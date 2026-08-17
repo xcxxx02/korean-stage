@@ -1,5 +1,15 @@
 import type { Course, DialogueLine, Exercise, MediaSource, VocabularyItem } from './types'
 
+export const courseUnits = [
+  { id: 'unit-1', title: 'Hello & Self-introduction' },
+  { id: 'unit-2', title: 'Countries & Nationalities' },
+  { id: 'unit-3', title: 'Jobs & Occupations' },
+  { id: 'unit-4', title: '이에요 / 예요 - to be' },
+  { id: 'unit-5', title: '은 / 는 - topic marker' },
+  { id: 'unit-6', title: '이 / 가 아니에요 - to not be' },
+  { id: 'unit-7', title: 'Dialogue & Role Play' },
+] as const
+
 const developmentMedia = (durationSeconds?: number): MediaSource => ({
   src: null,
   kind: 'development-missing',

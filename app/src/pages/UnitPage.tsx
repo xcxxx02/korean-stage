@@ -4,6 +4,7 @@ import { GrammarLesson } from '../components/GrammarLesson'
 import { VocabularyJourney } from '../components/VocabularyJourney'
 import { course } from '../content/course'
 import { useCourseProgress } from '../hooks/useCourseProgress'
+import { DialoguePage } from './DialoguePage'
 import { LearnPage } from './LearnPage'
 
 export function UnitPage() {
@@ -15,6 +16,7 @@ export function UnitPage() {
   useEffect(() => {
     if (unitId && course.grammar.some((grammarPoint) => grammarPoint.unitId === unitId)) visitUnit(unitId)
     if (unitId === 'unit-2' || unitId === 'unit-3') visitUnit(unitId)
+    if (unitId === 'unit-7') visitUnit(unitId)
   }, [unitId, visitUnit])
 
   if (unitId === 'unit-2') {
@@ -47,6 +49,8 @@ export function UnitPage() {
   }
 
   if (unitId === 'unit-3') return <VocabularyJourney items={occupationItems} progressPath="/learn/unit-3" />
+
+  if (unitId === 'unit-7') return <DialoguePage unit />
 
   const grammarPoint = course.grammar.find((candidate) => candidate.unitId === unitId)
   if (grammarPoint) {

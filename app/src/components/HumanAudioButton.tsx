@@ -5,12 +5,12 @@ import type { MediaSource } from '../content/types'
 type HumanAudioButtonProps = {
   source: MediaSource
   memberName: string
+  label?: string
 }
 
-export function HumanAudioButton({ source, memberName }: HumanAudioButtonProps) {
+export function HumanAudioButton({ source, memberName, label = `Listen to ${memberName}` }: HumanAudioButtonProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [hasPlaybackError, setHasPlaybackError] = useState(false)
-  const label = `Listen to ${memberName}`
   const isHumanRecording = source.kind === 'human-recording' && source.src !== null
   const canPlay = isHumanRecording && !hasPlaybackError
   const status = hasPlaybackError

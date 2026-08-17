@@ -39,6 +39,34 @@ const invalidRadii = (source: string) => [...source.matchAll(roundedTokens)]
   .map((match) => match[0])
   .filter((token) => !/^rounded-(?:(?:(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|ee|es)-)?xl|full)$/.test(token.slice(token.lastIndexOf(':') + 1)))
 
+function cssRuleBodies(css: string): Array<{ selector: string, body: string }> {
+  return [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
+    selector: match[1].trim(),
+    body: match[2],
+  }))
+}
+
+function elevationViolations(css: string): string[] {
+  const rules = cssRuleBodies(css)
+  const menuRules = rules.filter(({ selector }) => selector === '.mobile-navigation')
+  const violations = menuRules.length === 1 ? [] : [`mobile-navigation: expected one exact rule, found ${menuRules.length}`]
+
+  if (menuRules.length === 1) {
+    const menuShadows = menuRules[0].body.match(/\bbox-shadow\s*:[^;]+;/g) ?? []
+    if (menuShadows.length !== 1 || !/^box-shadow:\s*var\(--stage-shadow-menu\);$/.test(menuShadows[0])) {
+      violations.push('mobile-navigation: expected approved menu elevation')
+    }
+  }
+
+  rules.forEach(({ selector, body }) => {
+    if (selector !== '.mobile-navigation' && /\bbox-shadow\s*:/.test(body)) {
+      violations.push(`${selector}: box-shadow outside approved menu`)
+    }
+  })
+
+  return violations
+}
+
 describe('Korean Stage visual-system contract', () => {
   it('keeps the compact navigation until the header has 1120px of safe width', () => {
     expect(styles.match(/\.desktop-navigation\s*\{\s*display:\s*none;/g)).toHaveLength(1)
@@ -56,8 +84,30 @@ describe('Korean Stage visual-system contract', () => {
   })
 
   it('allows elevation only on the compact navigation menu', () => {
-    expect(styles.match(/\bbox-shadow\s*:/g)).toHaveLength(1)
-    expect(styles).toMatch(/\.mobile-navigation\s*\{[\s\S]*?box-shadow:\s*var\(--stage-shadow-menu\);/)
+    const rules = cssRuleBodies(styles)
+    const menuRules = rules.filter(({ selector }) => selector === '.mobile-navigation')
+    const otherShadowSelectors = rules
+      .filter(({ selector, body }) => selector !== '.mobile-navigation' && /\bbox-shadow\s*:/.test(body))
+      .map(({ selector }) => selector)
+
+    expect(menuRules).toHaveLength(1)
+    expect(menuRules[0].body.match(/\bbox-shadow:\s*var\(--stage-shadow-menu\);/g)).toEqual([
+      'box-shadow: var(--stage-shadow-menu);',
+    ])
+    expect(otherShadowSelectors).toEqual([])
+    expect(elevationViolations(styles)).toEqual([])
+  })
+
+  it('rejects moving the sole elevation into a later unrelated rule', () => {
+    const misplacedElevation = styles
+      .replace('  box-shadow: var(--stage-shadow-menu);\n', '')
+      .concat('\n.unrelated-surface {\n  box-shadow: var(--stage-shadow-menu);\n}\n')
+
+    expect(misplacedElevation.match(/\bbox-shadow\s*:/g)).toHaveLength(1)
+    expect(elevationViolations(misplacedElevation)).toEqual([
+      'mobile-navigation: expected approved menu elevation',
+      '.unrelated-surface: box-shadow outside approved menu',
+    ])
   })
 
   it('uses Stage semantic colors instead of generic Tailwind accents', () => {

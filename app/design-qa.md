@@ -60,6 +60,7 @@
 6. Fix round 2 measured the semantic token pairs and found four contract failures: faint text, white text on vermilion, strong borders, and yellow boundaries. The four targeted token adjustments bring each pairing over its applicable threshold.
 7. The current desktop, mobile, primary-control, compact-selector, Practice-focus, and team-status captures were compared together with the approved source and fix-round-1 renders. The stronger colors remain vivid and restrained; they do not make the white interface muddy or visually heavy. No new P0/P1/P2 issue was introduced.
 8. Fix round 3 is test-only contract hardening. It broadens detection of Tailwind custom-property colors, multi-segment shadows, and JSX inline surface shorthands while explicitly locking menu elevation to `.mobile-navigation`. No production visual value or component changed, so the fix-round-2 rendered comparisons remain current and no screenshot recapture was required.
+9. Fix round 4 corrects that test-only elevation check: CSS rule bodies are now extracted before evaluating shadows, so a declaration in a later unrelated rule cannot satisfy the `.mobile-navigation` contract. Production visuals remain unchanged and the fix-round-2 captures remain current.
 
 ## Findings
 

@@ -72,8 +72,8 @@ Units remain directly accessible from the course map. Learning is encouraged in 
 | Unit | Student-facing title | Lec 1 content | Required learning experience |
 |---|---|---|---|
 | 1 | Hello & Self-introduction | Greetings, names, and basic self-introduction | Short introduction, model sentences, human-audio replay, and a readiness check |
-| 2 | Countries & Nationalities | Country and nationality vocabulary | Sequential member videos, Korean words, English meanings, Korean examples, audio replay, and flashcards |
-| 3 | Jobs & Occupations | Occupation vocabulary | Sequential member videos, Korean words, English meanings, Korean examples, audio replay, and flashcards |
+| 2 | Countries & Nationalities | Country and nationality vocabulary | Bilingual vocabulary, Korean examples, pronunciation support, audio replay, and flashcards |
+| 3 | Jobs & Occupations | Occupation vocabulary | Eight-item sequential member-video journey, bilingual labels, Korean examples, audio replay, and flashcards |
 | 4 | 이에요 / 예요 | Identification ending | Clear English explanation, consonant/vowel rule, original examples, and three exercises |
 | 5 | 은 / 는 | Topic marker | Clear English explanation, consonant/vowel rule, original examples, and three exercises |
 | 6 | 이 / 가 아니에요 | Negative identification | Clear English explanation, consonant/vowel rule, original examples, and three exercises |
@@ -85,14 +85,16 @@ The site labels these as **Units**, not Lessons. The home and Team pages state t
 
 ### Vocabulary recording
 
-- Every configured member owns 3-5 vocabulary items across Units 2 and 3.
-- With two members, the submission contains 6-10 vocabulary items total. The initial content target is eight items, four per member.
+- Every configured member owns 3-5 recorded vocabulary items across Units 2 and 3.
+- With two members, the submission contains 6-10 recorded vocabulary items total. The approved initial target is eight Lec 1 occupation items, four per member: 학생 (Student), 선생님 (Teacher), 회사원 (Office worker), 기자 (Reporter), 의사 (Doctor), 가수 (Singer), 군인 (Soldier), and 요리사 (Chef).
+- Unit 2 still teaches the Lec 1 country and nationality material through bilingual cards, examples, pronunciation support, and flashcards. Displayed supporting vocabulary does not count as a member recording unless it has an assigned owner and the required real-member media.
 - Every vocabulary item contains:
   - Korean word;
   - English translation;
   - Korean example sentence;
   - English sentence translation for learner support;
-  - romanization as optional learner support;
+  - standard romanization as beginner support;
+  - a separately labeled spoken-pronunciation hint when pronunciation differs from the standard romanization;
   - member name;
   - member-recorded selfie video;
   - member-recorded audio file or human-voice audio extracted from that member's video.
@@ -129,7 +131,22 @@ The site explains all three grammar points from Lec 1 in clear English. Each exp
 - Every configured member has a name, student ID, assigned vocabulary count, and dialogue participation shown on the Team page.
 - Development labels such as Member 1 and Member 2 are not submission-ready. The readiness check fails until real names and student IDs are provided.
 
-## 7. Visual Design
+## 7. Beginner Comprehension Standard
+
+The primary learner is an English-speaking absolute beginner who cannot yet read Korean. No primary task may require the learner to understand an unexplained Korean-only label.
+
+- Every vocabulary item in a rail, menu, card, flashcard, result, or review list shows Korean and an adjacent English meaning.
+- The first detailed presentation of a vocabulary word shows both `Romanization` and, when useful, a separately labeled `Pronunciation` hint. For 학생, the standard romanization is `haksaeng` and the spoken hint is `hak-ssaeng`.
+- Korean model sentences, grammar examples, quiz feedback, and dialogue lines have nearby English translations or explanations.
+- Navigation, buttons, exercise instructions, validation feedback, empty states, media errors, and completion messages use plain English.
+- Korean grammar forms remain visible as the learning target, but every grammar heading includes a short English function such as `이에요 / 예요 - to be`.
+- Audio actions use visible English labels such as `Listen to Member 1`; an unexplained speaker icon is not sufficient.
+- Unit titles match their content. Occupation words appear under `Unit 3 · Jobs & Occupations`, not under a generic or conflicting Lesson 1 heading.
+- The active item uses text and shape as well as color, including a `Now learning` label in the vocabulary rail.
+- Repeated Korean may appear without repeated romanization inside a focused exercise after the word has been introduced, but the English instruction and a help path remain available.
+- Placeholder identities and media are explicitly marked as development content and can never appear submission-ready.
+
+## 8. Visual Design
 
 The implementation follows the approved desktop mockup.
 
@@ -144,9 +161,12 @@ The implementation follows the approved desktop mockup.
 
 ### Learning screen
 
-- Desktop: unit or item progression on the left, large member video in the center, learning details on the right, and Previous/Next controls below.
+- Desktop: bilingual unit or item progression on the left, large member video in the center, bilingual learning details on the right, and Previous/Next controls below.
 - Vocabulary progression is sequential. Learners do not choose a speaker before choosing a word.
-- Progress markers, primary actions, and active states use vivid color; decoration remains secondary.
+- The vocabulary rail shows Korean as the learning target and a readable English meaning directly below it. The current item also shows a `Now learning` text label and shape indicator.
+- The detailed word panel separates standard romanization, spoken pronunciation, human-audio playback, Korean example, English translation, and a plain-English grammar tip.
+- The header uses Learn, Vocabulary, Grammar, Practice, Dialogue, and Team. Only one primary Next action appears in the learning screen.
+- Progress markers, primary actions, and active states use vivid color plus non-color cues; decoration remains secondary.
 - Custom cultural illustrations are raster assets generated or sourced for the measured slots. UI icons come from one consistent open-source icon library.
 
 ### Motion
@@ -155,11 +175,12 @@ The implementation follows the approved desktop mockup.
 - Buttons, flashcards, answers, progress markers, and menus have clear hover, focus, pressed, selected, success, and error states.
 - Motion respects `prefers-reduced-motion` and never blocks learning.
 
-## 8. Responsive and Accessible Behavior
+## 9. Responsive and Accessible Behavior
 
 - Desktop targets the approved 1440 x 1024 composition.
 - Tablet stacks the video and learning details while retaining the progress overview.
 - Mobile replaces the left rail with a compact unit/item selector and keeps Previous/Next actions reachable without horizontal scrolling.
+- The mobile selector preserves Korean and English labels rather than collapsing to Korean-only text.
 - All interactive controls work by keyboard.
 - Every icon-only button has an accessible name.
 - Videos have captions or an adjacent transcript; dialogue text remains available outside the video.
@@ -167,14 +188,14 @@ The implementation follows the approved desktop mockup.
 - Focus indicators are visible, heading order is logical, and current progress is not communicated by color alone.
 - Text and essential controls meet WCAG AA color-contrast targets.
 
-## 9. State and Data Design
+## 10. State and Data Design
 
 Course content lives in typed local data modules rather than being hard-coded inside page components. The model supports 2-6 members without changing component code.
 
 Core entities are:
 
 - `Member`: identity, student ID, photo, vocabulary assignments, and dialogue participation.
-- `VocabularyItem`: word, meaning, romanization, example, owner, video source, and audio source.
+- `VocabularyItem`: Korean word, English meaning, standard romanization, optional pronunciation hint, bilingual example, owner, video source, and audio source.
 - `GrammarPoint`: title, explanation, rules, examples, and exercise IDs.
 - `Exercise`: prompt, type, options or acceptable answer, correct answer, and explanation.
 - `Dialogue`: title, speakers, 6-8 bilingual lines, full video source, and optional line-audio sources.
@@ -182,7 +203,7 @@ Core entities are:
 
 Progress is stored in `localStorage`. Corrupt or obsolete progress data is discarded safely and replaced with the default state. Course content remains usable when storage is unavailable.
 
-## 10. Component Boundaries
+## 11. Component Boundaries
 
 - `AppShell`: header, responsive navigation, global decorative assets, and page container.
 - `CourseMap`: seven-unit overview and progress summary.
@@ -199,7 +220,7 @@ Progress is stored in `localStorage`. Corrupt or obsolete progress data is disca
 
 Each unit consumes typed course data and reports completion through one progress interface. Media components do not own course navigation, and exercise components do not own persistence.
 
-## 11. Error and Empty States
+## 12. Error and Empty States
 
 - Missing vocabulary video: show the item text, transcript, owner, recording checklist, and `Video coming soon`; mark submission readiness as failed.
 - Missing audio: disable playback with `Audio coming soon`; mark readiness as failed.
@@ -209,7 +230,7 @@ Each unit consumes typed course data and reports completion through one progress
 - Unknown unit route: show a friendly not-found state with a return-to-course action.
 - Storage failure: continue without persistence and show a non-blocking notice only when useful.
 
-## 12. Submission-Readiness Validation
+## 13. Submission-Readiness Validation
 
 Before submission, the content validator must confirm:
 
@@ -226,7 +247,7 @@ Before submission, the content validator must confirm:
 
 This validator checks completeness, not pronunciation quality, natural acting, lighting, background noise, or verbal flow. Those require human review of the final recordings.
 
-## 13. Rubric Strategy
+## 14. Rubric Strategy
 
 ### Organization of responses and paragraph
 
@@ -244,7 +265,7 @@ The Dialogue page prioritizes uninterrupted full-video playback. Line replay is 
 
 The approved Korean visual system, sequential learning journey, interactive exercises, flashcards, progress feedback, and culturally restrained motion make the presentation interesting without reducing clarity.
 
-## 14. Testing and Verification
+## 15. Testing and Verification
 
 ### Automated behavior tests
 
@@ -256,11 +277,13 @@ The approved Korean visual system, sequential learning journey, interactive exer
 - Content validator for every coursework count and required field.
 - Media and member fallback states.
 - Dialogue full playback state and line selection.
+- Beginner-language rules: bilingual vocabulary labels, English control labels, unit/content alignment, separated romanization and pronunciation, and no Korean-only error or feedback state.
 
 ### Accessibility and responsive checks
 
 - Keyboard-only completion of the primary learning flow.
 - Accessible names, focus order, headings, transcripts, and non-color progress cues.
+- Readable English helper text and bilingual mobile vocabulary selection.
 - Automated accessibility scan on the primary routes.
 - Visual checks at desktop, tablet, and mobile widths.
 
@@ -272,13 +295,14 @@ The selected mockup and the rendered 1440 x 1024 implementation are compared in 
 
 A human must verify every final vocabulary and dialogue recording for visible faces, member voices, pronunciation, intonation, lighting, noise, natural acting, and uninterrupted flow. Automated tests cannot award or guarantee rubric marks.
 
-## 15. Definition of Done
+## 16. Definition of Done
 
 The website is complete only when:
 
 - all required routes and interactions work on desktop and mobile;
 - automated tests, type checking, linting, production build, and accessibility checks pass;
 - the submission-readiness validator passes with real member data and media;
+- every primary learner-facing screen passes the beginner-comprehension rules with no unexplained Korean-only navigation, instruction, feedback, or vocabulary-list item;
 - two human reviewers confirm the final recordings satisfy the recording checklist;
 - the design QA report passes against the approved mockup;
 - the implementation contains no AI-generated voice;

@@ -105,8 +105,58 @@ describe('validateCourse', () => {
       expect.objectContaining({ code: 'dialogue-speaker-count', dialogueId: 'dialogue-1' }),
       expect.objectContaining({ code: 'dialogue-line-details', dialogueId: 'dialogue-1' }),
       expect.objectContaining({ code: 'dialogue-video-duration', dialogueId: 'dialogue-1' }),
-      expect.objectContaining({ code: 'member-dialogue-participation', memberId: 'member-2' }),
     ]))
+  })
+
+  it('requires exactly three exercises for every grammar point', () => {
+    const courseWithTwoExercises = {
+      ...validCourse,
+      grammar: validCourse.grammar.map((grammar) =>
+        grammar.id === 'grammar-1' ? { ...grammar, exercises: grammar.exercises.slice(0, 2) } : grammar,
+      ),
+    }
+    const courseWithFourExercises = {
+      ...validCourse,
+      grammar: validCourse.grammar.map((grammar) =>
+        grammar.id === 'grammar-1' ? { ...grammar, exercises: [...grammar.exercises, { ...grammar.exercises[0], id: 'grammar-1-exercise-4' }] } : grammar,
+      ),
+    }
+
+    expect(validateCourse(courseWithTwoExercises)).toContainEqual(
+      expect.objectContaining({ code: 'exercise-count', grammarId: 'grammar-1' }),
+    )
+    expect(validateCourse(courseWithFourExercises)).toContainEqual(
+      expect.objectContaining({ code: 'exercise-count', grammarId: 'grammar-1' }),
+    )
+  })
+
+  it('derives member dialogue participation from dialogue lines', () => {
+    const courseWithSilentDeclaredMember = {
+      ...validCourse,
+      dialogues: validCourse.dialogues.map((dialogue) => ({
+        ...dialogue,
+        lines: dialogue.lines.map((line) => ({ ...line, speakerId: 'member-1' })),
+      })),
+    }
+
+    expect(validateCourse(courseWithSilentDeclaredMember)).toContainEqual(
+      expect.objectContaining({ code: 'member-dialogue-participation', memberId: 'member-2' }),
+    )
+  })
+
+  it('rejects dialogue lines with unknown or undeclared speakers', () => {
+    const courseWithInvalidLineSpeaker = {
+      ...validCourse,
+      dialogues: validCourse.dialogues.map((dialogue) =>
+        dialogue.id === 'dialogue-1'
+          ? { ...dialogue, lines: dialogue.lines.map((line, index) => index === 0 ? { ...line, speakerId: 'member-unknown' } : line) }
+          : dialogue,
+      ),
+    }
+
+    expect(validateCourse(courseWithInvalidLineSpeaker)).toContainEqual(
+      expect.objectContaining({ code: 'dialogue-line-speaker', dialogueId: 'dialogue-1' }),
+    )
   })
 
   it('rejects every non-human media source in submission mode', () => {

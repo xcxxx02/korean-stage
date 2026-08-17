@@ -53,8 +53,8 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
   }
 
   for (const grammar of course.grammar) {
-    if (grammar.exercises.length < 2 || grammar.exercises.length > 5) {
-      issues.push(issue('exercise-count', 'error', 'Each grammar point must have 2-5 exercises.', { grammarId: grammar.id }))
+    if (grammar.exercises.length !== 3) {
+      issues.push(issue('exercise-count', 'error', 'Each grammar point must have exactly 3 exercises.', { grammarId: grammar.id }))
     }
   }
 
@@ -62,10 +62,9 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     issues.push(issue('dialogue-count', 'error', 'The course must have 2-3 dialogues.'))
   }
 
+  const courseMemberIds = new Set(course.members.map((member) => member.id))
   const participatingMemberIds = new Set<string>()
   for (const dialogue of course.dialogues) {
-    dialogue.speakerIds.forEach((speakerId) => participatingMemberIds.add(speakerId))
-
     if (dialogue.speakerIds.length < 2 || dialogue.speakerIds.length > 3) {
       issues.push(issue('dialogue-speaker-count', 'error', 'Each dialogue must have 2-3 speakers.', { dialogueId: dialogue.id }))
     }
@@ -76,6 +75,16 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
 
     if (dialogue.lines.some((line) => !line.speakerId.trim() || !line.korean.trim() || !line.english.trim())) {
       issues.push(issue('dialogue-line-details', 'error', 'Every dialogue line needs a speaker label, Korean text, and English translation.', { dialogueId: dialogue.id }))
+    }
+
+    if (dialogue.lines.some((line) => !dialogue.speakerIds.includes(line.speakerId) || !courseMemberIds.has(line.speakerId))) {
+      issues.push(issue('dialogue-line-speaker', 'error', 'Every dialogue line speaker must be declared for the dialogue and exist in the course.', { dialogueId: dialogue.id }))
+    }
+
+    for (const line of dialogue.lines) {
+      if (courseMemberIds.has(line.speakerId)) {
+        participatingMemberIds.add(line.speakerId)
+      }
     }
 
     if (!hasHumanMedia(dialogue.video)) {

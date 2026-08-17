@@ -1,3 +1,6 @@
+import { VocabularyJourney } from '../components/VocabularyJourney'
+import { course } from '../content/course'
+
 export function VocabularyPage() {
-  return <><h1>Vocabulary</h1><p>Review the Korean words and English meanings introduced in Lec 1.</p></>
+  return <VocabularyJourney items={course.vocabulary.filter((item) => item.unitId === 'unit-3')} />
 }

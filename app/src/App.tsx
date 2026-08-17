@@ -7,6 +7,7 @@ import { LearnPage } from './pages/LearnPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PracticePage } from './pages/PracticePage'
 import { TeamPage } from './pages/TeamPage'
+import { UnitPage } from './pages/UnitPage'
 import { VocabularyPage } from './pages/VocabularyPage'
 
 const router = createBrowserRouter([
@@ -15,7 +16,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'learn', element: <LearnPage /> },
-      { path: 'learn/:unitId', element: <LearnPage /> },
+      { path: 'learn/:unitId', element: <UnitPage /> },
       { path: 'vocabulary', element: <VocabularyPage /> },
       { path: 'grammar', element: <GrammarPage /> },
       { path: 'practice', element: <PracticePage /> },

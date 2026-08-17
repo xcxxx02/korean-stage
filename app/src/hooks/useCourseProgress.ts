@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { readProgress, writeProgress, type CourseProgress } from '../progress/progressStore'
 
 type CourseProgressActions = {
@@ -11,8 +11,14 @@ type CourseProgressActions = {
 
 export function useCourseProgress(): CourseProgressActions {
   const [progress, setProgress] = useState<CourseProgress>(() => readProgress())
+  const lastPersistedProgress = useRef(progress)
 
-  useEffect(() => writeProgress(progress), [progress])
+  useEffect(() => {
+    if (progress === lastPersistedProgress.current) return
+
+    writeProgress(progress)
+    lastPersistedProgress.current = progress
+  }, [progress])
 
   const updateProgress = useCallback((update: (current: CourseProgress) => CourseProgress) => {
     setProgress(update)

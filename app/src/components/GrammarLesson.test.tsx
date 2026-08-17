@@ -65,7 +65,11 @@ describe('grammar routes', () => {
     writeProgress({
       completedUnitIds: ['unit-5'],
       completedVocabularyIds: [],
-      exerciseResults: {},
+      exerciseResults: {
+        'eun-neun-1': true,
+        'eun-neun-2': true,
+        'eun-neun-3': true,
+      },
       lastPath: '/grammar',
     }, localStorage)
 
@@ -75,7 +79,10 @@ describe('grammar routes', () => {
     const units = screen.getByRole('list', { name: 'Grammar units' })
     expect(within(units).getAllByRole('listitem')).toHaveLength(3)
     expect(within(units).getByRole('link', { name: /이에요 \/ 예요.*to be/i })).toHaveAttribute('href', '/learn/unit-4')
-    expect(within(units).getByRole('link', { name: /은 \/ 는.*topic marker.*Complete/i })).toHaveAttribute('href', '/learn/unit-5')
+    const completedUnit = within(units).getByRole('link', { name: /은 \/ 는.*topic marker/i })
+    expect(completedUnit).toHaveAttribute('href', '/learn/unit-5')
+    expect(within(completedUnit).getByText('Complete')).toBeVisible()
+    expect(within(completedUnit).queryByText('Not complete')).not.toBeInTheDocument()
     expect(within(units).getByRole('link', { name: /이 \/ 가 아니에요.*is not/i })).toHaveAttribute('href', '/learn/unit-6')
   })
 

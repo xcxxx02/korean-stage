@@ -116,3 +116,36 @@ Included in the fix-round Task 6 commit; the exact SHA is recorded in the handof
 ### Concerns
 
 - None blocking.
+
+## Fix round 2
+
+### Disposition
+
+- Corrected the Grammar overview test fixture to persist all three exact Unit 5 exercise results as `true`, matching the result-derived completion policy.
+- Replaced the false-positive `/Complete/i` link-name match with an exact visible `Complete` assertion inside the Unit 5 card and an explicit rejection of `Not complete`.
+- No production code changed; the issue was confined to test setup and assertion precision.
+
+### TDD-quality evidence
+
+- RED: after tightening the assertion but before repairing the fixture, `npm test -- src/components/GrammarLesson.test.tsx` exited 1 with 1 failed and 6 passed. The Unit 5 card visibly contained `Not complete`, and exact `Complete` was absent.
+- GREEN: after seeding `eun-neun-1`, `eun-neun-2`, and `eun-neun-3` as true, the same focused command exited 0 with 7 of 7 tests passed.
+
+### Verification
+
+- `npm test` — exit 0; 11 files passed, 64 tests passed.
+- `npm run typecheck` — exit 0.
+- `npm run lint` — exit 0.
+
+### Self-review
+
+- The test now fails if Unit 5 renders `Not complete`, even though that phrase contains the substring `complete`.
+- The completion fixture is coherent with storage sanitization and the three-exercise completion contract.
+- Scope is limited to `GrammarLesson.test.tsx` and this report.
+
+### Commit
+
+Included in the fix-round 2 commit; the exact SHA is recorded in the handoff because a commit cannot contain its own final SHA.
+
+### Concerns
+
+- None.

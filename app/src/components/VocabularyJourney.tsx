@@ -10,6 +10,7 @@ import { MemberVideo } from './MemberVideo'
 type VocabularyJourneyProps = {
   items: VocabularyItem[]
   initialItemId?: string
+  progressPath?: string
 }
 
 function grammarTip(item: VocabularyItem): { heading: string; explanation: string } {
@@ -27,9 +28,10 @@ function grammarTip(item: VocabularyItem): { heading: string; explanation: strin
   }
 }
 
-export function VocabularyJourney({ items, initialItemId }: VocabularyJourneyProps) {
+export function VocabularyJourney({ items, initialItemId, progressPath }: VocabularyJourneyProps) {
   const initialIndex = Math.max(0, items.findIndex((item) => item.id === initialItemId))
   const [activeIndex, setActiveIndex] = useState(initialIndex)
+  const [isFinished, setIsFinished] = useState(false)
   const { markVocabularyComplete } = useCourseProgress()
 
   if (items.length === 0) {
@@ -49,33 +51,63 @@ export function VocabularyJourney({ items, initialItemId }: VocabularyJourneyPro
   const unitTitle = courseUnits.find((unit) => unit.id === item.unitId)?.title ?? 'Vocabulary'
 
   const showNext = () => {
-    markVocabularyComplete(item.id)
-    setActiveIndex((current) => Math.min(current + 1, items.length - 1))
+    markVocabularyComplete(item.id, progressPath)
+    if (activeIndex === items.length - 1) {
+      setIsFinished(true)
+    } else {
+      setActiveIndex((current) => current + 1)
+    }
   }
 
   const rail = (
-    <ol aria-label="Vocabulary progress" className="m-0 grid list-none gap-1 p-0">
-      {items.map((word, index) => {
-        const isActive = index === activeIndex
-        return (
-          <li
-            aria-current={isActive ? 'step' : undefined}
-            aria-label={`${index + 1}. ${word.korean}, ${word.english}`}
-            className={`relative grid grid-cols-[2.5rem_1fr] gap-3 border-l-4 py-2 pl-2 ${isActive ? 'border-blue-600' : 'border-transparent'}`}
-            key={word.id}
-          >
-            <span className={`grid size-9 place-items-center rounded-full border text-sm font-bold ${isActive ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white text-slate-700'}`}>
-              {index + 1}
-            </span>
-            <span>
-              <span className={`block text-lg font-bold ${isActive ? 'text-blue-700' : 'text-slate-950'}`}>{word.korean}</span>
-              <span className="block text-sm text-slate-700">{word.english}</span>
-              {isActive ? <span className="mt-1 inline-block rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">Now learning</span> : null}
-            </span>
-          </li>
-        )
-      })}
-    </ol>
+    <>
+      <fieldset className="rounded-lg border border-slate-300 p-4 lg:hidden">
+        <legend className="px-1 font-bold text-slate-950">Compact vocabulary progress</legend>
+        <label className="mb-2 block text-sm font-semibold text-slate-700" htmlFor="compact-vocabulary-selector">Choose vocabulary word</label>
+        <select
+          aria-label="Choose vocabulary word"
+          className="min-h-12 w-full rounded-lg border border-slate-400 bg-white px-3 text-slate-950 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          id="compact-vocabulary-selector"
+          onChange={(event) => {
+            const nextIndex = items.findIndex((word) => word.id === event.target.value)
+            if (nextIndex >= 0) {
+              setIsFinished(false)
+              setActiveIndex(nextIndex)
+            }
+          }}
+          value={item.id}
+        >
+          {items.map((word, index) => (
+            <option key={word.id} value={word.id}>{index + 1}. {word.korean} — {word.english}</option>
+          ))}
+        </select>
+        <p aria-current="step" className="mb-0 mt-3 text-sm font-semibold text-blue-700">
+          {activeIndex + 1} of {items.length} · {item.korean} · {item.english}
+        </p>
+      </fieldset>
+      <ol aria-label="Vocabulary progress" className="m-0 hidden list-none gap-1 p-0 lg:grid">
+        {items.map((word, index) => {
+          const isActive = index === activeIndex
+          return (
+            <li
+              aria-current={isActive ? 'step' : undefined}
+              aria-label={`${index + 1}. ${word.korean}, ${word.english}`}
+              className={`relative grid grid-cols-[2.5rem_1fr] gap-3 border-l-4 py-2 pl-2 ${isActive ? 'border-blue-600' : 'border-transparent'}`}
+              key={word.id}
+            >
+              <span className={`grid size-9 place-items-center rounded-full border text-sm font-bold ${isActive ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white text-slate-700'}`}>
+                {index + 1}
+              </span>
+              <span>
+                <span className={`block text-lg font-bold ${isActive ? 'text-blue-700' : 'text-slate-950'}`}>{word.korean}</span>
+                <span className="block text-sm text-slate-700">{word.english}</span>
+                {isActive ? <span className="mt-1 inline-block rounded-full bg-blue-600 px-2 py-0.5 text-xs font-semibold text-white">Now learning</span> : null}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </>
   )
 
   const media = (
@@ -129,7 +161,10 @@ export function VocabularyJourney({ items, initialItemId }: VocabularyJourneyPro
       <button
         className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border-2 border-blue-600 px-5 py-3 font-semibold text-blue-700 hover:bg-blue-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
         disabled={activeIndex === 0}
-        onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
+        onClick={() => {
+          setIsFinished(false)
+          setActiveIndex((current) => Math.max(0, current - 1))
+        }}
         type="button"
       >
         <CaretLeft aria-hidden="true" weight="bold" />
@@ -137,12 +172,12 @@ export function VocabularyJourney({ items, initialItemId }: VocabularyJourneyPro
       </button>
       <button
         className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:bg-slate-300"
-        disabled={activeIndex === items.length - 1}
+        disabled={isFinished}
         onClick={showNext}
         type="button"
       >
-        Next word
-        <CaretRight aria-hidden="true" weight="bold" />
+        {isFinished ? 'Vocabulary complete' : activeIndex === items.length - 1 ? 'Finish vocabulary' : 'Next word'}
+        {isFinished ? null : <CaretRight aria-hidden="true" weight="bold" />}
       </button>
     </nav>
   )

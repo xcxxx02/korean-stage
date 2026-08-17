@@ -1,16 +1,37 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { course } from '../content/course'
 import type { MediaSource } from '../content/types'
 import { readProgress } from '../progress/progressStore'
+import { HomePage } from '../pages/HomePage'
 import { UnitPage } from '../pages/UnitPage'
 import { HumanAudioButton } from './HumanAudioButton'
 import { MemberVideo } from './MemberVideo'
 import { VocabularyJourney } from './VocabularyJourney'
 
 const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
+const approvedCountries = [
+  { korean: '중국', english: 'China' },
+  { korean: '일본', english: 'Japan' },
+  { korean: '미국', english: 'USA' },
+  { korean: '한국', english: 'Korea' },
+  { korean: '프랑스', english: 'France' },
+  { korean: '독일', english: 'Germany' },
+  { korean: '호주', english: 'Australia' },
+  { korean: '영국', english: 'United Kingdom' },
+] as const
+const approvedOccupations = [
+  { id: 'student', korean: '학생', english: 'Student' },
+  { id: 'teacher', korean: '선생님', english: 'Teacher' },
+  { id: 'office-worker', korean: '회사원', english: 'Office worker' },
+  { id: 'reporter', korean: '기자', english: 'Reporter' },
+  { id: 'doctor', korean: '의사', english: 'Doctor' },
+  { id: 'singer', korean: '가수', english: 'Singer' },
+  { id: 'soldier', korean: '군인', english: 'Soldier' },
+  { id: 'chef', korean: '요리사', english: 'Chef' },
+] as const
 
 afterEach(cleanup)
 
@@ -51,12 +72,66 @@ describe('VocabularyJourney', () => {
 
     const rail = screen.getByRole('list', { name: 'Vocabulary progress' })
     expect(within(rail).getAllByRole('listitem')).toHaveLength(8)
-    occupationItems.forEach((item, index) => {
+    approvedOccupations.forEach((item, index) => {
       const row = within(rail).getByRole('listitem', { name: `${index + 1}. ${item.korean}, ${item.english}` })
       expect(row).toHaveTextContent(item.korean)
       expect(row).toHaveTextContent(item.english)
     })
     expect(within(rail).getByRole('listitem', { name: '5. 의사, Doctor' })).toHaveAttribute('aria-current', 'step')
+  })
+
+  it('finishes the eighth word and records all eight occupations complete', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
+
+    for (let index = 0; index < 7; index += 1) {
+      const next = screen.getByRole('button', { name: 'Next word' })
+      expect(next).toBeEnabled()
+      await user.click(next)
+    }
+
+    expect(screen.getAllByText('요리사').length).toBeGreaterThan(0)
+    const finish = screen.getByRole('button', { name: 'Finish vocabulary' })
+    expect(finish).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Next word' })).not.toBeInTheDocument()
+    await user.click(finish)
+
+    await waitFor(() => expect(readProgress(localStorage).completedVocabularyIds).toEqual([
+      'student',
+      'teacher',
+      'office-worker',
+      'reporter',
+      'doctor',
+      'singer',
+      'soldier',
+      'chef',
+    ]))
+    expect(screen.getByRole('button', { name: 'Vocabulary complete' })).toBeDisabled()
+  })
+
+  it('provides a compact bilingual word selector while keeping the full rail desktop-only', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} initialItemId="doctor" />)
+
+    expect(screen.getByRole('list', { name: 'Vocabulary progress' })).toHaveClass('hidden', 'lg:grid')
+    const compact = screen.getByRole('group', { name: 'Compact vocabulary progress' })
+    expect(compact).toHaveClass('lg:hidden')
+    const selector = within(compact).getByRole('combobox', { name: 'Choose vocabulary word' })
+    expect(within(selector).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      '1. 학생 — Student',
+      '2. 선생님 — Teacher',
+      '3. 회사원 — Office worker',
+      '4. 기자 — Reporter',
+      '5. 의사 — Doctor',
+      '6. 가수 — Singer',
+      '7. 군인 — Soldier',
+      '8. 요리사 — Chef',
+    ])
+    expect(within(compact).getByText('5 of 8 · 의사 · Doctor')).toHaveAttribute('aria-current', 'step')
+
+    await user.selectOptions(selector, 'teacher')
+    expect(within(compact).getByText('2 of 8 · 선생님 · Teacher')).toHaveAttribute('aria-current', 'step')
+    expect(screen.getAllByText('Teacher').length).toBeGreaterThan(0)
   })
 })
 
@@ -77,7 +152,49 @@ describe('human media states', () => {
     for (const check of ['Speak clearly', 'Check pronunciation', 'Use good lighting', 'Minimize background noise']) {
       expect(screen.getByText(check)).toBeVisible()
     }
+    expect(screen.getAllByLabelText('Not yet reviewed')).toHaveLength(4)
     expect(screen.getByText('저는 학생이에요. I am a student.')).toBeVisible()
+  })
+
+  it('never renders or enables AI-generated audio and video', () => {
+    const aiMedia: MediaSource = { src: '/media/generated.mp4', kind: 'ai-generated' }
+    render(<>
+      <HumanAudioButton memberName="Member 1" source={aiMedia} />
+      <MemberVideo memberName="Member 1" source={aiMedia} transcript="저는 학생이에요. I am a student." />
+    </>)
+
+    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
+    expect(screen.getByText('AI-generated audio is prohibited')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'AI-generated video is prohibited' })).toBeVisible()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+  })
+
+  it('rejects development-missing media that inconsistently includes a source', () => {
+    const invalidMedia: MediaSource = { src: '/media/not-approved.mp4', kind: 'development-missing' }
+    render(<>
+      <HumanAudioButton memberName="Member 1" source={invalidMedia} />
+      <MemberVideo memberName="Member 1" source={invalidMedia} transcript="저는 학생이에요. I am a student." />
+    </>)
+
+    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
+    expect(screen.getByText('Audio unavailable: invalid media source')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Member video unavailable' })).toBeVisible()
+    expect(screen.getByText('This media source is invalid. Ask a course editor to replace it with a human recording.')).toBeVisible()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+  })
+
+  it('reports a supplied human audio playback error in plain English', () => {
+    render(<HumanAudioButton
+      memberName="Member 1"
+      source={{ src: '/media/student.mp3', kind: 'human-recording' }}
+    />)
+
+    const audio = document.querySelector('audio')!
+    fireEvent.error(audio)
+    expect(screen.getByText('Audio playback unavailable. Continue with the written example.')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
   })
 
   it('uses native video controls, captions, and an adjacent transcript when supplied', () => {
@@ -90,6 +207,11 @@ describe('human media states', () => {
     const video = screen.getByLabelText('Member 1 vocabulary video')
     expect(video).toHaveAttribute('controls')
     expect(video.querySelector('track')).toHaveAttribute('src', '/media/student.vtt')
+    expect(screen.getByText('저는 학생이에요. I am a student.')).toBeVisible()
+
+    fireEvent.error(video)
+    expect(screen.getByRole('heading', { name: 'Video playback unavailable' })).toBeVisible()
+    expect(screen.getByText('Use the transcript below and continue to the next word.')).toBeVisible()
     expect(screen.getByText('저는 학생이에요. I am a student.')).toBeVisible()
   })
 })
@@ -109,7 +231,7 @@ describe('UnitPage vocabulary units', () => {
     expect(screen.getByRole('heading', { name: 'Unit 2 · Countries & Nationalities' })).toBeVisible()
     const cards = screen.getByRole('list', { name: 'Country and nationality vocabulary' })
     expect(within(cards).getAllByRole('listitem')).toHaveLength(8)
-    for (const item of course.vocabulary.filter((word) => word.unitId === 'unit-2')) {
+    for (const item of approvedCountries) {
       expect(within(cards).getByText(item.korean)).toBeVisible()
       expect(within(cards).getByText(item.english)).toBeVisible()
     }
@@ -122,5 +244,21 @@ describe('UnitPage vocabulary units', () => {
     expect(screen.getByRole('heading', { name: 'Unit 3 · Jobs & Occupations' })).toBeVisible()
     expect(screen.getByRole('list', { name: 'Vocabulary progress' })).toBeVisible()
     expect(screen.getAllByText('학생').length).toBeGreaterThan(0)
+  })
+
+  it('keeps Home continuation on Unit 3 while its vocabulary is completed', async () => {
+    const user = userEvent.setup()
+    const view = renderUnit('/learn/unit-3')
+    await waitFor(() => expect(readProgress(localStorage).lastPath).toBe('/learn/unit-3'))
+
+    await user.click(screen.getByRole('button', { name: 'Next word' }))
+    await waitFor(() => expect(readProgress(localStorage)).toMatchObject({
+      completedVocabularyIds: ['student'],
+      lastPath: '/learn/unit-3',
+    }))
+
+    view.unmount()
+    render(<MemoryRouter><HomePage /></MemoryRouter>)
+    expect(screen.getByRole('link', { name: 'Continue learning' })).toHaveAttribute('href', '/learn/unit-3')
   })
 })

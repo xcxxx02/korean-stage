@@ -5,7 +5,7 @@ type CourseProgressActions = {
   progress: CourseProgress
   visitUnit: (unitId: string) => void
   markUnitComplete: (unitId: string) => void
-  markVocabularyComplete: (itemId: string) => void
+  markVocabularyComplete: (itemId: string, lastPath?: string) => void
   recordExerciseResult: (exerciseId: string, correct: boolean) => void
 }
 
@@ -38,13 +38,13 @@ export function useCourseProgress(): CourseProgressActions {
     }))
   }, [updateProgress])
 
-  const markVocabularyComplete = useCallback((itemId: string) => {
+  const markVocabularyComplete = useCallback((itemId: string, lastPath?: string) => {
     updateProgress((current) => ({
       ...current,
       completedVocabularyIds: current.completedVocabularyIds.includes(itemId)
         ? current.completedVocabularyIds
         : [...current.completedVocabularyIds, itemId],
-      lastPath: '/vocabulary',
+      lastPath: lastPath ?? current.lastPath,
     }))
   }, [updateProgress])
 

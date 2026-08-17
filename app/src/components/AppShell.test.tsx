@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -49,14 +49,19 @@ describe('AppShell', () => {
     renderShell()
 
     const menuButton = screen.getByRole('button', { name: 'Menu' })
+    const mobilePanel = document.getElementById('primary-navigation-list')!
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    expect(mobilePanel).toHaveAttribute('hidden')
+    expect(within(mobilePanel).queryByRole('link', { name: 'Learn' })).not.toBeInTheDocument()
 
     await user.click(menuButton)
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')
-    expect(screen.getAllByRole('link', { name: 'Learn' })).toHaveLength(1)
+    expect(mobilePanel).not.toHaveAttribute('hidden')
+    expect(within(mobilePanel).getByRole('link', { name: 'Learn' })).toBeInTheDocument()
 
     await user.keyboard('{Escape}')
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    expect(mobilePanel).toHaveAttribute('hidden')
   })
 
   it('closes the mobile menu and focuses the destination heading after navigation', async () => {
@@ -64,9 +69,10 @@ describe('AppShell', () => {
     renderShell()
 
     await user.click(screen.getByRole('button', { name: 'Menu' }))
-    await user.click(screen.getByRole('link', { name: 'Vocabulary' }))
+    await user.click(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Vocabulary' }))
 
     expect(screen.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false')
+    expect(document.getElementById('primary-navigation-list')).toHaveAttribute('hidden')
     expect(screen.getByRole('heading', { name: 'Vocabulary' })).toHaveFocus()
   })
 

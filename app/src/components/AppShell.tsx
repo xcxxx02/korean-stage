@@ -39,12 +39,19 @@ export function AppShell() {
       <a href="#main-content">Skip to main content</a>
       <header>
         <Link to="/">{course.name}</Link>
-        <button aria-controls="primary-navigation-list" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen((open) => !open)} type="button">
+        <button aria-controls="primary-navigation-list" aria-expanded={isMenuOpen} className="mobile-menu-button" onClick={() => setIsMenuOpen((open) => !open)} type="button">
           <List aria-hidden="true" />
           <span>Menu</span>
         </button>
         <nav aria-label="Primary navigation">
-          <ul data-menu-open={isMenuOpen} id="primary-navigation-list">
+          <ul className="desktop-navigation">
+            {navigationItems.map(({ label, to }) => (
+              <li key={to}>
+                <NavLink onClick={() => setIsMenuOpen(false)} to={to}>{label}</NavLink>
+              </li>
+            ))}
+          </ul>
+          <ul className="mobile-navigation" hidden={!isMenuOpen} id="primary-navigation-list">
             {navigationItems.map(({ label, to }) => (
               <li key={to}>
                 <NavLink onClick={() => setIsMenuOpen(false)} to={to}>{label}</NavLink>

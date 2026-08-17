@@ -59,6 +59,7 @@
 5. Post-fix Playwright run passed every responsive, keyboard-focus, reduced-motion, overflow, and console assertion. The final side-by-side review found no remaining P0/P1/P2 issue.
 6. Fix round 2 measured the semantic token pairs and found four contract failures: faint text, white text on vermilion, strong borders, and yellow boundaries. The four targeted token adjustments bring each pairing over its applicable threshold.
 7. The current desktop, mobile, primary-control, compact-selector, Practice-focus, and team-status captures were compared together with the approved source and fix-round-1 renders. The stronger colors remain vivid and restrained; they do not make the white interface muddy or visually heavy. No new P0/P1/P2 issue was introduced.
+8. Fix round 3 is test-only contract hardening. It broadens detection of Tailwind custom-property colors, multi-segment shadows, and JSX inline surface shorthands while explicitly locking menu elevation to `.mobile-navigation`. No production visual value or component changed, so the fix-round-2 rendered comparisons remain current and no screenshot recapture was required.
 
 ## Findings
 
@@ -79,6 +80,7 @@
 - [x] Compare the rendered desktop and focused regions with the source visual.
 - [x] Measure meaningful text and component-boundary token pairings against WCAG thresholds.
 - [x] Re-capture and compare the higher-contrast vermilion control, compact boundary, Practice legend, and semantic status surfaces.
+- [x] Protect the approved palette, geometry, and menu-only elevation from additional Tailwind v4 and inline-style escape forms.
 
 ## Follow-up polish
 

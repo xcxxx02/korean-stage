@@ -9,11 +9,13 @@ const srcRoot = resolve(process.cwd(), 'src')
 const styles = readFileSync(resolve(srcRoot, 'styles.css'), 'utf8')
 const colors = stageColorTokens(styles)
 const variantPrefix = String.raw`(?:(?:[\w-]+(?:-\[[^\]\s]+\])?|\[[^\]\s]+\]):)*`
-const genericColor = new RegExp(String.raw`\b${variantPrefix}(?:accent|bg|border|decoration|fill|outline|ring|stroke|text)-(?:amber|black|blue|cyan|emerald|fuchsia|gray|green|indigo|lime|neutral|orange|pink|purple|red|rose|sky|slate|stone|teal|violet|white|yellow|zinc)(?:-[\w./%-]+)?\b|\b${variantPrefix}(?:accent|bg|border|decoration|fill|outline|ring|stroke|text)-\[[^\]]+\]`, 'g')
+const colorUtility = String.raw`(?:accent|bg|border|decoration|fill|outline|ring|stroke|text)`
+const genericColor = new RegExp(String.raw`\b${variantPrefix}${colorUtility}-(?:amber|black|blue|cyan|emerald|fuchsia|gray|green|indigo|lime|neutral|orange|pink|purple|red|rose|sky|slate|stone|teal|violet|white|yellow|zinc)(?:-[\w./%-]+)?\b|\b${variantPrefix}${colorUtility}-(?:\[[^\]]+\]|\(--[\w-]+\))`, 'g')
 const roundedTokens = new RegExp(String.raw`\b${variantPrefix}rounded(?:-(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|ee|es))?(?:-(?:none|xs|sm|md|lg|xl|2xl|3xl|full|\[[^\]\s"'\`}]+\]))?(?=[\s"'\`}])`, 'g')
 const thickBorders = new RegExp(String.raw`\b${variantPrefix}border(?:-[trblxyse])?-(?:[2-9]\d*|\[[^\]]+\])(?=[\s"'\`}])`, 'g')
-const shadows = new RegExp(String.raw`\b${variantPrefix}shadow(?:-(?:[\w]+|\[[^\]]+\]))?(?=[\s"'\`}])`, 'g')
-const inlineSurfaceStyles = /style=\{\{[^}]*\b(?:background(?:Color|Image)|border(?:Color|Radius|Width)|boxShadow|color)\b[^}]*\}\}/g
+const shadows = new RegExp(String.raw`\b${variantPrefix}shadow(?:-(?:[\w-]+|\[[^\]]+\]))?(?=[\s"'\`}])`, 'g')
+const inlineSurfaceProperty = String.raw`(?:background(?:Color|Image)?|border(?:Color|Radius|Width)?|border(?:Top|Right|Bottom|Left|Block(?:Start|End)?|Inline(?:Start|End)?)(?:Color|Style|Width)?|boxShadow|color)`
+const inlineSurfaceStyles = new RegExp(String.raw`style\s*=\s*\{\{(?:(?!\}\})[\s\S])*?['"]?${inlineSurfaceProperty}['"]?\s*:(?:(?!\}\})[\s\S])*?\}\}`, 'g')
 
 function productionTsxFiles(directory = srcRoot): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -53,6 +55,11 @@ describe('Korean Stage visual-system contract', () => {
     expect(styles).toMatch(/\.mobile-navigation a:focus-visible\s*\{[\s\S]*?outline-offset:\s*-3px;/)
   })
 
+  it('allows elevation only on the compact navigation menu', () => {
+    expect(styles.match(/\bbox-shadow\s*:/g)).toHaveLength(1)
+    expect(styles).toMatch(/\.mobile-navigation\s*\{[\s\S]*?box-shadow:\s*var\(--stage-shadow-menu\);/)
+  })
+
   it('uses Stage semantic colors instead of generic Tailwind accents', () => {
     expect(sourceViolations(genericColor)).toEqual([])
   })
@@ -75,7 +82,55 @@ describe('Korean Stage visual-system contract', () => {
     expect([...fixture.matchAll(thickBorders)].map((match) => match[0])).toEqual(['border-2', 'sm:border-x-[3px]', 'focus-visible:border-s-4'])
     expect([...fixture.matchAll(shadows)].map((match) => match[0])).toEqual(['shadow', 'shadow-[0_2px_8px_#000]', 'data-[state=open]:shadow-lg'])
     expect([...fixture.matchAll(genericColor)].map((match) => match[0])).toEqual(['hover:bg-teal-500', 'text-[#fff]', 'data-[tone=warn]:text-orange-700'])
-    expect([...fixture.matchAll(inlineSurfaceStyles)].map((match) => match[0])).toEqual(["style={{ borderRadius: '1rem' }}"])
+    expect([...fixture.matchAll(inlineSurfaceStyles)]).toHaveLength(1)
+  })
+
+  it('rejects Tailwind v4 custom-property color shorthand', () => {
+    const fixture = '<div className="bg_TOKEN_(--brand-color) text_TOKEN_(--brand-ink) border_TOKEN_(--brand-line) focus:ring_TOKEN_(--brand-focus)" />'
+      .replaceAll('_TOKEN_', '-')
+
+    expect([...fixture.matchAll(genericColor)].map((match) => match[0])).toEqual([
+      'bg\u002d(--brand-color)',
+      'text\u002d(--brand-ink)',
+      'border\u002d(--brand-line)',
+      'focus:ring\u002d(--brand-focus)',
+    ])
+  })
+
+  it('rejects multi-segment named shadows', () => {
+    const fixture = '<div className="shadow_TOKEN_stage-menu hover:shadow_TOKEN_brand-raised" />'
+      .replaceAll('_TOKEN_', '-')
+
+    expect([...fixture.matchAll(shadows)].map((match) => match[0])).toEqual(['shadow\u002dstage-menu', 'hover:shadow\u002dbrand-raised'])
+  })
+
+  it('rejects inline shorthand and directional surface styles', () => {
+    const fixture = `
+      <div style={{
+        background: '#fff',
+      }} />
+      <div style = {{ backgroundColor: '#fff' }} />
+      <div style={{ border: '2px solid red' }} />
+      <div style={{ borderTop: '2px solid red' }} />
+      <div style={{ borderRight: '2px solid red' }} />
+      <div style={{ borderBottom: '2px solid red' }} />
+      <div style={{ borderLeft: '2px solid red' }} />
+      <div style={{ borderWidth: '2px' }} />
+      <div style={{ borderTopWidth: '2px' }} />
+      <div style={{ borderRightWidth: '2px' }} />
+      <div style={{ borderBottomWidth: '2px' }} />
+      <div style={{ borderLeftWidth: '2px' }} />
+      <div style={{ borderBlockWidth: '2px' }} />
+      <div style={{ borderBlockStartWidth: '2px' }} />
+      <div style={{ borderBlockEndWidth: '2px' }} />
+      <div style={{ borderInlineWidth: '2px' }} />
+      <div style={{ borderInlineStartWidth: '2px' }} />
+      <div style={{ borderInlineEndWidth: '2px' }} />
+      <div style={{ boxShadow: '0 2px 8px #000' }} />
+      <div style={{ borderRadius: '4px' }} />
+    `
+
+    expect([...fixture.matchAll(inlineSurfaceStyles)].map((match) => match[0])).toHaveLength(20)
   })
 
   it('reserves full rounding for true status and progress indicators', () => {

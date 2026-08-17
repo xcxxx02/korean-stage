@@ -3,9 +3,17 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { extname, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { contrastRatio, stageColorTokens } from './test/contrast'
 
 const srcRoot = resolve(process.cwd(), 'src')
 const styles = readFileSync(resolve(srcRoot, 'styles.css'), 'utf8')
+const colors = stageColorTokens(styles)
+const variantPrefix = String.raw`(?:(?:[\w-]+(?:-\[[^\]\s]+\])?|\[[^\]\s]+\]):)*`
+const genericColor = new RegExp(String.raw`\b${variantPrefix}(?:accent|bg|border|decoration|fill|outline|ring|stroke|text)-(?:amber|black|blue|cyan|emerald|fuchsia|gray|green|indigo|lime|neutral|orange|pink|purple|red|rose|sky|slate|stone|teal|violet|white|yellow|zinc)(?:-[\w./%-]+)?\b|\b${variantPrefix}(?:accent|bg|border|decoration|fill|outline|ring|stroke|text)-\[[^\]]+\]`, 'g')
+const roundedTokens = new RegExp(String.raw`\b${variantPrefix}rounded(?:-(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|ee|es))?(?:-(?:none|xs|sm|md|lg|xl|2xl|3xl|full|\[[^\]\s"'\`}]+\]))?(?=[\s"'\`}])`, 'g')
+const thickBorders = new RegExp(String.raw`\b${variantPrefix}border(?:-[trblxyse])?-(?:[2-9]\d*|\[[^\]]+\])(?=[\s"'\`}])`, 'g')
+const shadows = new RegExp(String.raw`\b${variantPrefix}shadow(?:-(?:[\w]+|\[[^\]]+\]))?(?=[\s"'\`}])`, 'g')
+const inlineSurfaceStyles = /style=\{\{[^}]*\b(?:background(?:Color|Image)|border(?:Color|Radius|Width)|boxShadow|color)\b[^}]*\}\}/g
 
 function productionTsxFiles(directory = srcRoot): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -25,6 +33,10 @@ const sourceViolations = (pattern: RegExp) => sources.flatMap(({ path, source })
   [...source.matchAll(pattern)].map((match) => `${path}: ${match[0]}`),
 )
 
+const invalidRadii = (source: string) => [...source.matchAll(roundedTokens)]
+  .map((match) => match[0])
+  .filter((token) => !/^rounded-(?:(?:(?:t|r|b|l|s|e|tl|tr|br|bl|ss|se|ee|es)-)?xl|full)$/.test(token.slice(token.lastIndexOf(':') + 1)))
+
 describe('Korean Stage visual-system contract', () => {
   it('keeps the compact navigation until the header has 1120px of safe width', () => {
     expect(styles.match(/\.desktop-navigation\s*\{\s*display:\s*none;/g)).toHaveLength(1)
@@ -42,31 +54,103 @@ describe('Korean Stage visual-system contract', () => {
   })
 
   it('uses Stage semantic colors instead of generic Tailwind accents', () => {
-    const genericColor = /\b(?:accent|bg|border|outline|text)-(?:amber|black|blue|emerald|red|rose|slate|white|yellow)(?:-\d{2,3})?\b/g
     expect(sourceViolations(genericColor)).toEqual([])
   })
 
   it('uses the 12px surface radius, one-pixel borders, and menu-only elevation', () => {
-    const inconsistentGeometry = /\b(?:border(?:-[lrtbxy])?-[248]|rounded-(?:[trbl]{1,2}-)?(?:md|lg|2xl|3xl)|shadow-(?:sm|md|lg|xl|2xl))\b/g
-    expect(sourceViolations(inconsistentGeometry)).toEqual([])
+    expect(sources.flatMap(({ path, source }) => invalidRadii(source).map((token) => `${path}: ${token}`))).toEqual([])
+    expect(sourceViolations(thickBorders)).toEqual([])
+    expect(sourceViolations(shadows)).toEqual([])
+    expect(sourceViolations(inlineSurfaceStyles)).toEqual([])
+  })
+
+  it('rejects generic utility variants and non-token inline surface styling', () => {
+    const fixture = `
+      <div className="rounded rounded-sm rounded-s-sm rounded-tr-[7px] 2xl:hover:rounded-e-md shadow shadow-[0_2px_8px_#000] data-[state=open]:shadow-lg border-2 sm:border-x-[3px] focus-visible:border-s-4 hover:bg-teal-500 text-[#fff] data-[tone=warn]:text-orange-700" />
+      <div style={{ borderRadius: '1rem' }} />
+      <div className="rounded-xl rounded-t-xl rounded-full" />
+    `
+
+    expect(invalidRadii(fixture)).toEqual(['rounded', 'rounded-sm', 'rounded-s-sm', 'rounded-tr-[7px]', '2xl:hover:rounded-e-md'])
+    expect([...fixture.matchAll(thickBorders)].map((match) => match[0])).toEqual(['border-2', 'sm:border-x-[3px]', 'focus-visible:border-s-4'])
+    expect([...fixture.matchAll(shadows)].map((match) => match[0])).toEqual(['shadow', 'shadow-[0_2px_8px_#000]', 'data-[state=open]:shadow-lg'])
+    expect([...fixture.matchAll(genericColor)].map((match) => match[0])).toEqual(['hover:bg-teal-500', 'text-[#fff]', 'data-[tone=warn]:text-orange-700'])
+    expect([...fixture.matchAll(inlineSurfaceStyles)].map((match) => match[0])).toEqual(["style={{ borderRadius: '1rem' }}"])
   })
 
   it('reserves full rounding for true status and progress indicators', () => {
-    const allowedStatusPills: Record<string, number> = {
-      'components/DialoguePlayer.tsx': 1,
-      'components/ExerciseEngine.tsx': 1,
-      'components/LearningShell.tsx': 1,
-      'components/SubmissionReadiness.tsx': 2,
-      'components/TeamGrid.tsx': 2,
-      'components/VocabularyJourney.tsx': 2,
-      'pages/DialoguePage.tsx': 1,
+    const allowedStatusPills: Record<string, RegExp> = {
+      'components/DialoguePlayer.tsx': /Current line/,
+      'components/ExerciseEngine.tsx': /Score:/,
+      'components/LearningShell.tsx': /\{progress\}/,
+      'components/SubmissionReadiness.tsx': /Passed|Human review required/,
+      'components/TeamGrid.tsx': /Replace before submission|assignedVocabulary\.length/,
+      'components/VocabularyJourney.tsx': /\{index \+ 1\}|Now learning/,
+      'pages/DialoguePage.tsx': /Selected dialogue/,
     }
 
-    const actual = Object.fromEntries(sources.flatMap(({ path, source }) => {
-      const count = source.match(/\brounded-full\b/g)?.length ?? 0
-      return count > 0 ? [[path, count]] : []
+    const invalidPills = sources.flatMap(({ path, source }) => [...source.matchAll(/\brounded-full\b/g)].flatMap((match) => {
+      const component = source.slice(match.index, match.index + 400)
+      return allowedStatusPills[path]?.test(component) ? [] : [`${path}: ${component.split('\n')[0]}`]
     }))
 
-    expect(actual).toEqual(allowedStatusPills)
+    expect(invalidPills).toEqual([])
+  })
+
+  it('meets WCAG contrast for meaningful normal text token pairings', () => {
+    const textPairs = [
+      ['stage-faint', 'stage-white'],
+      ['stage-faint', 'stage-soft'],
+      ['stage-white', 'stage-vermilion'],
+      ['stage-charcoal', 'stage-white'],
+      ['stage-charcoal', 'stage-soft'],
+      ['stage-muted', 'stage-white'],
+      ['stage-muted', 'stage-soft'],
+      ['stage-muted', 'stage-disabled'],
+      ['stage-cobalt', 'stage-white'],
+      ['stage-cobalt', 'stage-cobalt-soft'],
+      ['stage-white', 'stage-cobalt'],
+      ['stage-white', 'stage-cobalt-strong'],
+      ['stage-white', 'stage-vermilion-strong'],
+      ['stage-white', 'stage-charcoal'],
+      ['stage-cobalt-soft', 'stage-charcoal'],
+      ['stage-vermilion-strong', 'stage-white'],
+      ['stage-vermilion-strong', 'stage-vermilion-soft'],
+      ['stage-yellow-strong', 'stage-white'],
+      ['stage-yellow-strong', 'stage-yellow-soft'],
+      ['stage-jade-strong', 'stage-white'],
+      ['stage-jade-strong', 'stage-jade-soft'],
+    ] as const
+
+    const failures = textPairs.flatMap(([foreground, background]) => {
+      const ratio = contrastRatio(colors[foreground], colors[background])
+      return ratio >= 4.5 ? [] : [`${foreground} on ${background}: ${ratio.toFixed(2)}:1`]
+    })
+
+    expect(failures).toEqual([])
+  })
+
+  it('meets WCAG non-text contrast for interactive and semantic boundaries', () => {
+    const boundaryPairs = [
+      ['stage-border-strong', 'stage-white'],
+      ['stage-border-strong', 'stage-soft'],
+      ['stage-cobalt', 'stage-white'],
+      ['stage-cobalt', 'stage-soft'],
+      ['stage-focus', 'stage-white'],
+      ['stage-focus', 'stage-soft'],
+      ['stage-vermilion', 'stage-white'],
+      ['stage-vermilion', 'stage-soft'],
+      ['stage-yellow', 'stage-white'],
+      ['stage-yellow', 'stage-soft'],
+      ['stage-jade', 'stage-white'],
+      ['stage-jade', 'stage-soft'],
+    ] as const
+
+    const failures = boundaryPairs.flatMap(([foreground, background]) => {
+      const ratio = contrastRatio(colors[foreground], colors[background])
+      return ratio >= 3 ? [] : [`${foreground} on ${background}: ${ratio.toFixed(2)}:1`]
+    })
+
+    expect(failures).toEqual([])
   })
 })

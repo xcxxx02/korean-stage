@@ -4,23 +4,23 @@
   --color-stage-white: #ffffff;
   --color-stage-charcoal: #17191f;
   --color-stage-muted: #5c6472;
-  --color-stage-faint: #8992a1;
+  --color-stage-faint: #687180;
   --color-stage-soft: #f7f9fc;
   --color-stage-disabled: #e2e6ec;
   --color-stage-cobalt: #1261f3;
   --color-stage-cobalt-strong: #0c4ecc;
   --color-stage-cobalt-soft: #eff5ff;
-  --color-stage-vermilion: #f04432;
+  --color-stage-vermilion: #d93827;
   --color-stage-vermilion-strong: #bd3022;
   --color-stage-vermilion-soft: #fff1ef;
-  --color-stage-yellow: #f2b719;
+  --color-stage-yellow: #bd8000;
   --color-stage-yellow-strong: #7a5200;
   --color-stage-yellow-soft: #fff9e8;
   --color-stage-jade: #109a79;
   --color-stage-jade-strong: #08745b;
   --color-stage-jade-soft: #ecfaf5;
   --color-stage-border: #d9dee7;
-  --color-stage-border-strong: #aeb7c5;
+  --color-stage-border-strong: #84909f;
   --color-stage-focus: #075ee5;
 }
 
@@ -28,13 +28,15 @@
   --stage-white: #ffffff;
   --stage-charcoal: #17191f;
   --stage-muted: #5c6472;
+  --stage-faint: #687180;
   --stage-soft: #f7f9fc;
   --stage-cobalt: #1261f3;
   --stage-cobalt-soft: #eff5ff;
-  --stage-vermilion: #f04432;
-  --stage-yellow: #f2b719;
+  --stage-vermilion: #d93827;
+  --stage-yellow: #bd8000;
   --stage-jade: #109a79;
   --stage-border: #d9dee7;
+  --stage-border-strong: #84909f;
   --stage-focus: #075ee5;
   --stage-radius: 0.75rem;
   --stage-shadow-menu: 0 18px 40px rgb(23 25 31 / 12%);

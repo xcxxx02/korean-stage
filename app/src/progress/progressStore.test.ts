@@ -48,6 +48,40 @@ describe('progressStore', () => {
     expect(readProgress(localStorage)).toEqual(saved)
   })
 
+  it('removes stale course IDs while preserving current progress', () => {
+    localStorage.setItem('korean-stage-progress-v1', JSON.stringify({
+      completedUnitIds: ['unit-2', 'unit-99', 'unit-2'],
+      completedVocabularyIds: ['china', 'retired-word'],
+      exerciseResults: { 'ieyo-yeyo-1': true, 'retired-exercise': false },
+      lastPath: '/learn/unit-2',
+    }))
+
+    const expected: CourseProgress = {
+      completedUnitIds: ['unit-2'],
+      completedVocabularyIds: ['china'],
+      exerciseResults: { 'ieyo-yeyo-1': true },
+      lastPath: '/learn/unit-2',
+    }
+    expect(readProgress(localStorage)).toEqual(expected)
+    expect(JSON.parse(localStorage.getItem('korean-stage-progress-v1')!)).toEqual(expected)
+  })
+
+  it('replaces an unsupported last path with the first unit path', () => {
+    localStorage.setItem('korean-stage-progress-v1', JSON.stringify({
+      completedUnitIds: ['unit-1'],
+      completedVocabularyIds: [],
+      exerciseResults: {},
+      lastPath: 'https://example.com/phishing',
+    }))
+
+    expect(readProgress(localStorage)).toEqual({
+      completedUnitIds: ['unit-1'],
+      completedVocabularyIds: [],
+      exerciseResults: {},
+      lastPath: '/learn/unit-1',
+    })
+  })
+
   it('removes corrupt JSON and returns default progress', () => {
     localStorage.setItem('korean-stage-progress-v1', '{not-json')
 

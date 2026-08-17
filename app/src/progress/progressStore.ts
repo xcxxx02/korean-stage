@@ -1,3 +1,5 @@
+import { course, courseUnits } from '../content/course'
+
 export type CourseProgress = {
   completedUnitIds: string[]
   completedVocabularyIds: string[]
@@ -6,12 +8,25 @@ export type CourseProgress = {
 }
 
 const storageKey = 'korean-stage-progress-v1'
+const firstUnitPath = `/learn/${courseUnits[0].id}`
+const currentUnitIds = new Set<string>(courseUnits.map((unit) => unit.id))
+const currentVocabularyIds = new Set(course.vocabulary.map((item) => item.id))
+const currentExerciseIds = new Set(course.grammar.flatMap((grammar) => grammar.exercises.map((exercise) => exercise.id)))
+const supportedLastPaths = new Set([
+  '/learn',
+  ...courseUnits.map((unit) => `/learn/${unit.id}`),
+  '/vocabulary',
+  '/grammar',
+  '/practice',
+  '/dialogue',
+  '/team',
+])
 
 const createDefaultProgress = (): CourseProgress => ({
   completedUnitIds: [],
   completedVocabularyIds: [],
   exerciseResults: {},
-  lastPath: '/learn/unit-1',
+  lastPath: firstUnitPath,
 })
 
 const isStringArray = (value: unknown): value is string[] =>
@@ -33,6 +48,23 @@ const isCourseProgress = (value: unknown): value is CourseProgress => {
     && typeof progress.lastPath === 'string'
 }
 
+const sanitizeProgress = (progress: CourseProgress): CourseProgress => ({
+  completedUnitIds: [...new Set(progress.completedUnitIds.filter((id) => currentUnitIds.has(id)))],
+  completedVocabularyIds: [...new Set(progress.completedVocabularyIds.filter((id) => currentVocabularyIds.has(id)))],
+  exerciseResults: Object.fromEntries(
+    Object.entries(progress.exerciseResults).filter(([id]) => currentExerciseIds.has(id)),
+  ),
+  lastPath: supportedLastPaths.has(progress.lastPath) ? progress.lastPath : firstUnitPath,
+})
+
+const removeSavedProgress = (storage: Storage) => {
+  try {
+    storage.removeItem(storageKey)
+  } catch {
+    // Storage can be disabled independently for every operation.
+  }
+}
+
 const defaultStorage = (): Storage | undefined => {
   try {
     return typeof window === 'undefined' ? undefined : window.localStorage
@@ -44,23 +76,31 @@ const defaultStorage = (): Storage | undefined => {
 export function readProgress(storage: Storage | undefined = defaultStorage()): CourseProgress {
   if (!storage) return createDefaultProgress()
 
+  let saved: string | null
   try {
-    const saved = storage.getItem(storageKey)
-    if (saved === null) return createDefaultProgress()
-
-    const parsed: unknown = JSON.parse(saved)
-    if (isCourseProgress(parsed)) return parsed
-
-    storage.removeItem(storageKey)
+    saved = storage.getItem(storageKey)
   } catch {
-    try {
-      storage.removeItem(storageKey)
-    } catch {
-      // Storage can be disabled independently for every operation.
-    }
+    return createDefaultProgress()
+  }
+  if (saved === null) return createDefaultProgress()
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(saved)
+  } catch {
+    removeSavedProgress(storage)
+    return createDefaultProgress()
   }
 
-  return createDefaultProgress()
+  if (!isCourseProgress(parsed)) {
+    removeSavedProgress(storage)
+    return createDefaultProgress()
+  }
+
+  const sanitized = sanitizeProgress(parsed)
+  if (JSON.stringify(sanitized) !== JSON.stringify(parsed)) writeProgress(sanitized, storage)
+
+  return sanitized
 }
 
 export function writeProgress(progress: CourseProgress, storage: Storage | undefined = defaultStorage()): void {

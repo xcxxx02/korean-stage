@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { readProgress, writeProgress, type CourseProgress } from '../progress/progressStore'
 
 type CourseProgressActions = {
   progress: CourseProgress
+  visitUnit: (unitId: string) => void
   markUnitComplete: (unitId: string) => void
   markVocabularyComplete: (itemId: string) => void
   recordExerciseResult: (exerciseId: string, correct: boolean) => void
@@ -11,13 +12,15 @@ type CourseProgressActions = {
 export function useCourseProgress(): CourseProgressActions {
   const [progress, setProgress] = useState<CourseProgress>(() => readProgress())
 
+  useEffect(() => writeProgress(progress), [progress])
+
   const updateProgress = useCallback((update: (current: CourseProgress) => CourseProgress) => {
-    setProgress((current) => {
-      const next = update(current)
-      writeProgress(next)
-      return next
-    })
+    setProgress(update)
   }, [])
+
+  const visitUnit = useCallback((unitId: string) => {
+    updateProgress((current) => ({ ...current, lastPath: `/learn/${unitId}` }))
+  }, [updateProgress])
 
   const markUnitComplete = useCallback((unitId: string) => {
     updateProgress((current) => ({
@@ -47,5 +50,5 @@ export function useCourseProgress(): CourseProgressActions {
     }))
   }, [updateProgress])
 
-  return { progress, markUnitComplete, markVocabularyComplete, recordExerciseResult }
+  return { progress, visitUnit, markUnitComplete, markVocabularyComplete, recordExerciseResult }
 }

@@ -1,4 +1,4 @@
-import { List } from '@phosphor-icons/react'
+import { GraduationCap, List } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { course } from '../content/course'
@@ -29,34 +29,45 @@ export function AppShell() {
   }, [])
 
   return (
-    <>
-      <a href="#main-content">Skip to main content</a>
-      <header>
-        <Link to="/">{course.name}</Link>
-        <button aria-controls="primary-navigation-list" aria-expanded={isMenuOpen} className="mobile-menu-button" onClick={() => setIsMenuOpen((open) => !open)} type="button">
-          <List aria-hidden="true" />
-          <span>Menu</span>
-        </button>
-        <nav aria-label="Primary navigation">
-          <ul className="desktop-navigation">
-            {navigationItems.map(({ label, to }) => (
-              <li key={to}>
-                <NavLink onClick={() => setIsMenuOpen(false)} to={to}>{label}</NavLink>
-              </li>
-            ))}
-          </ul>
-          <ul className="mobile-navigation" hidden={!isMenuOpen} id="primary-navigation-list">
-            {navigationItems.map(({ label, to }) => (
-              <li key={to}>
-                <NavLink onClick={() => setIsMenuOpen(false)} to={to}>{label}</NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <header className="site-header">
+        <div className="site-header__inner">
+          <Link className="site-brand" to="/">
+            <span aria-hidden="true" className="site-brand__mark">
+              <GraduationCap size={30} weight="fill" />
+            </span>
+            <span>{course.name}</span>
+          </Link>
+          <button aria-controls="primary-navigation-list" aria-expanded={isMenuOpen} className="mobile-menu-button" onClick={() => setIsMenuOpen((open) => !open)} type="button">
+            <List aria-hidden="true" size={24} />
+            <span>Menu</span>
+          </button>
+          <nav aria-label="Primary navigation">
+            <ul className="desktop-navigation">
+              {navigationItems.map(({ label, to }) => (
+                <li key={to}>
+                  <NavLink onClick={() => setIsMenuOpen(false)} to={to}>{label}</NavLink>
+                </li>
+              ))}
+            </ul>
+            <ul className="mobile-navigation" hidden={!isMenuOpen} id="primary-navigation-list">
+              {navigationItems.map(({ label, to }) => (
+                <li key={to}>
+                  <NavLink onClick={() => setIsMenuOpen(false)} to={to}>{label}</NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+        <img alt="" aria-hidden="true" className="dancheong-strip" src="/assets/culture/dancheong-strip.png" />
       </header>
-      <main id="main-content" ref={mainContentRef} tabIndex={-1}>
-        <Outlet />
-      </main>
-    </>
+      <div className="app-stage">
+        <img alt="" aria-hidden="true" className="palace-corner-art" src="/assets/culture/palace-line-art.png" />
+        <main id="main-content" ref={mainContentRef} tabIndex={-1}>
+          <Outlet />
+        </main>
+      </div>
+    </div>
   )
 }

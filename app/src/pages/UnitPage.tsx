@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { GrammarLesson } from '../components/GrammarLesson'
 import { VocabularyJourney } from '../components/VocabularyJourney'
 import { course } from '../content/course'
 import { useCourseProgress } from '../hooks/useCourseProgress'
@@ -7,11 +8,12 @@ import { LearnPage } from './LearnPage'
 
 export function UnitPage() {
   const { unitId } = useParams()
-  const { visitUnit } = useCourseProgress()
+  const { progress, visitUnit, markUnitComplete, recordExerciseResult } = useCourseProgress()
   const countryItems = course.vocabulary.filter((item) => item.unitId === 'unit-2')
   const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
 
   useEffect(() => {
+    if (unitId && course.grammar.some((grammarPoint) => grammarPoint.unitId === unitId)) visitUnit(unitId)
     if (unitId === 'unit-2' || unitId === 'unit-3') visitUnit(unitId)
   }, [unitId, visitUnit])
 
@@ -45,6 +47,26 @@ export function UnitPage() {
   }
 
   if (unitId === 'unit-3') return <VocabularyJourney items={occupationItems} progressPath="/learn/unit-3" />
+
+  const grammarPoint = course.grammar.find((candidate) => candidate.unitId === unitId)
+  if (grammarPoint) {
+    const handleResult = (exerciseId: string, correct: boolean) => {
+      recordExerciseResult(exerciseId, correct)
+      visitUnit(grammarPoint.unitId)
+      const nextResults = { ...progress.exerciseResults, [exerciseId]: correct }
+      if (grammarPoint.exercises.every((exercise) => nextResults[exercise.id] === true)) {
+        markUnitComplete(grammarPoint.unitId)
+      }
+    }
+
+    return (
+      <GrammarLesson
+        completed={progress.completedUnitIds.includes(grammarPoint.unitId)}
+        grammarPoint={grammarPoint}
+        onResult={handleResult}
+      />
+    )
+  }
 
   return <LearnPage />
 }

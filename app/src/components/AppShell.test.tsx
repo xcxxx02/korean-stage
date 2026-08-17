@@ -1,0 +1,85 @@
+import { cleanup, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { afterEach, describe, expect, it } from 'vitest'
+import { AppShell } from './AppShell'
+
+const routePage = (heading: string) => <h1>{heading}</h1>
+
+afterEach(cleanup)
+
+function renderShell(initialEntry = '/') {
+  return render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={routePage('Home')} />
+          <Route path="learn" element={routePage('Learn')} />
+          <Route path="learn/:unitId" element={routePage('Learn')} />
+          <Route path="vocabulary" element={routePage('Vocabulary')} />
+          <Route path="grammar" element={routePage('Grammar')} />
+          <Route path="practice" element={routePage('Practice')} />
+          <Route path="dialogue" element={routePage('Dialogue')} />
+          <Route path="team" element={routePage('Team')} />
+          <Route path="*" element={<><h1>Page not found</h1><a href="/">Return to course</a></>} />
+        </Route>
+      </Routes>
+    </MemoryRouter>,
+  )
+}
+
+describe('AppShell', () => {
+  it('exposes the primary course sections', () => {
+    renderShell()
+
+    const navigation = screen.getByRole('navigation', { name: 'Primary navigation' })
+    for (const label of ['Learn', 'Vocabulary', 'Grammar', 'Practice', 'Dialogue', 'Team']) {
+      expect(navigation).toHaveTextContent(label)
+    }
+  })
+
+  it('marks the current primary route as active', () => {
+    renderShell('/grammar')
+
+    expect(screen.getByRole('link', { name: 'Grammar' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('opens and closes the accessible mobile menu', async () => {
+    const user = userEvent.setup()
+    renderShell()
+
+    const menuButton = screen.getByRole('button', { name: 'Menu' })
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(menuButton)
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getAllByRole('link', { name: 'Learn' })).toHaveLength(1)
+
+    await user.keyboard('{Escape}')
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('closes the mobile menu and focuses the destination heading after navigation', async () => {
+    const user = userEvent.setup()
+    renderShell()
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(screen.getByRole('link', { name: 'Vocabulary' }))
+
+    expect(screen.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.getByRole('heading', { name: 'Vocabulary' })).toHaveFocus()
+  })
+
+  it('shows a recovery route for an unknown address', () => {
+    renderShell('/missing')
+
+    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Return to course' })).toBeInTheDocument()
+  })
+
+  it('provides a focusable target for the skip link', () => {
+    renderShell()
+
+    expect(document.getElementById('main-content')).toHaveAttribute('tabindex', '-1')
+  })
+})

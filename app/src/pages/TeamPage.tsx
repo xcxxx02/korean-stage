@@ -1,3 +1,17 @@
+import { SubmissionReadiness } from '../components/SubmissionReadiness'
+import { TeamGrid } from '../components/TeamGrid'
+import { course } from '../content/course'
+
 export function TeamPage() {
-  return <><h1>Team</h1><p>Meet the team members who prepared this Lec 1 Korean course.</p></>
+  return (
+    <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:py-14">
+      <p className="font-semibold text-blue-700">Korean Stage · {course.sourceLesson}</p>
+      <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Team & submission readiness</h1>
+      <p className="mt-3 max-w-3xl text-lg text-slate-700">
+        See who owns each bilingual recording and what the team must replace, record, or review before submission.
+      </p>
+      <TeamGrid course={course} />
+      <SubmissionReadiness course={course} />
+    </section>
+  )
 }

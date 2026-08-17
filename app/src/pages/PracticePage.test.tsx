@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { PracticePage } from './PracticePage'
@@ -16,6 +16,26 @@ const correctAnswers = [
   '가수가 아니에요',
   '회사원이 아니에요',
 ] as const
+
+const wrongAnswers = [
+  '민수이에요',
+  '학생예요',
+  '제니이에요',
+  '저은 학생이에요',
+  '선생님는 한국 사람이에요',
+  '제니은 가수예요',
+  '미국 사람 가 아니에요',
+  '가수이 아니에요',
+  '회사원가 아니에요',
+] as const
+
+async function completeChallenge(user: ReturnType<typeof userEvent.setup>, answers: readonly string[]) {
+  for (const [index, answer] of answers.entries()) {
+    await user.click(screen.getByRole('radio', { name: answer }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(screen.getByRole('button', { name: index === 8 ? 'See results' : 'Next question' }))
+  }
+}
 
 describe('PracticePage', () => {
   it('offers the Unit 2 and Unit 3 flashcards and the grammar challenge', async () => {
@@ -49,6 +69,72 @@ describe('PracticePage', () => {
     expect(feedback).toHaveTextContent('아직 아니에요. Not quite.')
     expect(feedback).toHaveTextContent('Correct answer: 민수예요')
     expect(feedback).toHaveTextContent('민수 ends in a vowel, so use 예요.')
+    const koreanFeedback = within(feedback).getByText('아직 아니에요.')
+    expect(koreanFeedback).toHaveAttribute('lang', 'ko')
+    expect(koreanFeedback.parentElement).not.toHaveAttribute('lang')
+  })
+
+  it('moves keyboard focus through feedback and the next question', async () => {
+    const user = userEvent.setup()
+    render(<PracticePage />)
+    await user.click(screen.getByRole('button', { name: 'Grammar Challenge' }))
+
+    await user.click(screen.getByRole('radio', { name: '민수예요' }))
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Check answer' })).toHaveFocus()
+    await user.keyboard('[Enter]')
+    expect(screen.getByRole('status')).toHaveFocus()
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Next question' })).toHaveFocus()
+    await user.keyboard('[Enter]')
+    expect(screen.getByText('Question 2 of 9').closest('legend')).toHaveFocus()
+  })
+
+  it('ignores a duplicate submission instead of pre-answering the next question', async () => {
+    const user = userEvent.setup()
+    render(<PracticePage />)
+    await user.click(screen.getByRole('button', { name: 'Grammar Challenge' }))
+
+    await user.click(screen.getByRole('radio', { name: '민수예요' }))
+    const firstQuestionForm = screen.getByRole('group', { name: /Question 1 of 9/ }).closest('form')
+    expect(firstQuestionForm).not.toBeNull()
+    fireEvent.submit(firstQuestionForm!)
+    fireEvent.submit(firstQuestionForm!)
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+
+    expect(screen.getByText('Question 2 of 9')).toBeVisible()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Check answer' })).toBeDisabled()
+  })
+
+  it('scores 0 / 9 and reviews every incorrect answer', async () => {
+    const user = userEvent.setup()
+    render(<PracticePage />)
+    await user.click(screen.getByRole('button', { name: 'Grammar Challenge' }))
+
+    await completeChallenge(user, wrongAnswers)
+
+    expect(screen.getByText('Score: 0 / 9')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Review incorrect answers' }))
+    const incorrectReviews = screen.getAllByRole('article')
+    expect(incorrectReviews).toHaveLength(9)
+    expect(incorrectReviews[0]).toHaveTextContent('Your answer: 민수이에요')
+    expect(incorrectReviews[0]).toHaveTextContent('Correct answer: 민수예요')
+    expect(incorrectReviews[8]).toHaveTextContent('Your answer: 회사원가 아니에요')
+    expect(incorrectReviews[8]).toHaveTextContent('Correct answer: 회사원이 아니에요')
+  })
+
+  it('scores 9 / 9 without offering an empty incorrect-answer review', async () => {
+    const user = userEvent.setup()
+    render(<PracticePage />)
+    await user.click(screen.getByRole('button', { name: 'Grammar Challenge' }))
+
+    await completeChallenge(user, correctAnswers)
+
+    expect(screen.getByText('Score: 9 / 9')).toBeVisible()
+    expect(screen.queryByRole('button', { name: 'Review incorrect answers' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
   })
 
   it('scores all nine exercises, reviews incorrect answers, and starts a fresh retry', async () => {
@@ -68,7 +154,9 @@ describe('PracticePage', () => {
 
     expect(screen.getByRole('status')).toHaveTextContent('맞았어요! Correct!')
     await user.click(screen.getByRole('button', { name: 'See results' }))
-    expect(screen.getByRole('heading', { name: 'Challenge complete' })).toBeVisible()
+    const completionHeading = screen.getByRole('heading', { name: 'Challenge complete' })
+    expect(completionHeading).toBeVisible()
+    expect(completionHeading).toHaveFocus()
     expect(screen.getByText('Score: 8 / 9')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Review incorrect answers' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
@@ -82,5 +170,6 @@ describe('PracticePage', () => {
     await user.click(screen.getByRole('button', { name: 'Try again' }))
     expect(screen.getByText('Question 1 of 9')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Check answer' })).toBeDisabled()
+    expect(screen.getByText('Question 1 of 9').closest('legend')).toHaveFocus()
   })
 })

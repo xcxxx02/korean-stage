@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { FlashcardDeck } from '../components/FlashcardDeck'
 import { course } from '../content/course'
 import type { Exercise } from '../content/types'
@@ -19,8 +19,23 @@ export function PracticePage() {
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [results, setResults] = useState<AnswerResult[]>([])
   const [phase, setPhase] = useState<ChallengePhase>('questions')
+  const questionLegendRef = useRef<HTMLLegendElement>(null)
+  const feedbackRef = useRef<HTMLDivElement>(null)
+  const completionHeadingRef = useRef<HTMLHeadingElement>(null)
+  const shouldFocusQuestion = useRef(false)
   const currentExercise = exercises[questionIndex]
   const currentResult = results[questionIndex]
+
+  useLayoutEffect(() => {
+    if (phase === 'complete') {
+      completionHeadingRef.current?.focus()
+    } else if (currentResult) {
+      feedbackRef.current?.focus()
+    } else if (shouldFocusQuestion.current) {
+      questionLegendRef.current?.focus()
+      shouldFocusQuestion.current = false
+    }
+  }, [currentResult, phase, questionIndex])
 
   const checkAnswer = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -36,11 +51,13 @@ export function PracticePage() {
   }
 
   const nextQuestion = () => {
+    shouldFocusQuestion.current = true
     setQuestionIndex((current) => current + 1)
     setSelectedAnswer('')
   }
 
   const tryAgain = () => {
+    shouldFocusQuestion.current = true
     setQuestionIndex(0)
     setSelectedAnswer('')
     setResults([])
@@ -89,7 +106,7 @@ export function PracticePage() {
           {phase === 'questions' ? (
             <form className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" onSubmit={checkAnswer}>
               <fieldset>
-                <legend className="w-full text-lg font-bold text-slate-950">
+                <legend className="w-full text-lg font-bold text-slate-950" ref={questionLegendRef} tabIndex={-1}>
                   <span className="block text-sm font-semibold text-slate-500">Question {questionIndex + 1} of {exercises.length}</span>
                   <span className="mt-2 block">{currentExercise.prompt}</span>
                   <span className="mt-3 block rounded-lg bg-slate-50 p-4 text-xl text-blue-800" lang="ko">{currentExercise.koreanContext}</span>
@@ -116,9 +133,13 @@ export function PracticePage() {
                   <div
                     aria-live="polite"
                     className={`mt-5 rounded-xl p-4 ${currentResult.isCorrect ? 'bg-emerald-50 text-emerald-950' : 'bg-amber-50 text-amber-950'}`}
+                    ref={feedbackRef}
                     role="status"
+                    tabIndex={-1}
                   >
-                    <p className="font-bold" lang="ko">{currentResult.isCorrect ? '맞았어요! Correct!' : '아직 아니에요. Not quite.'}</p>
+                    <p className="font-bold">
+                      {currentResult.isCorrect ? <><span lang="ko">맞았어요!</span> Correct!</> : <><span lang="ko">아직 아니에요.</span> Not quite.</>}
+                    </p>
                     {!currentResult.isCorrect ? <p className="mt-1">Correct answer: <span lang="ko">{currentExercise.answer}</span></p> : null}
                     <p className="mt-1">{currentExercise.explanation}</p>
                   </div>
@@ -143,11 +164,13 @@ export function PracticePage() {
 
           {phase === 'complete' ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-2xl font-bold text-slate-950">Challenge complete</h3>
+              <h3 className="text-2xl font-bold text-slate-950" ref={completionHeadingRef} tabIndex={-1}>Challenge complete</h3>
               <p aria-live="polite" className="mt-3 text-xl font-bold text-blue-800">Score: {correctCount} / {exercises.length}</p>
-              <p className="mt-2 text-slate-600">잘했어요! Nice work completing every grammar question.</p>
+              <p className="mt-2 text-slate-600"><span lang="ko">잘했어요!</span> Nice work completing every grammar question.</p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <button className="rounded-lg border border-blue-600 px-5 py-3 font-bold text-blue-700" disabled={incorrectResults.length === 0} onClick={() => setPhase('review')} type="button">Review incorrect answers</button>
+                {incorrectResults.length > 0 ? (
+                  <button className="rounded-lg border border-blue-600 px-5 py-3 font-bold text-blue-700" onClick={() => setPhase('review')} type="button">Review incorrect answers</button>
+                ) : null}
                 <button className="rounded-lg bg-blue-600 px-5 py-3 font-bold text-white" onClick={tryAgain} type="button">Try again</button>
               </div>
             </div>

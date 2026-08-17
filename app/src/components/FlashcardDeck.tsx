@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import type { VocabularyItem } from '../content/types'
 
 type FlashcardDeckProps = {
@@ -20,27 +20,15 @@ export function FlashcardDeck({ items, random = Math.random }: FlashcardDeckProp
   const previous = () => showCard(Math.max(0, cardIndex - 1))
   const next = () => showCard(Math.min(cards.length - 1, cardIndex + 1))
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.target instanceof HTMLElement && ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName)) return
-
-      if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        setCardIndex((current) => Math.min(cards.length - 1, current + 1))
-        setIsFlipped(false)
-      } else if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        setCardIndex((current) => Math.max(0, current - 1))
-        setIsFlipped(false)
-      } else if (event.key === ' ') {
-        event.preventDefault()
-        setIsFlipped((current) => !current)
-      }
+  const handleCardKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === 'ArrowRight') {
+      event.preventDefault()
+      next()
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      previous()
     }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [cards.length])
+  }
 
   const shuffle = () => {
     const shuffled = [...cards]
@@ -72,20 +60,24 @@ export function FlashcardDeck({ items, random = Math.random }: FlashcardDeckProp
         aria-pressed={isFlipped}
         className="flex min-h-64 w-full flex-col items-center justify-center rounded-3xl border border-blue-200 bg-white p-8 text-center shadow-sm transition-transform duration-200 motion-reduce:transition-none"
         onClick={() => setIsFlipped((current) => !current)}
+        onKeyDown={handleCardKeyDown}
+        style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)`, transformStyle: 'preserve-3d' }}
         type="button"
       >
-        {isFlipped ? (
-          <>
-            <span className="text-3xl font-bold text-slate-950">{card.english}</span>
-            <span className="mt-3 text-lg text-blue-700">{card.romanization}</span>
-            <span className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Show Korean</span>
-          </>
-        ) : (
-          <>
-            <span className="text-5xl font-bold text-slate-950" lang="ko">{card.korean}</span>
-            <span className="mt-6 text-sm font-bold uppercase tracking-wide text-blue-700">Show meaning</span>
-          </>
-        )}
+        <span className="flex flex-col items-center" style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)` }}>
+          {isFlipped ? (
+            <>
+              <span className="text-3xl font-bold text-slate-950">{card.english}</span>
+              <span className="mt-3 text-lg text-blue-700">{card.romanization}</span>
+              <span className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Show Korean</span>
+            </>
+          ) : (
+            <>
+              <span className="text-5xl font-bold text-slate-950" lang="ko">{card.korean}</span>
+              <span className="mt-6 text-sm font-bold uppercase tracking-wide text-blue-700">Show meaning</span>
+            </>
+          )}
+        </span>
       </button>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

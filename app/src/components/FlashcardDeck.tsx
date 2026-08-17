@@ -45,7 +45,7 @@ export function FlashcardDeck({ items, random = Math.random }: FlashcardDeckProp
     showCard(0)
   }
 
-  if (!card) return <p>No vocabulary cards are available.</p>
+  if (!card) return <p>No vocabulary cards are available. Return to the course map and choose a unit with vocabulary.</p>
 
   return (
     <section aria-labelledby="flashcard-heading" className="space-y-5">
@@ -58,13 +58,13 @@ export function FlashcardDeck({ items, random = Math.random }: FlashcardDeckProp
       <button
         aria-label={isFlipped ? 'Show Korean' : 'Show meaning'}
         aria-pressed={isFlipped}
-        className="flex min-h-64 w-full flex-col items-center justify-center rounded-xl border border-stage-border bg-stage-white p-8 text-center transition-transform duration-200 motion-reduce:transition-none"
+        className="flashcard-motion flex min-h-64 w-full flex-col items-center justify-center rounded-xl border border-stage-border bg-stage-white p-8 text-center transition-transform duration-200 motion-reduce:transition-none"
         onClick={() => setIsFlipped((current) => !current)}
         onKeyDown={handleCardKeyDown}
         style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)`, transformStyle: 'preserve-3d' }}
         type="button"
       >
-        <span className="flex flex-col items-center" style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)` }}>
+        <span className="flashcard-motion flex flex-col items-center" style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)` }}>
           {isFlipped ? (
             <>
               <span className="text-3xl font-bold text-stage-charcoal">{card.english}</span>

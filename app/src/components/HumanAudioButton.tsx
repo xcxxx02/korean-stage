@@ -14,14 +14,14 @@ export function HumanAudioButton({ source, memberName, label = `Listen to ${memb
   const isHumanRecording = source.kind === 'human-recording' && source.src !== null
   const canPlay = isHumanRecording && !hasPlaybackError
   const status = hasPlaybackError
-    ? 'Audio playback unavailable. Continue with the written example.'
+    ? <span>Audio playback unavailable. Continue with the written example.</span>
     : source.kind === 'ai-generated'
-    ? 'AI-generated audio is prohibited'
+    ? <><span>AI-generated audio is prohibited</span><span> Use a human recording instead.</span></>
     : source.kind === 'development-missing' && source.src === null
-      ? 'Audio coming soon'
+      ? <><span>Audio coming soon</span><span> Use the written example for now.</span></>
       : canPlay
         ? null
-        : 'Audio unavailable: invalid media source'
+        : <><span>Audio unavailable: invalid media source</span><span>. Continue with the written example.</span></>
 
   return (
     <div className="grid gap-2">
@@ -34,7 +34,7 @@ export function HumanAudioButton({ source, memberName, label = `Listen to ${memb
         <SpeakerHigh aria-hidden="true" size={24} weight="fill" />
         {label}
       </button>
-      {status ? <span className="text-sm font-medium text-stage-muted">{status}</span> : null}
+      {status ? <span className="text-sm font-medium text-stage-muted" role="status">{status}</span> : null}
       {canPlay ? <audio onError={() => setHasPlaybackError(true)} ref={audioRef} src={source.src ?? undefined} /> : null}
     </div>
   )

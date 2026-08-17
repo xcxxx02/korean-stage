@@ -10,14 +10,16 @@ export function AppShell() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const location = useLocation()
   const mainContentRef = useRef<HTMLElement>(null)
+  const initialLocationKeyRef = useRef(location.key)
 
   useEffect(() => {
+    if (location.key === initialLocationKeyRef.current) return
     const heading = mainContentRef.current?.querySelector('h1')
     if (heading instanceof HTMLElement) {
       heading.tabIndex = -1
       heading.focus()
     }
-  }, [location.pathname])
+  }, [location.key])
 
   useEffect(() => {
     const closeMenuOnEscape = (event: KeyboardEvent) => {

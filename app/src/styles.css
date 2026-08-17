@@ -60,6 +60,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+:where(button, select) {
+  min-height: 2.75rem;
+}
+
 .app-shell {
   min-height: 100vh;
   background: var(--stage-white);
@@ -393,5 +397,10 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .flashcard-motion {
+    transition: none !important;
+    transform: none !important;
   }
 }

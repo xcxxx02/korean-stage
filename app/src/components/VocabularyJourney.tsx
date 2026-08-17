@@ -41,7 +41,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
     return (
       <section className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-3xl font-bold text-stage-charcoal">Vocabulary unavailable</h1>
-        <p className="mt-3 text-stage-muted">There are no words in this unit yet.</p>
+        <p className="mt-3 text-stage-muted">There are no words in this unit yet. Return to the course map and choose another unit.</p>
       </section>
     )
   }

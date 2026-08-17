@@ -1,14 +1,17 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { course } from '../content/course'
 import { validCourse } from '../test/fixtures'
 import { DialoguePage } from '../pages/DialoguePage'
 import { UnitPage } from '../pages/UnitPage'
 import { DialoguePlayer } from './DialoguePlayer'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+})
 
 const recordingChecklist = [
   "Show every speaker's face",
@@ -45,12 +48,17 @@ describe('DialoguePlayer', () => {
 
     const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
     const lines = within(transcript).getAllByRole('listitem')
-    expect(lines[0]).toHaveAttribute('aria-current', 'true')
+    const firstSelector = within(lines[0]).getByRole('button', { name: 'Select line 1 by Amina Rahman' })
+    expect(firstSelector).toHaveAttribute('aria-current', 'true')
+    expect(within(firstSelector).getByText('Current line')).toBeVisible()
 
     await user.click(within(lines[4]).getByRole('button', { name: 'Select line 5 by Amina Rahman' }))
 
-    expect(lines[0]).not.toHaveAttribute('aria-current')
-    expect(lines[4]).toHaveAttribute('aria-current', 'true')
+    const fifthSelector = within(lines[4]).getByRole('button', { name: 'Select line 5 by Amina Rahman' })
+    expect(firstSelector).not.toHaveAttribute('aria-current')
+    expect(within(firstSelector).queryByText('Current line')).not.toBeInTheDocument()
+    expect(fifthSelector).toHaveAttribute('aria-current', 'true')
+    expect(within(fifthSelector).getByText('Current line')).toBeVisible()
     expect(transcript.querySelectorAll('[lang="en"]')).toHaveLength(8)
     expect(within(lines[4]).getByText('English line 5')).toBeVisible()
   })
@@ -67,6 +75,77 @@ describe('DialoguePlayer', () => {
     for (const rule of recordingChecklist) expect(screen.getByText(rule)).toBeVisible()
     expect(screen.getAllByText('Audio coming soon')).toHaveLength(8)
   })
+
+  it('renders supplied human role-play video and line audio as the only playable media', () => {
+    const dialogue = validCourse.dialogues[0]
+    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
+
+    const video = screen.getByLabelText('Dialogue 1 full role-play video')
+    expect(video).toHaveAttribute('controls')
+    expect(video.querySelector('source')).toHaveAttribute('src', '/media/dialogues/dialogue-1.mp4')
+    expect(document.querySelectorAll('audio')).toHaveLength(8)
+    expect(document.querySelector('audio')).toHaveAttribute('src', '/media/dialogues/dialogue-1-line-1.mp3')
+  })
+
+  it('prohibits AI role-play video and line audio instead of rendering media elements', () => {
+    const dialogue = {
+      ...validCourse.dialogues[0],
+      video: { src: '/media/dialogues/ai.mp4', kind: 'ai-generated' as const, durationSeconds: 90 },
+      lines: validCourse.dialogues[0].lines.map((line) => ({
+        ...line,
+        audio: { src: `/media/dialogues/${line.id}-ai.mp3`, kind: 'ai-generated' as const },
+      })),
+    }
+
+    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
+
+    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
+    expect(screen.getByRole('heading', { name: 'AI-generated video is prohibited' })).toBeVisible()
+    expect(screen.getAllByText('AI-generated audio is prohibited')).toHaveLength(8)
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+  })
+
+  it('rejects inconsistent development role-play sources instead of rendering them', () => {
+    const dialogue = {
+      ...validCourse.dialogues[0],
+      video: { src: '/media/dialogues/not-approved.mp4', kind: 'development-missing' as const, durationSeconds: 90 },
+      lines: validCourse.dialogues[0].lines.map((line) => ({
+        ...line,
+        audio: { src: `/media/dialogues/${line.id}-not-approved.mp3`, kind: 'development-missing' as const },
+      })),
+    }
+
+    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
+
+    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
+    expect(screen.getByRole('heading', { name: 'Member video unavailable' })).toBeVisible()
+    expect(screen.getAllByText('Audio unavailable: invalid media source')).toHaveLength(8)
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+  })
+
+  it('uses beginner role-play copy when the full video element reports an error', () => {
+    render(<DialoguePlayer dialogue={validCourse.dialogues[0]} members={validCourse.members} />)
+
+    fireEvent.error(screen.getByLabelText('Dialogue 1 full role-play video'))
+
+    expect(screen.getByRole('heading', { name: 'Role-play video unavailable' })).toBeVisible()
+    expect(screen.getByText('Keep practising with the bilingual transcript below.')).toBeVisible()
+    expect(screen.queryByText('Use the transcript below and continue to the next word.')).not.toBeInTheDocument()
+  })
+
+  it('turns rejected primary playback into the same honest role-play error state', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockRejectedValueOnce(new Error('Playback blocked'))
+    render(<DialoguePlayer dialogue={validCourse.dialogues[0]} members={validCourse.members} />)
+
+    await user.click(screen.getByRole('button', { name: 'Play full role-play video' }))
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Role-play video unavailable' })).toBeVisible())
+    expect(screen.getByText('Keep practising with the bilingual transcript below.')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
+  })
 })
 
 describe('dialogue entry points', () => {
@@ -76,12 +155,19 @@ describe('dialogue entry points', () => {
 
     const chooser = screen.getByRole('group', { name: 'Choose a dialogue' })
     expect(within(chooser).getAllByRole('button')).toHaveLength(2)
-    expect(within(chooser).getByRole('button', { name: 'Hello, I am Mina' })).toHaveAttribute('aria-pressed', 'true')
+    const firstDialogue = within(chooser).getByRole('button', { name: 'Hello, I am Mina' })
+    const secondDialogue = within(chooser).getByRole('button', { name: 'Who are you?' })
+    expect(firstDialogue).toHaveAttribute('aria-pressed', 'true')
+    expect(within(firstDialogue).getByText('Selected dialogue')).toBeVisible()
+    expect(within(secondDialogue).queryByText('Selected dialogue')).not.toBeInTheDocument()
     expect(screen.getByText('안녕하세요.')).toBeVisible()
 
-    await user.click(within(chooser).getByRole('button', { name: 'Who are you?' }))
+    await user.click(secondDialogue)
 
-    expect(within(chooser).getByRole('button', { name: 'Who are you?' })).toHaveAttribute('aria-pressed', 'true')
+    expect(firstDialogue).toHaveAttribute('aria-pressed', 'false')
+    expect(within(firstDialogue).queryByText('Selected dialogue')).not.toBeInTheDocument()
+    expect(secondDialogue).toHaveAttribute('aria-pressed', 'true')
+    expect(within(secondDialogue).getByText('Selected dialogue')).toBeVisible()
     const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
     expect(within(transcript).getAllByRole('listitem')).toHaveLength(8)
     expect(within(transcript).getByText('다니엘은 학생이에요?')).toBeVisible()

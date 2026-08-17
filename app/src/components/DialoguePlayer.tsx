@@ -40,6 +40,8 @@ export function DialoguePlayer({ dialogue, members }: DialoguePlayerProps) {
           memberName={speakers}
           missingDescription={`This role-play still needs a real recording from ${speakers}.`}
           missingHeading="Full role-play video coming soon"
+          playbackErrorDescription="Keep practising with the bilingual transcript below."
+          playbackErrorHeading="Role-play video unavailable"
           primaryControlLabel="Play full role-play video"
           showRecordingChecklist={false}
           source={dialogue.video}
@@ -68,17 +70,18 @@ export function DialoguePlayer({ dialogue, members }: DialoguePlayerProps) {
             const isSelected = line.id === selectedLineId
             return (
               <li
-                aria-current={isSelected ? 'true' : undefined}
                 className={`grid gap-4 rounded-xl border-l-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center ${isSelected ? 'border-blue-600 bg-blue-50' : 'border-slate-300 bg-slate-50'}`}
                 key={line.id}
               >
                 <button
+                  aria-current={isSelected ? 'true' : undefined}
                   aria-label={`Select line ${index + 1} by ${speaker}`}
                   className="min-w-0 text-left focus-visible:rounded-md focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                   onClick={() => setSelectedLineId(line.id)}
                   type="button"
                 >
                   <span className="block text-sm font-black uppercase tracking-wide text-blue-700">Line {index + 1} · {speaker}</span>
+                  {isSelected ? <span className="mt-1 inline-block rounded-full bg-blue-700 px-2 py-0.5 text-xs font-bold text-white">Current line</span> : null}
                   <span className="mt-2 block text-xl font-bold text-slate-950" lang="ko">{line.korean}</span>
                   <span className="mt-1 block leading-6 text-slate-700" lang="en">{line.english}</span>
                 </button>

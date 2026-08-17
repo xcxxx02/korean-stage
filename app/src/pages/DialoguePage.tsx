@@ -32,6 +32,7 @@ export function DialoguePage({ unit = false }: DialoguePageProps) {
             >
               <span className="block text-xs uppercase tracking-widest opacity-80">Dialogue {index + 1}</span>
               <span className="mt-1 block text-lg">{dialogue.title}</span>
+              {isActive ? <span className="mt-2 inline-block rounded-full bg-white px-2 py-0.5 text-xs font-bold text-blue-700">Selected dialogue</span> : null}
             </button>
           )
         })}

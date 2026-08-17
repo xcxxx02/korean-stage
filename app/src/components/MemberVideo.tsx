@@ -9,6 +9,8 @@ type MemberVideoProps = {
   mediaLabel?: string
   missingDescription?: string
   missingHeading?: string
+  playbackErrorDescription?: string
+  playbackErrorHeading?: string
   primaryControlLabel?: string
   showRecordingChecklist?: boolean
 }
@@ -27,6 +29,8 @@ export function MemberVideo({
   mediaLabel = `${memberName} vocabulary video`,
   missingDescription = `This word still needs a real recording from ${memberName}.`,
   missingHeading = 'Member video coming soon',
+  playbackErrorDescription = 'Use the transcript below and continue to the next word.',
+  playbackErrorHeading = 'Video playback unavailable',
   primaryControlLabel,
   showRecordingChecklist = true,
 }: MemberVideoProps) {
@@ -76,8 +80,8 @@ export function MemberVideo({
     mediaPanel = (
       <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-8 py-10 text-center" role="alert">
         <Warning aria-hidden="true" className="mb-4 text-amber-700" size={52} weight="fill" />
-        <h2 className="text-2xl font-bold text-slate-950">Video playback unavailable</h2>
-        <p className="mt-2 max-w-md text-slate-700">Use the transcript below and continue to the next word.</p>
+        <h2 className="text-2xl font-bold text-slate-950">{playbackErrorHeading}</h2>
+        <p className="mt-2 max-w-md text-slate-700">{playbackErrorDescription}</p>
       </div>
     )
   } else {
@@ -104,7 +108,10 @@ export function MemberVideo({
         <button
           className="inline-flex min-h-12 items-center justify-center rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
           disabled={!canPlay || hasPlaybackError}
-          onClick={() => { void videoRef.current?.play() }}
+          onClick={() => {
+            const playback = videoRef.current?.play()
+            if (playback) void playback.catch(() => setHasPlaybackError(true))
+          }}
           type="button"
         >
           {primaryControlLabel}

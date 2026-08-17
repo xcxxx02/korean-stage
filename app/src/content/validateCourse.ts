@@ -1,4 +1,4 @@
-import type { Course, CourseIssue, MediaSource } from './types'
+import type { Course, CourseIssue, MediaSource, Member } from './types'
 
 type ValidationMode = 'development' | 'submission'
 
@@ -10,6 +10,9 @@ const issue = (
 ): CourseIssue => ({ code, severity, message, ...identifiers })
 
 const hasHumanMedia = (media: MediaSource) => media.kind === 'human-recording' && Boolean(media.src)
+
+export const needsMemberIdentityReplacement = (member: Member) =>
+  member.isDevelopmentIdentity || !member.name.trim() || !member.studentId.trim()
 
 export function validateCourse(course: Course, mode: ValidationMode = 'submission'): CourseIssue[] {
   const issues: CourseIssue[] = []
@@ -28,7 +31,7 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
   }
 
   for (const member of course.members) {
-    if (member.isDevelopmentIdentity || !member.name.trim() || !member.studentId.trim()) {
+    if (needsMemberIdentityReplacement(member)) {
       issues.push(issue('member-details', requiredSeverity, 'Each member needs a real name and student ID.', { memberId: member.id }))
     }
 

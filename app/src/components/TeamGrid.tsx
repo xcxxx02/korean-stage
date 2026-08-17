@@ -1,4 +1,5 @@
 import type { Course } from '../content/types'
+import { needsMemberIdentityReplacement } from '../content/validateCourse'
 
 type TeamGridProps = {
   course: Course
@@ -8,7 +9,7 @@ export function TeamGrid({ course }: TeamGridProps) {
   return (
     <section aria-labelledby="team-contributions-heading" className="mt-10">
       <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 sm:p-8">
-        <p className="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Source · {course.sourceLesson}</p>
+        <p className="text-sm font-black uppercase tracking-[0.16em] text-blue-700">All seven units are adapted entirely from {course.sourceLesson}</p>
         <h2 className="mt-2 text-2xl font-black text-slate-950" id="team-contributions-heading">Team contributions</h2>
         <p className="mt-3 max-w-4xl text-slate-700">{course.purpose}</p>
       </div>
@@ -22,13 +23,13 @@ export function TeamGrid({ course }: TeamGridProps) {
             .map((dialogue) => dialogue.title)
 
           return (
-            <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" key={member.id}>
+            <article aria-label={`${member.name.trim() || 'Unnamed member'} contribution`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" key={member.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h3 className="text-xl font-black text-slate-950">{member.name}</h3>
                   <p className="mt-1 text-sm font-semibold text-slate-600">Student ID · {member.studentId}</p>
                 </div>
-                {member.isDevelopmentIdentity ? (
+                {needsMemberIdentityReplacement(member) ? (
                   <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-900">
                     Replace before submission
                   </span>

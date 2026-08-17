@@ -1,8 +1,10 @@
 import type { Course, CourseIssue } from '../content/types'
 import { validateCourse } from '../content/validateCourse'
+import { appRouteManifest, type RouteManifestEntry, validatePrimaryNavigation } from '../navigation'
 
 type SubmissionReadinessProps = {
   course: Course
+  routes?: readonly RouteManifestEntry[]
 }
 
 type PassedCheck = {
@@ -23,17 +25,29 @@ const passedChecks: PassedCheck[] = [
   { label: 'Dialogue line counts', issueCodes: ['dialogue-line-count', 'dialogue-line-details', 'dialogue-line-speaker'] },
   { label: 'Dialogue video durations', issueCodes: ['dialogue-video-duration'] },
   { label: 'Member dialogue participation', issueCodes: ['member-dialogue-participation'] },
-  { label: 'Primary navigation', issueCodes: [] },
 ]
 
 const qualitativeChecks = ['Pronunciation accuracy', 'Dialogue acting', 'Video lighting', 'Background noise']
+
+const needsHumanMedia = (media: { kind: string, src: string | null }) => media.kind !== 'human-recording' || !media.src
+
+function joinWithAnd(names: string[]) {
+  if (names.length === 2) return `${names[0]} and ${names[1]}`
+  return names[0]
+}
+
+function formatLineNumbers(numbers: number[]) {
+  if (numbers.length === 1) return `line ${numbers[0]}`
+  if (numbers.length === 2) return `lines ${numbers[0]} and ${numbers[1]}`
+  return `lines ${numbers.slice(0, -1).join(', ')}, and ${numbers.at(-1)}`
+}
 
 function issueAction(course: Course, issue: CourseIssue) {
   const member = course.members.find((candidate) => candidate.id === issue.memberId)
   const vocabulary = course.vocabulary.find((candidate) => candidate.id === issue.vocabularyId)
   const grammar = course.grammar.find((candidate) => candidate.id === issue.grammarId)
   const dialogue = course.dialogues.find((candidate) => candidate.id === issue.dialogueId)
-  const memberName = member?.name ?? 'Unknown member'
+  const memberName = member?.name.trim() || member?.studentId.trim() || 'Unknown member'
   const vocabularyName = vocabulary ? `${vocabulary.korean} / ${vocabulary.english}` : 'Unknown vocabulary item'
   const grammarName = grammar ? `${grammar.korean} / ${grammar.englishFunction}` : 'Unknown grammar point'
   const dialogueName = dialogue?.title ?? 'Unknown dialogue'
@@ -42,10 +56,25 @@ function issueAction(course: Course, issue: CourseIssue) {
     case 'source-lesson': return 'Set the course source to Lec 1.'
     case 'course-name': return 'Use Korean Stage as the website name.'
     case 'course-purpose': return 'Add the website purpose.'
-    case 'member-details': return `${memberName} — add a real name and student ID.`
+    case 'member-details': {
+      if (!member || member.isDevelopmentIdentity) return `${memberName} — add a real name and student ID.`
+      const missingFields = [
+        ...(!member.name.trim() ? ['name'] : []),
+        ...(!member.studentId.trim() ? ['student ID'] : []),
+      ]
+      return `${memberName} — add a real ${joinWithAnd(missingFields)}.`
+    }
     case 'member-vocabulary-count': return `${memberName} — assign 3–5 recorded vocabulary items.`
     case 'vocabulary-bilingual-fields': return `${vocabularyName} — complete the Korean, English, romanization, and bilingual examples.`
-    case 'vocabulary-media': return `${vocabularyName} — add human-recorded video and audio.`
+    case 'vocabulary-media': {
+      const missingMedia = vocabulary
+        ? [
+            ...(needsHumanMedia(vocabulary.video) ? ['video'] : []),
+            ...(needsHumanMedia(vocabulary.audio) ? ['audio'] : []),
+          ]
+        : ['video', 'audio']
+      return `${vocabularyName} — add human-recorded ${joinWithAnd(missingMedia)}.`
+    }
     case 'grammar-count': return 'Keep exactly three grammar points.'
     case 'exercise-count': return `${grammarName} — keep exactly three exercises.`
     case 'dialogue-count': return 'Keep 2–3 dialogues.'
@@ -55,20 +84,27 @@ function issueAction(course: Course, issue: CourseIssue) {
     case 'dialogue-line-speaker': return `${dialogueName} — use only declared team members as line speakers.`
     case 'dialogue-video-media': return `${dialogueName} — add a human-recorded dialogue video.`
     case 'dialogue-video-duration': return `${dialogueName} — keep the video between 60 and 180 seconds.`
-    case 'dialogue-line-media': return `${dialogueName} — add human-recorded audio to every dialogue line.`
+    case 'dialogue-line-media': {
+      const missingLineNumbers = dialogue?.lines.flatMap((line, index) => needsHumanMedia(line.audio) ? [index + 1] : []) ?? []
+      return `${dialogueName} — add human-recorded audio to ${formatLineNumbers(missingLineNumbers)}.`
+    }
     case 'member-dialogue-participation': return `${memberName} — add at least one dialogue speaking line.`
     case 'ai-voice-prohibited': return 'Remove every AI-generated voice before submission.'
     default: return issue.message
   }
 }
 
-export function SubmissionReadiness({ course }: SubmissionReadinessProps) {
+export function SubmissionReadiness({ course, routes = appRouteManifest }: SubmissionReadinessProps) {
   const issues = validateCourse(course, 'development')
+  const navigationIssues = validatePrimaryNavigation(routes)
   const issueCodes = new Set(issues.map((issue) => issue.code))
   const prohibitedIssues = issues.filter((issue) => issue.severity === 'prohibited')
   const contentIssues = issues.filter((issue) => issue.severity !== 'prohibited')
-  const structurallyPassed = passedChecks.filter((check) => check.issueCodes.every((code) => !issueCodes.has(code)))
-  const isNotReady = issues.length > 0
+  const structurallyPassed = [
+    ...passedChecks.filter((check) => check.issueCodes.every((code) => !issueCodes.has(code))),
+    ...(navigationIssues.length === 0 ? [{ label: 'Primary navigation', issueCodes: [] }] : []),
+  ]
+  const isNotReady = issues.length > 0 || navigationIssues.length > 0
 
   return (
     <section aria-labelledby="readiness-heading" className="mt-14">
@@ -100,11 +136,16 @@ export function SubmissionReadiness({ course }: SubmissionReadinessProps) {
 
           <section aria-labelledby="needs-content-heading" className="rounded-xl border border-amber-200 bg-white p-5 lg:col-span-2">
             <h3 className="text-xl font-black text-amber-900" id="needs-content-heading">Needs content</h3>
-            {contentIssues.length > 0 ? (
+            {contentIssues.length > 0 || navigationIssues.length > 0 ? (
               <ul className="mt-4 space-y-3">
                 {contentIssues.map((contentIssue, index) => (
                   <li className="rounded-lg bg-amber-50 px-4 py-3 text-sm font-semibold text-slate-900" key={`${contentIssue.code}-${contentIssue.memberId ?? contentIssue.vocabularyId ?? contentIssue.grammarId ?? contentIssue.dialogueId ?? index}`}>
                     {issueAction(course, contentIssue)}
+                  </li>
+                ))}
+                {navigationIssues.map((navigationIssue) => (
+                  <li className="rounded-lg bg-amber-50 px-4 py-3 text-sm font-semibold text-slate-900" key={`navigation-${navigationIssue.id}`}>
+                    {navigationIssue.message}
                   </li>
                 ))}
               </ul>

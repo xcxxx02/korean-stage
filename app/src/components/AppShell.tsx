@@ -2,15 +2,9 @@ import { List } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { course } from '../content/course'
+import { getPrimaryNavigationItems } from '../navigation'
 
-const navigationItems = [
-  { label: 'Learn', to: '/learn' },
-  { label: 'Vocabulary', to: '/vocabulary' },
-  { label: 'Grammar', to: '/grammar' },
-  { label: 'Practice', to: '/practice' },
-  { label: 'Dialogue', to: '/dialogue' },
-  { label: 'Team', to: '/team' },
-]
+const navigationItems = getPrimaryNavigationItems()
 
 export function AppShell() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

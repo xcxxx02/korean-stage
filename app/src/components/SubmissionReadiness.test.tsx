@@ -1,6 +1,28 @@
-import { render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { cleanup, render, screen, within } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
+import { validCourse } from '../test/fixtures'
+import { appRouteManifest } from '../navigation'
 import { TeamPage } from '../pages/TeamPage'
+import { SubmissionReadiness } from './SubmissionReadiness'
+
+const developmentMissingMedia = { src: null, kind: 'development-missing' as const }
+
+afterEach(cleanup)
+
+function courseWithAiOnlyProhibition() {
+  return {
+    ...validCourse,
+    vocabulary: [
+      ...validCourse.vocabulary,
+      {
+        ...validCourse.vocabulary[0],
+        id: 'unowned-ai-reference',
+        ownerId: null,
+        audio: { src: '/media/reference/ai.mp3', kind: 'ai-generated' as const },
+      },
+    ],
+  }
+}
 
 describe('SubmissionReadiness', () => {
   it('keeps the real development course not ready while distinguishing complete structure from missing submission content', () => {
@@ -49,5 +71,120 @@ describe('SubmissionReadiness', () => {
     const humanReview = within(needsContent).getAllByText('Human review required')
     expect(humanReview).toHaveLength(4)
     expect(within(passed).queryByText(/pronunciation|acting|lighting|background noise/i)).not.toBeInTheDocument()
+  })
+
+  it('sends a complete human-recorded course to human review without calling it ready for submission', () => {
+    render(<SubmissionReadiness course={validCourse} />)
+
+    expect(screen.getByRole('heading', { name: 'Ready for human review' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Not ready for submission' })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent('No automated content gaps detected.')
+    expect(screen.getAllByText('Human review required')).toHaveLength(4)
+  })
+
+  it('reports an AI-only violation in Prohibited without inventing a content gap', () => {
+    render(<SubmissionReadiness course={courseWithAiOnlyProhibition()} />)
+
+    expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Prohibited' })).toHaveTextContent('Remove every AI-generated voice before submission.')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent('No automated content gaps detected.')
+  })
+
+  it('names only the missing vocabulary media source', () => {
+    const singleMissingAudio = {
+      ...validCourse,
+      vocabulary: validCourse.vocabulary.map((item, index) =>
+        index === 0 ? { ...item, audio: developmentMissingMedia } : item,
+      ),
+    }
+
+    render(<SubmissionReadiness course={singleMissingAudio} />)
+
+    const needsContent = screen.getByRole('region', { name: 'Needs content' })
+    expect(within(needsContent).getByText('한국어 1 / Word 1 — add human-recorded audio.')).toBeInTheDocument()
+    expect(within(needsContent).queryByText(/한국어 1 \/ Word 1 — add human-recorded video and audio\./)).not.toBeInTheDocument()
+  })
+
+  it('names only dialogue lines whose audio is missing', () => {
+    const oneMissingLineAudio = {
+      ...validCourse,
+      dialogues: validCourse.dialogues.map((dialogue, dialogueIndex) =>
+        dialogueIndex === 0
+          ? {
+              ...dialogue,
+              lines: dialogue.lines.map((line, lineIndex) =>
+                lineIndex === 0 ? { ...line, audio: developmentMissingMedia } : line,
+              ),
+            }
+          : dialogue,
+      ),
+    }
+
+    render(<SubmissionReadiness course={oneMissingLineAudio} />)
+
+    const needsContent = screen.getByRole('region', { name: 'Needs content' })
+    expect(within(needsContent).getByText('Dialogue 1 — add human-recorded audio to line 1.')).toBeInTheDocument()
+    expect(within(needsContent).queryByText('Dialogue 1 — add human-recorded audio to every dialogue line.')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['name', { name: '   ' }, 'A12345 — add a real name.'],
+    ['student ID', { studentId: '   ' }, 'Amina Rahman — add a real student ID.'],
+  ])('identifies the exact missing %s for a partial member identity', (_field, identityOverride, expectedAction) => {
+    const partialIdentity = {
+      ...validCourse,
+      members: validCourse.members.map((member, index) =>
+        index === 0 ? { ...member, ...identityOverride, isDevelopmentIdentity: false } : member,
+      ),
+    }
+
+    render(<SubmissionReadiness course={partialIdentity} />)
+
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(expectedAction)
+  })
+
+  it('shows prohibited and precise missing-media actions together', () => {
+    const aiAndMissingVideo = {
+      ...courseWithAiOnlyProhibition(),
+      vocabulary: courseWithAiOnlyProhibition().vocabulary.map((item, index) =>
+        index === 1 ? { ...item, video: developmentMissingMedia } : item,
+      ),
+    }
+
+    render(<SubmissionReadiness course={aiAndMissingVideo} />)
+
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      '한국어 2 / Word 2 — add human-recorded video.',
+    )
+    expect(screen.getByRole('region', { name: 'Prohibited' })).toHaveTextContent(
+      'Remove every AI-generated voice before submission.',
+    )
+  })
+
+  it('does not pass navigation when a required registered route is missing', () => {
+    const routes = appRouteManifest.filter((route) => route.id !== 'team')
+
+    render(<SubmissionReadiness course={validCourse} {...{ routes }} />)
+
+    expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Primary navigation')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Restore the Team primary navigation route at /team.',
+    )
+  })
+
+  it.each([
+    ['label', { id: 'team', path: 'team', primaryNavigationLabel: 'People' }],
+    ['path', { id: 'team', path: 'people', primaryNavigationLabel: 'Team' }],
+  ])('does not pass navigation when a required route has a mismatched %s', (_kind, mismatchedTeamRoute) => {
+    const routes = appRouteManifest.map((route) => route.id === 'team' ? mismatchedTeamRoute : route)
+
+    render(<SubmissionReadiness course={validCourse} {...{ routes }} />)
+
+    expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Primary navigation')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Restore the Team primary navigation route at /team.',
+    )
   })
 })

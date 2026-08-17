@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
+import { appRouteManifest, type AppRouteId } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
 import { GrammarPage } from './pages/GrammarPage'
 import { HomePage } from './pages/HomePage'
@@ -10,20 +12,24 @@ import { TeamPage } from './pages/TeamPage'
 import { UnitPage } from './pages/UnitPage'
 import { VocabularyPage } from './pages/VocabularyPage'
 
+const routeElements: Record<AppRouteId, ReactNode> = {
+  home: <HomePage />,
+  learn: <LearnPage />,
+  unit: <UnitPage />,
+  vocabulary: <VocabularyPage />,
+  grammar: <GrammarPage />,
+  practice: <PracticePage />,
+  dialogue: <DialoguePage />,
+  team: <TeamPage />,
+  'not-found': <NotFoundPage />,
+}
+
 const router = createBrowserRouter([
   {
     element: <AppShell />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: 'learn', element: <LearnPage /> },
-      { path: 'learn/:unitId', element: <UnitPage /> },
-      { path: 'vocabulary', element: <VocabularyPage /> },
-      { path: 'grammar', element: <GrammarPage /> },
-      { path: 'practice', element: <PracticePage /> },
-      { path: 'dialogue', element: <DialoguePage /> },
-      { path: 'team', element: <TeamPage /> },
-      { path: '*', element: <NotFoundPage /> },
-    ],
+    children: appRouteManifest.map((route) => 'index' in route
+      ? { index: true as const, element: routeElements[route.id] }
+      : { path: route.path, element: routeElements[route.id] }),
   },
 ])
 

@@ -48,14 +48,25 @@ const isCourseProgress = (value: unknown): value is CourseProgress => {
     && typeof progress.lastPath === 'string'
 }
 
-const sanitizeProgress = (progress: CourseProgress): CourseProgress => ({
-  completedUnitIds: [...new Set(progress.completedUnitIds.filter((id) => currentUnitIds.has(id)))],
-  completedVocabularyIds: [...new Set(progress.completedVocabularyIds.filter((id) => currentVocabularyIds.has(id)))],
-  exerciseResults: Object.fromEntries(
+const sanitizeProgress = (progress: CourseProgress): CourseProgress => {
+  const exerciseResults = Object.fromEntries(
     Object.entries(progress.exerciseResults).filter(([id]) => currentExerciseIds.has(id)),
-  ),
-  lastPath: supportedLastPaths.has(progress.lastPath) ? progress.lastPath : firstUnitPath,
-})
+  )
+  const grammarUnitIds = new Set<string>(course.grammar.map((grammarPoint) => grammarPoint.unitId))
+  const completedNonGrammarUnits = [...new Set(
+    progress.completedUnitIds.filter((id) => currentUnitIds.has(id) && !grammarUnitIds.has(id)),
+  )]
+  const completedGrammarUnits = course.grammar
+    .filter((grammarPoint) => grammarPoint.exercises.every((exercise) => exerciseResults[exercise.id] === true))
+    .map((grammarPoint) => grammarPoint.unitId)
+
+  return {
+    completedUnitIds: [...completedNonGrammarUnits, ...completedGrammarUnits],
+    completedVocabularyIds: [...new Set(progress.completedVocabularyIds.filter((id) => currentVocabularyIds.has(id)))],
+    exerciseResults,
+    lastPath: supportedLastPaths.has(progress.lastPath) ? progress.lastPath : firstUnitPath,
+  }
+}
 
 const removeSavedProgress = (storage: Storage) => {
   try {

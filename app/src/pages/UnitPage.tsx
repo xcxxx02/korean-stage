@@ -50,6 +50,7 @@ export function UnitPage() {
 
   const grammarPoint = course.grammar.find((candidate) => candidate.unitId === unitId)
   if (grammarPoint) {
+    const grammarComplete = grammarPoint.exercises.every((exercise) => progress.exerciseResults[exercise.id] === true)
     const handleResult = (exerciseId: string, correct: boolean) => {
       recordExerciseResult(exerciseId, correct)
       visitUnit(grammarPoint.unitId)
@@ -61,8 +62,9 @@ export function UnitPage() {
 
     return (
       <GrammarLesson
-        completed={progress.completedUnitIds.includes(grammarPoint.unitId)}
+        completed={grammarComplete}
         grammarPoint={grammarPoint}
+        initialResults={progress.exerciseResults}
         onResult={handleResult}
       />
     )

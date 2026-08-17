@@ -6,14 +6,15 @@ type GrammarLessonProps = {
   grammarPoint: GrammarPoint
   completed?: boolean
   onResult?: (exerciseId: string, correct: boolean) => void
+  initialResults?: Record<string, boolean>
 }
 
-export function GrammarLesson({ grammarPoint, completed = false, onResult }: GrammarLessonProps) {
+export function GrammarLesson({ grammarPoint, completed = false, initialResults, onResult }: GrammarLessonProps) {
   const unitNumber = Number(grammarPoint.unitId.split('-')[1])
 
   return (
     <LearningShell
-      controls={<ExerciseEngine exercises={grammarPoint.exercises} onResult={onResult} />}
+      controls={<ExerciseEngine exercises={grammarPoint.exercises} initialResults={initialResults} onResult={onResult} />}
       details={(
         <section aria-labelledby="lesson-rule-heading" className="rounded-2xl bg-yellow-50 p-5">
           <h2 className="text-lg font-bold text-slate-950" id="lesson-rule-heading">Rule at a glance</h2>

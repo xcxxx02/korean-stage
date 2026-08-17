@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import type { Exercise } from '../content/types'
 
 type ExerciseEngineProps = {
   exercises: Exercise[]
+  initialResults?: Record<string, boolean>
   onResult?: (exerciseId: string, correct: boolean) => void
 }
 
@@ -10,19 +11,39 @@ type Feedback = {
   isCorrect: boolean
 }
 
-export function ExerciseEngine({ exercises, onResult }: ExerciseEngineProps) {
-  const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [feedback, setFeedback] = useState<Record<string, Feedback>>({})
+export function ExerciseEngine({ exercises, initialResults = {}, onResult }: ExerciseEngineProps) {
+  const firstChoiceRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const [answers, setAnswers] = useState<Record<string, string>>(() => Object.fromEntries(
+    exercises.filter((exercise) => initialResults[exercise.id] === true).map((exercise) => [exercise.id, exercise.answer]),
+  ))
+  const [feedback, setFeedback] = useState<Record<string, Feedback>>(() => Object.fromEntries(
+    exercises.filter((exercise) => initialResults[exercise.id] === true).map((exercise) => [exercise.id, { isCorrect: true }]),
+  ))
   const correctCount = Object.values(feedback).filter((result) => result.isCorrect).length
 
   const checkAnswer = (event: FormEvent<HTMLFormElement>, exercise: Exercise) => {
     event.preventDefault()
+    if (feedback[exercise.id]?.isCorrect) return
     const selectedAnswer = answers[exercise.id]
     if (!selectedAnswer) return
 
     const isCorrect = selectedAnswer === exercise.answer
     setFeedback((current) => ({ ...current, [exercise.id]: { isCorrect } }))
     onResult?.(exercise.id, isCorrect)
+  }
+
+  const retry = (exerciseId: string) => {
+    setFeedback((current) => {
+      const next = { ...current }
+      delete next[exerciseId]
+      return next
+    })
+    setAnswers((current) => {
+      const next = { ...current }
+      delete next[exerciseId]
+      return next
+    })
+    window.setTimeout(() => firstChoiceRefs.current[exerciseId]?.focus(), 0)
   }
 
   return (
@@ -46,13 +67,17 @@ export function ExerciseEngine({ exercises, onResult }: ExerciseEngineProps) {
                 <span className="mt-2 block rounded-lg bg-slate-50 p-3 text-xl text-blue-800" lang="ko">{exercise.koreanContext}</span>
               </legend>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {exercise.choices.map((choice) => (
+                {exercise.choices.map((choice, choiceIndex) => (
                   <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 p-4 font-semibold text-slate-900 has-checked:border-blue-600 has-checked:bg-blue-50" key={choice}>
                     <input
                       checked={answers[exercise.id] === choice}
                       className="size-4 accent-blue-600"
+                      disabled={Boolean(result)}
                       name={`answer-${exercise.id}`}
                       onChange={() => setAnswers((current) => ({ ...current, [exercise.id]: choice }))}
+                      ref={(element) => {
+                        if (choiceIndex === 0) firstChoiceRefs.current[exercise.id] = element
+                      }}
                       type="radio"
                       value={choice}
                     />
@@ -71,11 +96,7 @@ export function ExerciseEngine({ exercises, onResult }: ExerciseEngineProps) {
 
               <div className="mt-4 flex gap-3">
                 {result && !result.isCorrect ? (
-                  <button className="rounded-lg border border-blue-600 px-4 py-2 font-semibold text-blue-700" onClick={() => setFeedback((current) => {
-                    const next = { ...current }
-                    delete next[exercise.id]
-                    return next
-                  })} type="button">
+                  <button className="rounded-lg border border-blue-600 px-4 py-2 font-semibold text-blue-700" onClick={() => retry(exercise.id)} type="button">
                     Try again
                   </button>
                 ) : (

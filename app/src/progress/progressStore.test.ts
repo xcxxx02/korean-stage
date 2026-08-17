@@ -106,12 +106,33 @@ describe('progressStore', () => {
     const progress: CourseProgress = {
       completedUnitIds: ['unit-1', 'unit-4'],
       completedVocabularyIds: ['china', 'student'],
-      exerciseResults: { 'ieyo-yeyo-1': true, 'eun-neun-2': false },
+      exerciseResults: {
+        'ieyo-yeyo-1': true,
+        'ieyo-yeyo-2': true,
+        'ieyo-yeyo-3': true,
+        'eun-neun-2': false,
+      },
       lastPath: '/learn/unit-4',
     }
 
     writeProgress(progress, localStorage)
 
     expect(readProgress(localStorage)).toEqual(progress)
+  })
+
+  it('derives grammar unit completion from all three persisted results', () => {
+    localStorage.setItem('korean-stage-progress-v1', JSON.stringify({
+      completedUnitIds: ['unit-2', 'unit-4'],
+      completedVocabularyIds: [],
+      exerciseResults: {
+        'ieyo-yeyo-1': true,
+        'eun-neun-1': true,
+        'eun-neun-2': true,
+        'eun-neun-3': true,
+      },
+      lastPath: '/learn/unit-5',
+    }))
+
+    expect(readProgress(localStorage).completedUnitIds).toEqual(['unit-2', 'unit-5'])
   })
 })

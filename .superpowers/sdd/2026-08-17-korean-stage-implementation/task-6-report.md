@@ -60,3 +60,59 @@ Included in the Task 6 commit with message `feat: add grammar lessons and exerci
 ## Concerns
 
 - None blocking. The in-page score reflects answers submitted during the current render; persisted unit completion remains visible after reload.
+
+## Fix round 1
+
+### Dispositions
+
+- **Persisted score and completion:** resolved. `ExerciseEngine` now hydrates persisted correct results into its checked answers, correct feedback, locked controls, and visible score. `GrammarLesson` and `UnitPage` pass the persisted results through rather than starting a second session-local truth.
+- **No correct-result regression:** resolved. A result that has become `true` remains `true` in `useCourseProgress`, and a hydrated/completed exercise is locked in the engine. Later wrong submissions cannot contradict completed state.
+- **Completion/result consistency:** resolved. Progress sanitization now derives grammar completion exclusively from all three persisted exercise results, removing incomplete legacy flags and adding a missing flag when all three results are true. Non-grammar unit completion is preserved.
+- **Stable feedback and retry:** resolved. Radios are disabled while feedback is visible, so the submitted checked answer cannot drift away from the explanation. `Try again` clears feedback and the selected answer, re-enables choices, and restores focus to the first choice.
+- **All grammar points:** resolved. Parameterized rendered tests cover the exact title, both exact rules, both Korean/English example pairs, and exactly three prompts for 이에요/예요, 은/는, and 이/가 아니에요.
+- **Obsolete generic completion fixture:** reconciled. The existing `LearnPage` manual-completion test now uses Unit 1 instead of grammar Unit 4, preserving its generic contract without bypassing the three-exercise grammar policy.
+
+### TDD evidence
+
+Initial focused RED command:
+
+`npm test -- src/components/GrammarLesson.test.tsx src/components/ExerciseEngine.test.tsx src/hooks/useCourseProgress.test.ts`
+
+Result: exit 1; 5 expected failures. Failures showed submitted radios remained enabled, `initialResults` did not hydrate the score, partial/completed reloads showed 0 of 3, and a later wrong result changed persisted `true` to `false`.
+
+Storage-consistency RED command:
+
+`npm test -- src/progress/progressStore.test.ts`
+
+Result: exit 1; the inconsistent saved state retained incomplete Unit 4 and omitted fully correct Unit 5.
+
+Focused GREEN command:
+
+`npm test -- src/components/GrammarLesson.test.tsx src/components/ExerciseEngine.test.tsx src/hooks/useCourseProgress.test.ts src/progress/progressStore.test.ts`
+
+Result: exit 0; 4 files passed, 23 tests passed.
+
+### Verification
+
+- First `npm test` regression run: 63 passed, 1 failed. The failing legacy test manually completed grammar Unit 4 through `LearnPage`, contrary to the new result-derived policy; its generic fixture was moved to Unit 1.
+- Final `npm test`: exit 0; 11 files passed, 64 tests passed.
+- Final `npm run typecheck`: exit 0.
+- Final `npm run lint`: exit 0.
+- `git diff --check`: exit 0; only Git line-ending conversion notices.
+
+### Self-review
+
+- The persisted `exerciseResults` map is the source of truth for grammar scoring and completion after reload; completion flags are normalized from all three exact exercise IDs.
+- Correct answers are protected twice: completed controls do not submit, and the persistence action itself treats `true` as monotonic.
+- Wrong-answer feedback keeps its submitted radio checked and locked until retry; retry atomically removes both UI states before returning keyboard focus.
+- Partial saved progress (2/3 then third), completed reload (3/3 and complete), malformed completion flags, and later wrong submissions all have behavioral regression coverage.
+- Existing native keyboard selection/submission and polite live-region tests remain green.
+- No production behavior outside grammar progress consistency and exercise feedback was changed.
+
+### Commit
+
+Included in the fix-round Task 6 commit; the exact SHA is recorded in the handoff because a commit cannot contain its own final SHA.
+
+### Concerns
+
+- None blocking.

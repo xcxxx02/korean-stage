@@ -13,16 +13,16 @@ describe('LearnPage', () => {
   it('lets a learner complete the selected course unit', async () => {
     const user = userEvent.setup()
     render(
-      <MemoryRouter initialEntries={['/learn/unit-4']}>
+      <MemoryRouter initialEntries={['/learn/unit-1']}>
         <Routes><Route path="learn/:unitId" element={<LearnPage />} /></Routes>
       </MemoryRouter>,
     )
 
-    expect(screen.getByRole('heading', { name: '이에요 / 예요 - to be' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Hello & Self-introduction' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Mark unit complete' }))
 
     expect(screen.getByText('Unit complete')).toBeInTheDocument()
-    expect(readProgress(localStorage).completedUnitIds).toEqual(['unit-4'])
+    expect(readProgress(localStorage).completedUnitIds).toEqual(['unit-1'])
   })
 
   it('defaults the parameterless learn route to Unit 1', () => {

@@ -65,11 +65,12 @@ describe('useCourseProgress', () => {
     expect(readProgress(localStorage).completedVocabularyIds).toEqual(['china'])
   })
 
-  it('persists the latest result for each exercise', () => {
+  it('keeps a correct exercise result true after a later wrong submission', () => {
     const { result } = renderHook(() => useCourseProgress())
 
     act(() => result.current.recordExerciseResult('ieyo-yeyo-1', false))
     act(() => result.current.recordExerciseResult('ieyo-yeyo-1', true))
+    act(() => result.current.recordExerciseResult('ieyo-yeyo-1', false))
 
     expect(readProgress(localStorage).exerciseResults).toEqual({ 'ieyo-yeyo-1': true })
   })

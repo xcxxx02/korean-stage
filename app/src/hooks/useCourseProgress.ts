@@ -51,7 +51,10 @@ export function useCourseProgress(): CourseProgressActions {
   const recordExerciseResult = useCallback((exerciseId: string, correct: boolean) => {
     updateProgress((current) => ({
       ...current,
-      exerciseResults: { ...current.exerciseResults, [exerciseId]: correct },
+      exerciseResults: {
+        ...current.exerciseResults,
+        [exerciseId]: current.exerciseResults[exerciseId] === true ? true : correct,
+      },
       lastPath: '/practice',
     }))
   }, [updateProgress])

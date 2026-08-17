@@ -26,7 +26,7 @@ export function HumanAudioButton({ source, memberName, label = `Listen to ${memb
   return (
     <div className="grid gap-2">
       <button
-        className="inline-flex min-h-12 items-center justify-center gap-3 rounded-lg border-2 border-blue-600 px-5 py-3 font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-500"
+        className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl border border-stage-cobalt px-5 py-3 font-semibold text-stage-cobalt transition hover:bg-stage-cobalt-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:border-stage-border disabled:bg-stage-soft disabled:text-stage-faint"
         disabled={!canPlay}
         onClick={() => { void audioRef.current?.play() }}
         type="button"
@@ -34,7 +34,7 @@ export function HumanAudioButton({ source, memberName, label = `Listen to ${memb
         <SpeakerHigh aria-hidden="true" size={24} weight="fill" />
         {label}
       </button>
-      {status ? <span className="text-sm font-medium text-slate-600">{status}</span> : null}
+      {status ? <span className="text-sm font-medium text-stage-muted">{status}</span> : null}
       {canPlay ? <audio onError={() => setHasPlaybackError(true)} ref={audioRef} src={source.src ?? undefined} /> : null}
     </div>
   )

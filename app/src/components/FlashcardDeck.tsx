@@ -50,15 +50,15 @@ export function FlashcardDeck({ items, random = Math.random }: FlashcardDeckProp
   return (
     <section aria-labelledby="flashcard-heading" className="space-y-5">
       <div>
-        <p className="text-sm font-bold uppercase tracking-wide text-blue-700">Vocabulary Flashcards</p>
-        <h2 className="mt-1 text-2xl font-bold text-slate-950" id="flashcard-heading">Review Korean words</h2>
-        <p aria-live="polite" className="mt-2 font-semibold text-slate-600">Card {cardIndex + 1} of {cards.length}</p>
+        <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Vocabulary Flashcards</p>
+        <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="flashcard-heading">Review Korean words</h2>
+        <p aria-live="polite" className="mt-2 font-semibold text-stage-muted">Card {cardIndex + 1} of {cards.length}</p>
       </div>
 
       <button
         aria-label={isFlipped ? 'Show Korean' : 'Show meaning'}
         aria-pressed={isFlipped}
-        className="flex min-h-64 w-full flex-col items-center justify-center rounded-3xl border border-blue-200 bg-white p-8 text-center shadow-sm transition-transform duration-200 motion-reduce:transition-none"
+        className="flex min-h-64 w-full flex-col items-center justify-center rounded-xl border border-stage-border bg-stage-white p-8 text-center transition-transform duration-200 motion-reduce:transition-none"
         onClick={() => setIsFlipped((current) => !current)}
         onKeyDown={handleCardKeyDown}
         style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)`, transformStyle: 'preserve-3d' }}
@@ -67,26 +67,26 @@ export function FlashcardDeck({ items, random = Math.random }: FlashcardDeckProp
         <span className="flex flex-col items-center" style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)` }}>
           {isFlipped ? (
             <>
-              <span className="text-3xl font-bold text-slate-950">{card.english}</span>
-              <span className="mt-3 text-lg text-blue-700">{card.romanization}</span>
-              <span className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">Show Korean</span>
+              <span className="text-3xl font-bold text-stage-charcoal">{card.english}</span>
+              <span className="mt-3 text-lg text-stage-cobalt">{card.romanization}</span>
+              <span className="mt-6 text-sm font-bold uppercase tracking-wide text-stage-faint">Show Korean</span>
             </>
           ) : (
             <>
-              <span className="text-5xl font-bold text-slate-950" lang="ko">{card.korean}</span>
-              <span className="mt-6 text-sm font-bold uppercase tracking-wide text-blue-700">Show meaning</span>
+              <span className="text-5xl font-bold text-stage-charcoal" lang="ko">{card.korean}</span>
+              <span className="mt-6 text-sm font-bold uppercase tracking-wide text-stage-cobalt">Show meaning</span>
             </>
           )}
         </span>
       </button>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <button className="rounded-lg border border-blue-600 px-4 py-2 font-semibold text-blue-700 disabled:border-slate-300 disabled:text-slate-400" disabled={cardIndex === 0} onClick={previous} type="button">Previous card</button>
-        <button className="rounded-lg border border-blue-600 px-4 py-2 font-semibold text-blue-700 disabled:border-slate-300 disabled:text-slate-400" disabled={cardIndex === cards.length - 1} onClick={next} type="button">Next card</button>
-        <button className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white" onClick={shuffle} type="button">Shuffle</button>
-        <button className="rounded-lg border border-slate-400 px-4 py-2 font-semibold text-slate-700" onClick={reset} type="button">Reset cards</button>
+        <button className="rounded-xl border border-stage-cobalt px-4 py-2 font-semibold text-stage-cobalt disabled:border-stage-border disabled:text-stage-faint" disabled={cardIndex === 0} onClick={previous} type="button">Previous card</button>
+        <button className="rounded-xl border border-stage-cobalt px-4 py-2 font-semibold text-stage-cobalt disabled:border-stage-border disabled:text-stage-faint" disabled={cardIndex === cards.length - 1} onClick={next} type="button">Next card</button>
+        <button className="rounded-xl bg-stage-cobalt px-4 py-2 font-semibold text-stage-white" onClick={shuffle} type="button">Shuffle</button>
+        <button className="rounded-xl border border-stage-border-strong px-4 py-2 font-semibold text-stage-muted" onClick={reset} type="button">Reset cards</button>
       </div>
-      <p className="text-sm text-slate-500">Keyboard: Arrow Left/Right changes cards. Space flips the current card.</p>
+      <p className="text-sm text-stage-faint">Keyboard: Arrow Left/Right changes cards. Space flips the current card.</p>
     </section>
   )
 }

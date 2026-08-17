@@ -42,10 +42,10 @@ export function MemberVideo({
   let mediaPanel
   if (source.kind === 'ai-generated') {
     mediaPanel = (
-      <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-8 py-10 text-center">
-        <Prohibit aria-hidden="true" className="mb-4 text-red-700" size={52} weight="fill" />
-        <h2 className="text-2xl font-bold text-slate-950">AI-generated video is prohibited</h2>
-        <p className="mt-2 max-w-md text-slate-700">Use a real recording from {memberName}. This source will not be played.</p>
+      <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-xl border border-stage-vermilion bg-stage-vermilion-soft px-8 py-10 text-center">
+        <Prohibit aria-hidden="true" className="mb-4 text-stage-vermilion-strong" size={52} weight="fill" />
+        <h2 className="text-2xl font-bold text-stage-charcoal">AI-generated video is prohibited</h2>
+        <p className="mt-2 max-w-md text-stage-muted">Use a real recording from {memberName}. This source will not be played.</p>
       </div>
     )
   } else if (isComingSoon) {
@@ -77,25 +77,25 @@ export function MemberVideo({
     )
   } else if (!canPlay) {
     mediaPanel = (
-      <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-8 py-10 text-center">
-        <Warning aria-hidden="true" className="mb-4 text-amber-700" size={52} weight="fill" />
-        <h2 className="text-2xl font-bold text-slate-950">Member video unavailable</h2>
-        <p className="mt-2 max-w-md text-slate-700">This media source is invalid. Ask a course editor to replace it with a human recording.</p>
+      <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-xl border border-stage-yellow bg-stage-yellow-soft px-8 py-10 text-center">
+        <Warning aria-hidden="true" className="mb-4 text-stage-yellow-strong" size={52} weight="fill" />
+        <h2 className="text-2xl font-bold text-stage-charcoal">Member video unavailable</h2>
+        <p className="mt-2 max-w-md text-stage-muted">This media source is invalid. Ask a course editor to replace it with a human recording.</p>
       </div>
     )
   } else if (hasPlaybackError) {
     mediaPanel = (
-      <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-2xl border border-amber-300 bg-amber-50 px-8 py-10 text-center" role="alert">
-        <Warning aria-hidden="true" className="mb-4 text-amber-700" size={52} weight="fill" />
-        <h2 className="text-2xl font-bold text-slate-950">{playbackErrorHeading}</h2>
-        <p className="mt-2 max-w-md text-slate-700">{playbackErrorDescription}</p>
+      <div className="flex aspect-video min-h-72 flex-col items-center justify-center rounded-xl border border-stage-yellow bg-stage-yellow-soft px-8 py-10 text-center" role="alert">
+        <Warning aria-hidden="true" className="mb-4 text-stage-yellow-strong" size={52} weight="fill" />
+        <h2 className="text-2xl font-bold text-stage-charcoal">{playbackErrorHeading}</h2>
+        <p className="mt-2 max-w-md text-stage-muted">{playbackErrorDescription}</p>
       </div>
     )
   } else {
     mediaPanel = (
       <video
         aria-label={mediaLabel}
-        className="aspect-video w-full rounded-2xl bg-slate-950 object-cover shadow-sm"
+        className="aspect-video w-full rounded-xl bg-stage-charcoal object-cover"
         controls
         onError={() => setHasPlaybackError(true)}
         ref={videoRef}
@@ -113,7 +113,7 @@ export function MemberVideo({
     <figure className="m-0 grid gap-4">
       {primaryControlLabel ? (
         <button
-          className="inline-flex min-h-12 items-center justify-center rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
+          className="inline-flex min-h-12 items-center justify-center rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white hover:bg-stage-cobalt-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:bg-stage-disabled disabled:text-stage-muted"
           disabled={!canPlay || hasPlaybackError}
           onClick={() => {
             const playback = videoRef.current?.play()
@@ -125,8 +125,8 @@ export function MemberVideo({
         </button>
       ) : null}
       {mediaPanel}
-      <figcaption className="border-l-4 border-emerald-500 pl-4 text-sm leading-6 text-slate-700">
-        <span className="block font-semibold text-slate-950">Transcript</span>
+      <figcaption className="border-l border-stage-jade pl-4 text-sm leading-6 text-stage-muted">
+        <span className="block font-semibold text-stage-charcoal">Transcript</span>
         {transcript}
       </figcaption>
     </figure>

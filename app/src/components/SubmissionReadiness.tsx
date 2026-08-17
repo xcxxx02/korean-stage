@@ -108,71 +108,71 @@ export function SubmissionReadiness({ course, routes = appRouteManifest }: Submi
 
   return (
     <section aria-labelledby="readiness-heading" className="mt-14">
-      <div className="rounded-t-2xl border border-rose-300 bg-rose-700 px-5 py-4 text-white" role="alert">
+      <div className="rounded-t-xl border border-stage-vermilion bg-stage-vermilion-strong px-5 py-4 text-stage-white" role="alert">
         <p className="font-black">AI-generated voices receive 0 marks and must never be added.</p>
       </div>
 
-      <div className="rounded-b-2xl border-x border-b border-slate-200 bg-slate-50 p-6 sm:p-8">
-        <p className="text-sm font-black uppercase tracking-[0.16em] text-slate-600">Submission readiness</p>
-        <h2 className="mt-2 text-3xl font-black text-slate-950" id="readiness-heading">
+      <div className="rounded-b-xl border-x border-b border-stage-border bg-stage-soft p-6 sm:p-8">
+        <p className="text-sm font-black uppercase tracking-[0.16em] text-stage-muted">Submission readiness</p>
+        <h2 className="mt-2 text-3xl font-black text-stage-charcoal" id="readiness-heading">
           {isNotReady ? 'Not ready for submission' : 'Ready for human review'}
         </h2>
-        <p className="mt-3 max-w-3xl text-slate-700">
+        <p className="mt-3 max-w-3xl text-stage-muted">
           Automated checks confirm structure and identify missing content. Qualitative performance always needs a person to review it.
         </p>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          <section aria-labelledby="passed-heading" className="rounded-xl border border-emerald-200 bg-white p-5">
-            <h3 className="text-xl font-black text-emerald-800" id="passed-heading">Passed</h3>
+          <section aria-labelledby="passed-heading" className="rounded-xl border border-stage-jade bg-stage-white p-5">
+            <h3 className="text-xl font-black text-stage-jade-strong" id="passed-heading">Passed</h3>
             <ul className="mt-4 space-y-3">
               {structurallyPassed.map((check) => (
-                <li className="flex items-center justify-between gap-3 text-sm text-slate-800" key={check.label}>
+                <li className="flex items-center justify-between gap-3 text-sm text-stage-charcoal" key={check.label}>
                   <span>{check.label}</span>
-                  <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-800">Passed</span>
+                  <span className="rounded-full bg-stage-jade-soft px-2 py-1 text-xs font-black text-stage-jade-strong">Passed</span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section aria-labelledby="needs-content-heading" className="rounded-xl border border-amber-200 bg-white p-5 lg:col-span-2">
-            <h3 className="text-xl font-black text-amber-900" id="needs-content-heading">Needs content</h3>
+          <section aria-labelledby="needs-content-heading" className="rounded-xl border border-stage-yellow bg-stage-white p-5 lg:col-span-2">
+            <h3 className="text-xl font-black text-stage-yellow-strong" id="needs-content-heading">Needs content</h3>
             {contentIssues.length > 0 || navigationIssues.length > 0 ? (
               <ul className="mt-4 space-y-3">
                 {contentIssues.map((contentIssue, index) => (
-                  <li className="rounded-lg bg-amber-50 px-4 py-3 text-sm font-semibold text-slate-900" key={`${contentIssue.code}-${contentIssue.memberId ?? contentIssue.vocabularyId ?? contentIssue.grammarId ?? contentIssue.dialogueId ?? index}`}>
+                  <li className="rounded-xl bg-stage-yellow-soft px-4 py-3 text-sm font-semibold text-stage-charcoal" key={`${contentIssue.code}-${contentIssue.memberId ?? contentIssue.vocabularyId ?? contentIssue.grammarId ?? contentIssue.dialogueId ?? index}`}>
                     {issueAction(course, contentIssue)}
                   </li>
                 ))}
                 {navigationIssues.map((navigationIssue) => (
-                  <li className="rounded-lg bg-amber-50 px-4 py-3 text-sm font-semibold text-slate-900" key={`navigation-${navigationIssue.id}`}>
+                  <li className="rounded-xl bg-stage-yellow-soft px-4 py-3 text-sm font-semibold text-stage-charcoal" key={`navigation-${navigationIssue.id}`}>
                     {navigationIssue.message}
                   </li>
                 ))}
               </ul>
-            ) : <p className="mt-4 text-sm text-slate-700">No automated content gaps detected.</p>}
+            ) : <p className="mt-4 text-sm text-stage-muted">No automated content gaps detected.</p>}
 
-            <h4 className="mt-7 border-t border-slate-200 pt-5 font-black text-slate-900">Qualitative checks</h4>
+            <h4 className="mt-7 border-t border-stage-border pt-5 font-black text-stage-charcoal">Qualitative checks</h4>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2">
               {qualitativeChecks.map((check) => (
-                <li className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-slate-100 px-4 py-3 text-sm" key={check}>
-                  <span className="font-semibold text-slate-800">{check}</span>
-                  <span className="rounded-full bg-slate-200 px-2 py-1 text-xs font-black text-slate-700">Human review required</span>
+                <li className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-stage-soft px-4 py-3 text-sm" key={check}>
+                  <span className="font-semibold text-stage-charcoal">{check}</span>
+                  <span className="rounded-full bg-stage-disabled px-2 py-1 text-xs font-black text-stage-muted">Human review required</span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section aria-labelledby="prohibited-heading" className="rounded-xl border border-rose-200 bg-white p-5 lg:col-span-3">
-            <h3 className="text-xl font-black text-rose-800" id="prohibited-heading">Prohibited</h3>
+          <section aria-labelledby="prohibited-heading" className="rounded-xl border border-stage-vermilion bg-stage-white p-5 lg:col-span-3">
+            <h3 className="text-xl font-black text-stage-vermilion-strong" id="prohibited-heading">Prohibited</h3>
             {prohibitedIssues.length > 0 ? (
               <ul className="mt-4 space-y-3">
                 {prohibitedIssues.map((prohibitedIssue, index) => (
-                  <li className="rounded-lg bg-rose-50 px-4 py-3 text-sm font-bold text-rose-900" key={`${prohibitedIssue.code}-${index}`}>
+                  <li className="rounded-xl bg-stage-vermilion-soft px-4 py-3 text-sm font-bold text-stage-vermilion-strong" key={`${prohibitedIssue.code}-${index}`}>
                     {issueAction(course, prohibitedIssue)}
                   </li>
                 ))}
               </ul>
-            ) : <p className="mt-3 text-sm text-slate-700">No prohibited media detected. Keep all voices human-recorded.</p>}
+            ) : <p className="mt-3 text-sm text-stage-muted">No prohibited media detected. Keep all voices human-recorded.</p>}
           </section>
         </div>
       </div>

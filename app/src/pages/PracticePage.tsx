@@ -70,15 +70,15 @@ export function PracticePage() {
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-5 sm:p-8">
       <header>
-        <p className="text-sm font-bold uppercase tracking-wide text-blue-700">Lec 1 review</p>
-        <h1 className="mt-1 text-4xl font-black text-slate-950">Final practice</h1>
-        <p className="mt-3 max-w-2xl text-slate-600">Review countries and jobs, then complete all nine grammar questions.</p>
+        <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lec 1 review</p>
+        <h1 className="mt-1 text-4xl font-black text-stage-charcoal">Final practice</h1>
+        <p className="mt-3 max-w-2xl text-stage-muted">Review countries and jobs, then complete all nine grammar questions.</p>
       </header>
 
       <nav aria-label="Practice activities" className="grid gap-3 sm:grid-cols-2">
         <button
           aria-pressed={mode === 'flashcards'}
-          className="rounded-xl border border-blue-600 px-5 py-3 font-bold text-blue-800 aria-pressed:bg-blue-600 aria-pressed:text-white"
+          className="rounded-xl border border-stage-cobalt px-5 py-3 font-bold text-stage-cobalt aria-pressed:bg-stage-cobalt aria-pressed:text-stage-white"
           onClick={() => setMode('flashcards')}
           type="button"
         >
@@ -86,7 +86,7 @@ export function PracticePage() {
         </button>
         <button
           aria-pressed={mode === 'challenge'}
-          className="rounded-xl border border-blue-600 px-5 py-3 font-bold text-blue-800 aria-pressed:bg-blue-600 aria-pressed:text-white"
+          className="rounded-xl border border-stage-cobalt px-5 py-3 font-bold text-stage-cobalt aria-pressed:bg-stage-cobalt aria-pressed:text-stage-white"
           onClick={() => setMode('challenge')}
           type="button"
         >
@@ -99,25 +99,25 @@ export function PracticePage() {
       {mode === 'challenge' ? (
         <section aria-labelledby="challenge-heading" className="space-y-5">
           <div>
-            <p className="text-sm font-bold uppercase tracking-wide text-blue-700">Final check</p>
-            <h2 className="mt-1 text-2xl font-bold text-slate-950" id="challenge-heading">Grammar Challenge</h2>
+            <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Final check</p>
+            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="challenge-heading">Grammar Challenge</h2>
           </div>
 
           {phase === 'questions' ? (
-            <form className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" onSubmit={checkAnswer}>
+            <form className="rounded-xl border border-stage-border bg-stage-white p-5" onSubmit={checkAnswer}>
               <fieldset>
-                <legend className="w-full text-lg font-bold text-slate-950" ref={questionLegendRef} tabIndex={-1}>
-                  <span className="block text-sm font-semibold text-slate-500">Question {questionIndex + 1} of {exercises.length}</span>
+                <legend className="practice-focus-target w-full text-lg font-bold text-stage-charcoal" ref={questionLegendRef} tabIndex={-1}>
+                  <span className="block text-sm font-semibold text-stage-faint">Question {questionIndex + 1} of {exercises.length}</span>
                   <span className="mt-2 block">{currentExercise.prompt}</span>
-                  <span className="mt-3 block rounded-lg bg-slate-50 p-4 text-xl text-blue-800" lang="ko">{currentExercise.koreanContext}</span>
+                  <span className="mt-3 block rounded-xl bg-stage-soft p-4 text-xl text-stage-cobalt" lang="ko">{currentExercise.koreanContext}</span>
                 </legend>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   {currentExercise.choices.map((choice) => (
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 p-4 font-semibold text-slate-900 has-checked:border-blue-600 has-checked:bg-blue-50" key={choice}>
+                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-stage-border p-4 font-semibold text-stage-charcoal has-checked:border-stage-cobalt has-checked:bg-stage-cobalt-soft" key={choice}>
                       <input
                         checked={selectedAnswer === choice}
-                        className="size-4 accent-blue-600"
+                        className="size-4 accent-stage-cobalt"
                         disabled={Boolean(currentResult)}
                         name={`answer-${currentExercise.id}`}
                         onChange={() => setSelectedAnswer(choice)}
@@ -132,7 +132,7 @@ export function PracticePage() {
                 {currentResult ? (
                   <div
                     aria-live="polite"
-                    className={`mt-5 rounded-xl p-4 ${currentResult.isCorrect ? 'bg-emerald-50 text-emerald-950' : 'bg-amber-50 text-amber-950'}`}
+                    className={`practice-focus-target mt-5 rounded-xl p-4 ${currentResult.isCorrect ? 'bg-stage-jade-soft text-stage-jade-strong' : 'bg-stage-yellow-soft text-stage-yellow-strong'}`}
                     ref={feedbackRef}
                     role="status"
                     tabIndex={-1}
@@ -148,14 +148,14 @@ export function PracticePage() {
                 <div className="mt-5">
                   {currentResult ? (
                     <button
-                      className="rounded-lg bg-blue-600 px-5 py-3 font-bold text-white"
+                      className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white"
                       onClick={questionIndex === exercises.length - 1 ? () => setPhase('complete') : nextQuestion}
                       type="button"
                     >
                       {questionIndex === exercises.length - 1 ? 'See results' : 'Next question'}
                     </button>
                   ) : (
-                    <button className="rounded-lg bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:bg-slate-300" disabled={!selectedAnswer} type="submit">Check answer</button>
+                    <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!selectedAnswer} type="submit">Check answer</button>
                   )}
                 </div>
               </fieldset>
@@ -163,31 +163,31 @@ export function PracticePage() {
           ) : null}
 
           {phase === 'complete' ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-2xl font-bold text-slate-950" ref={completionHeadingRef} tabIndex={-1}>Challenge complete</h3>
-              <p aria-live="polite" className="mt-3 text-xl font-bold text-blue-800">Score: {correctCount} / {exercises.length}</p>
-              <p className="mt-2 text-slate-600"><span lang="ko">잘했어요!</span> Nice work completing every grammar question.</p>
+            <div className="rounded-xl border border-stage-border bg-stage-white p-6">
+              <h3 className="practice-focus-target text-2xl font-bold text-stage-charcoal" ref={completionHeadingRef} tabIndex={-1}>Challenge complete</h3>
+              <p aria-live="polite" className="mt-3 text-xl font-bold text-stage-cobalt">Score: {correctCount} / {exercises.length}</p>
+              <p className="mt-2 text-stage-muted"><span lang="ko">잘했어요!</span> Nice work completing every grammar question.</p>
               <div className="mt-5 flex flex-wrap gap-3">
                 {incorrectResults.length > 0 ? (
-                  <button className="rounded-lg border border-blue-600 px-5 py-3 font-bold text-blue-700" onClick={() => setPhase('review')} type="button">Review incorrect answers</button>
+                  <button className="rounded-xl border border-stage-cobalt px-5 py-3 font-bold text-stage-cobalt" onClick={() => setPhase('review')} type="button">Review incorrect answers</button>
                 ) : null}
-                <button className="rounded-lg bg-blue-600 px-5 py-3 font-bold text-white" onClick={tryAgain} type="button">Try again</button>
+                <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white" onClick={tryAgain} type="button">Try again</button>
               </div>
             </div>
           ) : null}
 
           {phase === 'review' ? (
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-slate-950">Review incorrect answers</h3>
+              <h3 className="text-2xl font-bold text-stage-charcoal">Review incorrect answers</h3>
               {incorrectResults.map((result) => (
-                <article className="rounded-2xl border border-amber-200 bg-amber-50 p-5" key={result.exercise.id}>
-                  <p className="text-xl font-bold text-slate-950" lang="ko">{result.exercise.koreanContext}</p>
+                <article className="rounded-xl border border-stage-yellow bg-stage-yellow-soft p-5" key={result.exercise.id}>
+                  <p className="text-xl font-bold text-stage-charcoal" lang="ko">{result.exercise.koreanContext}</p>
                   <p className="mt-3">Your answer: <span lang="ko">{result.answer}</span></p>
                   <p className="mt-1">Correct answer: <span lang="ko">{result.exercise.answer}</span></p>
-                  <p className="mt-2 text-slate-700">{result.exercise.explanation}</p>
+                  <p className="mt-2 text-stage-muted">{result.exercise.explanation}</p>
                 </article>
               ))}
-              <button className="rounded-lg bg-blue-600 px-5 py-3 font-bold text-white" onClick={tryAgain} type="button">Try again</button>
+              <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white" onClick={tryAgain} type="button">Try again</button>
             </div>
           ) : null}
         </section>

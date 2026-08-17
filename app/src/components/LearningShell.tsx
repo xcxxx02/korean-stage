@@ -13,8 +13,8 @@ export function LearningShell({ heading, progress, rail, media, details, control
   return (
     <section className="mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
       <div className="mb-8 grid items-end gap-4 lg:grid-cols-[minmax(0,1fr)_2fr]">
-        <h1 className="m-0 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{heading}</h1>
-        <p className="m-0 justify-self-start rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 lg:justify-self-center">
+        <h1 className="m-0 text-3xl font-bold tracking-tight text-stage-charcoal sm:text-4xl">{heading}</h1>
+        <p className="m-0 justify-self-start rounded-full border border-stage-border px-4 py-2 text-sm font-semibold text-stage-muted lg:justify-self-center">
           {progress}
         </p>
       </div>

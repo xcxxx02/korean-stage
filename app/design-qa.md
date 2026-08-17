@@ -1,66 +1,76 @@
 # Task 10 Design QA
 
-**Source visual truth**
+## Source visual truth
 
 - `../docs/design/korean-stage-approved-ui.png`
 - Source pixels: 1484 x 1060, RGB.
 - State: Unit 3, word 1 of 8, desktop learning view.
 
-**Rendered implementation evidence**
+## Current rendered implementation evidence
 
-- Desktop screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-desktop.png`
-- Mobile screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-mobile.png`
-- Full comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-comparison.png`
-- Focused header comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-header-comparison.png`
-- Route and state: `/learn/unit-3`, word 1 of 8, missing-member-video state.
-- Desktop CSS viewport: 1480 x 1058 at devicePixelRatio 1. Browser capture pixels: 1479 x 1058. The implementation was normalized to 1484 x 1060 with Lanczos resampling for the equal-size comparison.
-- Mobile CSS viewport: 390 x 844 at devicePixelRatio 1. Browser capture pixels: 375 x 811. Mobile is responsive evidence only because the selected source provides no mobile frame.
+- Desktop screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-desktop-1480.png`
+- Source/implementation comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-comparison.png`
+- Responsive comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-responsive-sheet.png`
+- Focus-state comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-focus-sheet.png`
+- Mobile full-page screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-mobile-390-full.png`
+- Tablet/mobile menu focus: `task-10-fix1-tablet-menu-focus.png` and `task-10-fix1-mobile-menu-focus.png` in the same report directory.
+- Practice focus: `task-10-fix1-practice-feedback-focus.png`, `task-10-fix1-practice-legend-focus.png`, and `task-10-fix1-practice-completion-focus.png` in the same report directory.
+- Route and state: `/learn/unit-3`, word 1 of 8, missing-member-video state; `/practice`, answer feedback, next question, and completion states.
+- Desktop CSS viewport and capture: 1480 x 1060 at devicePixelRatio 1. The 1484 x 1060 source and 1480 x 1060 implementation were placed together at natural scale with a 16 px divider; no density resampling was needed.
+- Responsive CSS viewports and captures: 768, 900, 1024, 1100, and 1280 x 900 at devicePixelRatio 1.
+- Mobile CSS viewport: 390 x 844 at devicePixelRatio 1. Full-page capture: 390 x 1683.
 
-**Full-view comparison evidence**
+## Full-view comparison evidence
 
-- The final render preserves the source's white canvas, compact top navigation, high-contrast Korean/English hierarchy, three-column learning layout, cobalt primary emphasis, jade instructional accents, vermilion forward action, restrained borders, and lower-corner architectural detail.
-- The supplied 16:9 recording-guide artwork replaces the source's real-video content only in the existing missing-recording state. Its subject, crop, and white background remain clear without competing with the word details or controls.
-- Final desktop metrics show body 1480 x 1058 inside a 1480 x 1058 CSS viewport with no horizontal overflow. The Next word control ends at y=975.3 and remains fully visible.
-- Mobile metrics show no horizontal overflow. The header collapses to a 44 px-plus menu control, the compact vocabulary selector remains readable, and the 333.6 x 187.65 image slot preserves 16:9.
+- The final desktop render preserves the selected mockup's white canvas, compact shell, bilingual hierarchy, three-column learning layout, cobalt primary emphasis, jade instructional accents, vermilion forward action, restrained borders, and lower-corner architectural detail.
+- The approved missing-recording artwork truthfully replaces the mockup's completed human video without introducing a generic placeholder. Its 16:9 subject, white background, and cultural linework remain crisp and do not compete with the learning controls.
+- The source/implementation comparison shows consistent 12 px radii, one-pixel rules, no non-menu elevation, and a clean white/obangsaek surface system throughout the visible product.
+- All breakpoint metrics report document, body, and header scroll widths equal to their client widths. Compact navigation remains active at 768, 900, 1024, and 1100 px; desktop navigation activates at 1280 px and remains clear at 1480 px.
+- The 390 px full-page capture includes the stacked media, transcript, navigation controls, details, audio state, example, tip, and low-opacity palace artwork without clipping or horizontal overflow.
 
-**Focused comparison evidence**
+## Focused comparison evidence
 
-- The header crop verifies the white surface, bold wordmark, evenly spaced navigation, cobalt active underline, and 12 px approved dancheong strip.
-- The full comparison remains legible enough to inspect the rail labels, media-state heading/checklist, bilingual details, transcript, and navigation controls, so no additional focused content crop was necessary.
+- The responsive sheet makes the header, title wrapping, rail-to-compact-selector transition, media crop, detail rail, and controls readable across four representative widths. The standalone 900 px capture covers the fifth requested metric width.
+- The focus sheet shows the open tablet menu's first link, Practice feedback, and Practice completion heading with visible cobalt focus indicators. Separate evidence confirms the next-question legend and the mobile menu link.
+- Tablet and mobile menu links compute to a 3 px solid `rgb(7, 94, 229)` outline with `-3px` offset. Practice feedback, legend, and completion targets compute to the same 3 px outline with 3 px offset.
 
-**Required fidelity surfaces**
+## Required fidelity surfaces
 
-- Fonts and typography: Noto Sans KR/Noto Sans variable fonts render both scripts consistently. Desktop heading, navigation, word hierarchy, body copy, and checklist weights are readable with no clipping or unintended wrapping after the title fix.
-- Spacing and layout rhythm: 1440 px shell alignment, restrained 12 px radius, one-pixel borders, menu-only shadow, and lower-corner artwork follow the approved visual direction. Desktop controls remain above the fold; mobile content stacks without collisions.
-- Colors and visual tokens: white, charcoal, cobalt, vermilion, yellow, jade, border gray, and focus blue are defined as Tailwind theme variables and shared CSS tokens. Contrast remains strong on controls and labels.
-- Image quality and asset fidelity: all three approved assets load at their natural dimensions. The strip and palace retain transparency; the recording guide remains sharp at both desktop and mobile crops. No CSS illustration, handcrafted SVG, emoji, watermark, or placeholder art is used.
-- Copy and content: existing Korean/English learning copy is unchanged. The missing-recording heading, description, checklist, transcript, and attribution remain visible and coherent.
+- Fonts and typography: Noto Sans KR/Noto Sans variable fonts render both scripts consistently. Heading, navigation, word hierarchy, body copy, and checklist weights remain clear. Intermediate content titles wrap naturally while the header remains unwrapped and collision-free.
+- Spacing and layout rhythm: shell alignment, compact-to-desktop transitions, 12 px radii, one-pixel borders, menu-only shadow, and lower-corner artwork match the approved direction. No breakpoint clips or overlaps.
+- Colors and visual tokens: every product surface now uses the Stage white/charcoal/cobalt/vermilion/yellow/jade semantic palette. Selected, success, warning, prohibited, disabled, and instructional states remain distinct and legible.
+- Image quality and asset fidelity: all three approved assets remain sharp at their natural aspect ratios. The transparent strip and palace art integrate cleanly; no CSS illustration, handcrafted SVG, emoji, watermark, or placeholder art is used.
+- Copy and content: existing Korean/English learning copy and behavior are unchanged. The missing-recording description, checklist, transcript, and attribution remain coherent.
+- Accessibility and motion: keyboard focus is visible on compact-menu links and every Practice programmatic target. With `prefers-reduced-motion: reduce`, the flashcard computes transition and animation durations to `1e-05s` with one animation iteration. Browser console and page errors: none.
 
-**Comparison history**
+## Comparison history
 
-1. Initial browser comparison found three P2 presentation issues: the programmatically focused heading showed a large native outline, the desktop title wrapped to two lines, and the 1087 px body clipped the bottom controls by 29 px at the 1058 px target viewport.
-2. Fixes: suppressed outlines only for programmatically focused `tabindex="-1"` content, kept desktop learning headings on one line, and tightened the missing-video copy/checklist spacing.
-3. Post-fix evidence: `task-10-desktop.png` and `task-10-comparison.png` show a single-line title, no stray focus rectangle, full controls, body height equal to viewport height, and no horizontal overflow.
+1. Initial Task 10 comparison found P2 programmatic-focus, desktop-title wrapping, and vertical-fit issues. Those were fixed and the original baseline passed.
+2. Fix round 1 source review found unsafe intermediate navigation activation, broad focus suppression, and generic product-surface styling. The implementation moved desktop navigation to 1120 px, restored explicit focus, and migrated all product surfaces to Stage tokens and approved geometry.
+3. First fix-round render found one P2 layout issue: the compact trigger remained centered between the brand and an empty navigation element while its menu panel was right-aligned. The trigger was visually detached from the opened panel.
+4. Fix: added a contract for automatic left margin on the compact trigger and applied `margin-left: auto`. Post-fix captures show the trigger aligned at the header's right edge across 390-1100 px, with the menu panel immediately below it.
+5. Post-fix Playwright run passed every responsive, keyboard-focus, reduced-motion, overflow, and console assertion. The final side-by-side review found no remaining P0/P1/P2 issue.
 
-**Findings**
+## Findings
 
 - No actionable P0, P1, or P2 findings remain.
-- Accepted product constraint: the source image depicts a completed human video and marks Vocabulary active, while the application route correctly marks Learn active and renders its approved missing-recording state. Changing either would alter existing navigation or content behavior outside Task 10.
+- Accepted product constraint: the source depicts a completed human video and marks Vocabulary active, while the application correctly marks Learn active and renders its approved missing-recording state. Changing either would alter existing navigation or content behavior outside Task 10.
 
-**Open Questions**
+## Open questions
 
-- P3 follow-up only: the supplied asset set does not include the source's palace wordmark icon, so the shell uses the existing Phosphor icon family rather than inventing a cultural logo asset.
+- None.
 
-**Implementation Checklist**
+## Implementation checklist
 
-- [x] Fix initial P2 focus, wrapping, and vertical-fit differences.
-- [x] Verify desktop and mobile overflow.
-- [x] Exercise menu open/Escape close and next/previous word controls.
-- [x] Check browser console warnings and errors; none found.
-- [x] Confirm all approved asset dimensions and rendered natural sizes.
+- [x] Keep compact navigation through 1100 px and verify desktop navigation at 1280/1480 px.
+- [x] Align the compact trigger with its right-anchored panel.
+- [x] Preserve visible keyboard focus on the open menu and Practice programmatic transitions.
+- [x] Apply Stage semantic tokens and approved surface geometry throughout the product.
+- [x] Verify desktop, intermediate, mobile full-page, reduced-motion, and console states.
+- [x] Compare the rendered desktop and focused regions with the source visual.
 
-**Follow-up Polish**
+## Follow-up polish
 
-- If a separate approved brand mark is produced later, replace the standard icon without changing the shell geometry.
+- P3 only: replace the standard icon if a separate approved palace wordmark asset is supplied later.
 
 final result: passed

@@ -84,11 +84,13 @@ describe('PracticePage', () => {
     expect(screen.getByRole('button', { name: 'Check answer' })).toHaveFocus()
     await user.keyboard('[Enter]')
     expect(screen.getByRole('status')).toHaveFocus()
+    expect(screen.getByRole('status')).toHaveClass('practice-focus-target')
 
     await user.tab()
     expect(screen.getByRole('button', { name: 'Next question' })).toHaveFocus()
     await user.keyboard('[Enter]')
     expect(screen.getByText('Question 2 of 9').closest('legend')).toHaveFocus()
+    expect(screen.getByText('Question 2 of 9').closest('legend')).toHaveClass('practice-focus-target')
   })
 
   it('ignores a duplicate submission instead of pre-answering the next question', async () => {
@@ -157,6 +159,7 @@ describe('PracticePage', () => {
     const completionHeading = screen.getByRole('heading', { name: 'Challenge complete' })
     expect(completionHeading).toBeVisible()
     expect(completionHeading).toHaveFocus()
+    expect(completionHeading).toHaveClass('practice-focus-target')
     expect(screen.getByText('Score: 8 / 9')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Review incorrect answers' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()

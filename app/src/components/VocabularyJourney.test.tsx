@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { course } from '../content/course'
-import type { MediaSource } from '../content/types'
-import { readProgress } from '../progress/progressStore'
+import type { MediaSource, VocabularyItem } from '../content/types'
+import { readProgress, writeProgress } from '../progress/progressStore'
 import { HomePage } from '../pages/HomePage'
 import { UnitPage } from '../pages/UnitPage'
 import { HumanAudioButton } from './HumanAudioButton'
@@ -32,10 +32,28 @@ const approvedOccupations = [
   { id: 'soldier', korean: '군인', english: 'Soldier' },
   { id: 'chef', korean: '요리사', english: 'Chef' },
 ] as const
+const humanMediaItems = occupationItems.slice(0, 2).map((item, index): VocabularyItem => ({
+  ...item,
+  audio: { src: `/media/${index === 0 ? 'student' : 'teacher'}.mp3`, kind: 'human-recording' },
+  video: {
+    src: `/media/${index === 0 ? 'student' : 'teacher'}.mp4`,
+    captionSrc: `/media/${index === 0 ? 'student' : 'teacher'}.vtt`,
+    kind: 'human-recording',
+  },
+}))
 
 afterEach(cleanup)
 
 beforeEach(() => localStorage.clear())
+
+function unlockThroughDoctor() {
+  writeProgress({
+    completedUnitIds: [],
+    completedVocabularyIds: ['student', 'teacher', 'office-worker', 'reporter'],
+    exerciseResults: {},
+    lastPath: '/learn/unit-3',
+  }, localStorage)
+}
 
 describe('VocabularyJourney', () => {
   it('introduces one beginner word at a time with English learning support', async () => {
@@ -68,6 +86,7 @@ describe('VocabularyJourney', () => {
   })
 
   it('keeps all eight ordered bilingual occupations visible in its progress rail', () => {
+    unlockThroughDoctor()
     render(<VocabularyJourney items={occupationItems} initialItemId="doctor" />)
 
     const rail = screen.getByRole('list', { name: 'Vocabulary progress' })
@@ -111,6 +130,7 @@ describe('VocabularyJourney', () => {
 
   it('provides a compact bilingual word selector while keeping the full rail desktop-only', async () => {
     const user = userEvent.setup()
+    unlockThroughDoctor()
     render(<VocabularyJourney items={occupationItems} initialItemId="doctor" />)
 
     expect(screen.getByRole('list', { name: 'Vocabulary progress' })).toHaveClass('hidden', 'lg:grid')
@@ -132,6 +152,43 @@ describe('VocabularyJourney', () => {
     await user.selectOptions(selector, 'teacher')
     expect(within(compact).getByText('2 of 8 · 선생님 · Teacher')).toHaveAttribute('aria-current', 'step')
     expect(screen.getAllByText('Teacher').length).toBeGreaterThan(0)
+  })
+
+  it('prevents the compact selector from skipping ahead to a false completion', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
+
+    const selector = screen.getByRole('combobox', { name: 'Choose vocabulary word' })
+    expect(within(selector).getByRole('option', { name: '8. 요리사 — Chef' })).toBeDisabled()
+    await user.selectOptions(selector, 'chef')
+
+    expect(selector).toHaveValue('student')
+    expect(screen.queryByRole('button', { name: 'Finish vocabulary' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Vocabulary complete' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next word' })).toBeEnabled()
+    expect(readProgress(localStorage).completedVocabularyIds).toEqual([])
+  })
+
+  it('recovers human audio and video when Next word loads a different source', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={humanMediaItems} />)
+
+    fireEvent.error(document.querySelector('audio')!)
+    fireEvent.error(screen.getByLabelText('Member 1 vocabulary video'))
+    expect(screen.getByText('Audio playback unavailable. Continue with the written example.')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Video playback unavailable' })).toBeVisible()
+    expect(screen.getByText('저는 학생이에요. I am a student.')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Next word' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'Next word' }))
+
+    expect(screen.queryByText('Audio playback unavailable. Continue with the written example.')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Video playback unavailable' })).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).toHaveAttribute('src', '/media/teacher.mp3')
+    const nextVideo = screen.getByLabelText('Member 1 vocabulary video')
+    expect(nextVideo.querySelector('source')).toHaveAttribute('src', '/media/teacher.mp4')
+    expect(screen.getByText('저는 선생님이에요. I am a teacher.')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Finish vocabulary' })).toBeEnabled()
   })
 })
 

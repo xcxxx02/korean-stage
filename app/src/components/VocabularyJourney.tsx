@@ -29,10 +29,13 @@ function grammarTip(item: VocabularyItem): { heading: string; explanation: strin
 }
 
 export function VocabularyJourney({ items, initialItemId, progressPath }: VocabularyJourneyProps) {
-  const initialIndex = Math.max(0, items.findIndex((item) => item.id === initialItemId))
+  const { progress, markVocabularyComplete } = useCourseProgress()
+  const firstUnfinishedIndex = items.findIndex((item) => !progress.completedVocabularyIds.includes(item.id))
+  const unlockedIndex = firstUnfinishedIndex === -1 ? Math.max(0, items.length - 1) : firstUnfinishedIndex
+  const requestedIndex = Math.max(0, items.findIndex((item) => item.id === initialItemId))
+  const initialIndex = Math.min(requestedIndex, unlockedIndex)
   const [activeIndex, setActiveIndex] = useState(initialIndex)
   const [isFinished, setIsFinished] = useState(false)
-  const { markVocabularyComplete } = useCourseProgress()
 
   if (items.length === 0) {
     return (
@@ -70,7 +73,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
           id="compact-vocabulary-selector"
           onChange={(event) => {
             const nextIndex = items.findIndex((word) => word.id === event.target.value)
-            if (nextIndex >= 0) {
+            if (nextIndex >= 0 && nextIndex <= unlockedIndex) {
               setIsFinished(false)
               setActiveIndex(nextIndex)
             }
@@ -78,7 +81,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
           value={item.id}
         >
           {items.map((word, index) => (
-            <option key={word.id} value={word.id}>{index + 1}. {word.korean} — {word.english}</option>
+            <option disabled={index > unlockedIndex} key={word.id} value={word.id}>{index + 1}. {word.korean} — {word.english}</option>
           ))}
         </select>
         <p aria-current="step" className="mb-0 mt-3 text-sm font-semibold text-blue-700">
@@ -113,6 +116,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
   const media = (
     <div>
       <MemberVideo
+        key={`${item.id}:${item.video.kind}:${item.video.src ?? 'missing'}`}
         memberName={memberName}
         source={item.video}
         transcript={`${item.koreanExample} ${item.englishExample}`}
@@ -139,7 +143,11 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
           </div>
         ) : null}
       </dl>
-      <HumanAudioButton memberName={memberName} source={item.audio} />
+      <HumanAudioButton
+        key={`${item.id}:${item.audio.kind}:${item.audio.src ?? 'missing'}`}
+        memberName={memberName}
+        source={item.audio}
+      />
       <div className="border-y border-emerald-300 py-4">
         <p className="m-0 text-xl font-bold text-slate-950">{item.koreanExample}</p>
         <p className="mt-2 text-slate-700">{item.englishExample}</p>

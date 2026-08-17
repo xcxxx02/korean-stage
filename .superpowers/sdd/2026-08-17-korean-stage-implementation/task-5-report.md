@@ -140,3 +140,57 @@
 ### Concerns
 
 - Real human media and caption assets remain intentionally absent from the bundled course. The corrected states prevent prohibited or invalid sources from being mistaken for submission-ready recordings.
+
+## Fix round 2
+
+### Finding dispositions
+
+1. **The compact selector could bypass the sequence and falsely complete Chef — fixed.** The journey now derives its first unfinished item from persisted progress. The compact selector keeps completed words available for backward review, exposes the first unfinished word, and disables every later option. An `initialItemId` is also clamped to that unlocked boundary, so direct initialization cannot bypass the sequence. The existing seven-Next-plus-Finish path still records all eight exact IDs before announcing completion, and exactly one primary forward action remains.
+2. **Playback error state leaked into the next item — fixed.** `HumanAudioButton` and `MemberVideo` now receive keys composed from item ID, media kind, and source URL. Loading a different item/source remounts each media control, so a Student playback failure does not suppress Teacher audio or video. The external transcript, written example, and word navigation remain available throughout.
+
+### TDD red / green evidence
+
+- Sequential selector cycle:
+  - RED: the Chef option was enabled for a new learner, so the compact selector could activate the final item without completing the first seven.
+  - GREEN: `npm test -- src/components/VocabularyJourney.test.tsx` passed 14/14; Chef is disabled, selection stays on Student, Finish/complete are absent, Next remains the single enabled forward action, and stored completion remains empty.
+- Media source-identity cycle:
+  - RED: after Student audio and video emitted errors, Next loaded Teacher content but the Student audio error remained; the same persistent-state path also retained the video error.
+  - GREEN: the focused journey suite passed 15/15; Teacher gets fresh human audio/video elements with the expected source URLs, its transcript is visible, error states are gone, and `Finish vocabulary` is the single forward action.
+
+### Final verification
+
+- `npm test -- src/components/VocabularyJourney.test.tsx`
+  - PASS: 1 file, 15 tests.
+- `npm test`
+  - PASS: 9 files, 53 tests.
+- `npm run typecheck`
+  - PASS: `tsc --noEmit`, exit 0.
+- `npm run lint`
+  - PASS: `eslint .`, exit 0 with no warnings.
+- `git diff --check`
+  - PASS: no whitespace errors; only line-ending conversion notices.
+
+### Files changed
+
+- `app/src/components/VocabularyJourney.tsx`
+- `app/src/components/VocabularyJourney.test.tsx`
+- `.superpowers/sdd/2026-08-17-korean-stage-implementation/task-5-report.md`
+
+### Commit
+
+- `fix: enforce vocabulary journey state` (the Task 5 fix-round 2 commit)
+
+### Self-review
+
+- Verified a fresh learner can select only Student; after each Next transition the newly first-unfinished item becomes available while earlier items remain selectable for review.
+- Verified seeded progress through Reporter unlocks Doctor and preserves the existing `initialItemId="doctor"` behavior without unlocking Singer through Chef.
+- Verified selecting a disabled Chef option through user-level interaction cannot change the current item, expose Finish, mutate progress, or announce completion.
+- Verified all-eight completion still requires the exact ordered IDs and only the final valid Finish transition produces the disabled `Vocabulary complete` state.
+- Verified source-qualified keys include both item identity and media identity, so item changes and replacement source URLs both reset playback error state.
+- Verified the journey-level recovery test exercises real audio/video elements and state transitions rather than component mocks.
+- Mutation check: removing the unlocked-index cap enables Chef and breaks the false-completion regression; removing either media key leaves the corresponding Student error visible after Next.
+- Reviewed the complete fix-round diff against both Important regressions; no unrelated implementation files are included.
+
+### Concerns
+
+- None blocking. Progress remains browser-local by design, and real member recordings/captions are still required before submission readiness.

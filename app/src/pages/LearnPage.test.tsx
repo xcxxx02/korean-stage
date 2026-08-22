@@ -19,6 +19,12 @@ describe('LearnPage', () => {
     )
 
     expect(screen.getByRole('heading', { name: 'Hello & Self-introduction' })).toBeInTheDocument()
+    const models = screen.getByRole('list', { name: 'Bilingual self-introduction models' })
+    expect(models).toHaveTextContent('안녕하세요?')
+    expect(models).toHaveTextContent('Hello.')
+    expect(models).toHaveTextContent('저는 미나예요.')
+    expect(models).toHaveTextContent('I am Mina.')
+    expect(screen.getByRole('region', { name: 'Ready to continue?' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Mark unit complete' }))
 
     expect(screen.getByText('Unit complete')).toBeInTheDocument()

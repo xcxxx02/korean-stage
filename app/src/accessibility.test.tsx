@@ -1,54 +1,53 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import axe from 'axe-core'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, useRoutes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { AppShell } from './components/AppShell'
 import { FlashcardDeck } from './components/FlashcardDeck'
 import { HumanAudioButton } from './components/HumanAudioButton'
 import { course } from './content/course'
-import { appRouteManifest } from './navigation'
+import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
-import { GrammarPage } from './pages/GrammarPage'
-import { HomePage } from './pages/HomePage'
-import { LearnPage } from './pages/LearnPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { PracticePage } from './pages/PracticePage'
-import { TeamPage } from './pages/TeamPage'
-import { UnitPage } from './pages/UnitPage'
-import { VocabularyPage } from './pages/VocabularyPage'
+import { createAppRouteObjects } from './routeObjects'
 
-const primaryRoutes = appRouteManifest.flatMap((route): Array<readonly [string, string]> => {
-  if ('index' in route) return [['Home', '/']]
-  if ('primaryNavigationLabel' in route) return [[route.primaryNavigationLabel, `/${route.path}`]]
+const expectedPrimaryHeadings: Record<AppRouteId, string> = {
+  home: 'Korean Stage',
+  learn: 'Hello & Self-introduction',
+  unit: 'Unit 2 · Countries & Nationalities',
+  vocabulary: 'Vocabulary review',
+  grammar: 'Grammar',
+  practice: 'Final practice',
+  dialogue: 'Dialogue & role play',
+  team: 'Team & submission readiness',
+  'not-found': 'Page not found',
+}
+
+const routeEntries: readonly RouteManifestEntry[] = appRouteManifest
+
+const primaryRoutes = routeEntries.flatMap((route): Array<readonly [string, string, string]> => {
+  const routeId = route.id as AppRouteId
+  if (route.index === true) return [['Home', '/', expectedPrimaryHeadings[routeId]]]
+  if (route.primaryNavigationLabel) return [[route.primaryNavigationLabel, `/${route.path}`, expectedPrimaryHeadings[routeId]]]
   return []
 })
 
 const routes = [
   ...primaryRoutes,
-  ['Unit 2', '/learn/unit-2'],
-  ['Unit 3', '/learn/unit-3'],
-  ['Unit 4', '/learn/unit-4'],
-  ['Unit 7', '/learn/unit-7'],
-  ['Fallback', '/missing'],
+  ['Unit 2', '/learn/unit-2', 'Unit 2 · Countries & Nationalities'],
+  ['Unit 3', '/learn/unit-3', 'Unit 3 · Jobs & Occupations'],
+  ['Unit 4', '/learn/unit-4', '이에요 / 예요 - to be'],
+  ['Unit 7', '/learn/unit-7', 'Unit 7 · Dialogue & role play'],
+  ['Fallback', '/missing', 'Page not found'],
 ] as const
 
-function renderRoute(path: string) {
+function ProductionRoutes({ manifest = appRouteManifest }: { manifest?: readonly RouteManifestEntry[] }) {
+  return useRoutes(createAppRouteObjects(manifest))
+}
+
+function renderRoute(path: string, manifest: readonly RouteManifestEntry[] = appRouteManifest) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route index element={<HomePage />} />
-          <Route path="learn" element={<LearnPage />} />
-          <Route path="learn/:unitId" element={<UnitPage />} />
-          <Route path="vocabulary" element={<VocabularyPage />} />
-          <Route path="grammar" element={<GrammarPage />} />
-          <Route path="practice" element={<PracticePage />} />
-          <Route path="dialogue" element={<DialoguePage />} />
-          <Route path="team" element={<TeamPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <ProductionRoutes {...{ manifest }} />
     </MemoryRouter>,
   )
 }
@@ -70,10 +69,11 @@ beforeEach(() => localStorage.clear())
 afterEach(cleanup)
 
 describe('default-route accessibility', () => {
-  it.each(routes)('%s has a single named content landmark and no automated axe violations', async (_name, path) => {
+  it.each(routes)('%s has its expected page heading, a single named content landmark, and no automated axe violations', async (_name, path, expectedHeading) => {
     const { container } = renderRoute(path)
 
     expect(screen.getAllByRole('main')).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1, name: expectedHeading })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
     expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveAttribute('href', '#main-content')
     expect(duplicateIds(container)).toEqual([])
@@ -85,6 +85,17 @@ describe('default-route accessibility', () => {
       },
     })
     expect(results.violations).toEqual([])
+  })
+
+  it('renders a manifest route at its mutated path instead of silently accepting the wildcard page', () => {
+    const movedTeamManifest: readonly RouteManifestEntry[] = appRouteManifest.map((route) =>
+      route.id === 'team' ? { ...route, path: 'people' } : route,
+    )
+
+    renderRoute('/people', movedTeamManifest)
+
+    expect(screen.getByRole('heading', { level: 1, name: expectedPrimaryHeadings.team })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: expectedPrimaryHeadings['not-found'] })).not.toBeInTheDocument()
   })
 
   it('labels transcript media without announcing static unavailable audio guidance', () => {

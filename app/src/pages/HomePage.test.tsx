@@ -25,6 +25,8 @@ describe('HomePage', () => {
   it('offers all seven Lec 1 units to a new learner', () => {
     renderHomePage()
 
+    expect(screen.getByRole('region', { name: 'Start with Lec 1' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Choose your learning path' })).toBeInTheDocument()
     const courseMap = screen.getByRole('navigation', { name: 'Course map' })
     expect(within(courseMap).getAllByRole('link')).toHaveLength(7)
     unitTitles.forEach((title, index) => {
@@ -33,6 +35,7 @@ describe('HomePage', () => {
     expect(screen.getByRole('link', { name: 'Start learning' })).toHaveAttribute('href', '/learn/unit-1')
     expect(screen.getByText('All seven units are adapted entirely from Lec 1')).toBeInTheDocument()
     expect(screen.getByText('0 of 7 units complete')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Start learning' })).toHaveClass('bg-stage-vermilion')
   })
 
   it('continues from the last saved location', () => {

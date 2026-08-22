@@ -1,17 +1,21 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { course } from '../content/course'
 import { validCourse } from '../test/fixtures'
 import { DialoguePage } from '../pages/DialoguePage'
+import { HomePage } from '../pages/HomePage'
 import { UnitPage } from '../pages/UnitPage'
+import { readProgress } from '../progress/progressStore'
 import { DialoguePlayer } from './DialoguePlayer'
 
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
 })
+
+beforeEach(() => localStorage.clear())
 
 const recordingChecklist = [
   "Show every speaker's face",
@@ -198,5 +202,35 @@ describe('dialogue entry points', () => {
     )
     expect(screen.getByRole('heading', { name: 'Unit 7 · Dialogue & role play' })).toBeVisible()
     expect(screen.getByRole('list', { name: 'Bilingual dialogue transcript' })).toBeVisible()
+  })
+
+  it('completes Unit 7 only after both dialogues are reviewed and confirmed', async () => {
+    const user = userEvent.setup()
+    const overview = render(<DialoguePage />)
+    expect(screen.queryByRole('button', { name: 'Mark Unit 7 complete' })).not.toBeInTheDocument()
+    overview.unmount()
+
+    const unit = render(
+      <MemoryRouter initialEntries={['/learn/unit-7']}>
+        <Routes><Route path="learn/:unitId" element={<UnitPage />} /></Routes>
+      </MemoryRouter>,
+    )
+    const complete = screen.getByRole('button', { name: 'Mark Unit 7 complete' })
+    expect(complete).toBeDisabled()
+    expect(readProgress(localStorage).completedUnitIds).not.toContain('unit-7')
+
+    await user.click(screen.getByRole('button', { name: 'Who are you?' }))
+    expect(complete).toBeEnabled()
+    complete.focus()
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => expect(readProgress(localStorage).completedUnitIds).toContain('unit-7'))
+    expect(screen.getByRole('status')).toHaveTextContent('Unit 7 complete')
+    expect(complete).toBeDisabled()
+
+    unit.unmount()
+    render(<MemoryRouter><HomePage /></MemoryRouter>)
+    expect(screen.getByText('1 of 7 units complete')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Continue learning' })).toHaveAttribute('href', '/learn/unit-7')
   })
 })

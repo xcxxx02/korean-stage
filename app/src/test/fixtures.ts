@@ -30,6 +30,7 @@ export const validCourse: Course = {
       korean: '저는 다니엘이에요.',
       english: 'I am Daniel.',
       romanization: 'jeoneun danierieyo.',
+      pronunciationHint: 'juh-nuhn da-nee-el-ee-eh-yo',
       ownerId: 'member-2',
       audioLabel: 'Listen to Daniel self-introduction',
       audio: humanMedia('/media/introduction/self-introduction.mp3'),

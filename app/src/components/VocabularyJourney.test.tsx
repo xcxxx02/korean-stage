@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { course } from '../content/course'
 import type { MediaSource, VocabularyItem } from '../content/types'
 import { readProgress, writeProgress } from '../progress/progressStore'
@@ -125,6 +125,7 @@ describe('VocabularyJourney', () => {
       'soldier',
       'chef',
     ]))
+    expect(readProgress(localStorage).completedUnitIds).toContain('unit-3')
     expect(screen.getByRole('button', { name: 'Vocabulary complete' })).toBeDisabled()
   })
 
@@ -258,6 +259,31 @@ describe('human media states', () => {
     expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
   })
 
+  it('handles rejected playback and resets the fallback when the source changes', async () => {
+    const user = userEvent.setup()
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockRejectedValueOnce(new Error('Playback blocked'))
+    const view = render(<HumanAudioButton
+      memberName="Member 1"
+      source={{ src: '/media/student.mp3', kind: 'human-recording' }}
+    />)
+
+    await user.click(screen.getByRole('button', { name: 'Listen to Member 1' }))
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(
+      'Audio playback unavailable. Continue with the written example.',
+    ))
+    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
+
+    view.rerender(<HumanAudioButton
+      memberName="Member 2"
+      source={{ src: '/media/teacher.mp3', kind: 'human-recording' }}
+    />)
+
+    await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument())
+    expect(screen.getByRole('button', { name: 'Listen to Member 2' })).toBeEnabled()
+    expect(document.querySelector('audio')).toHaveAttribute('src', '/media/teacher.mp3')
+  })
+
   it('uses native video controls, captions, and an adjacent transcript when supplied', () => {
     render(<MemberVideo
       memberName="Member 1"
@@ -297,6 +323,27 @@ describe('UnitPage vocabulary units', () => {
       expect(within(cards).getByText(item.english)).toBeVisible()
     }
     expect(screen.getByRole('link', { name: 'Practise Unit 2 with flashcards' })).toHaveAttribute('href', '/practice')
+    expect(readProgress(localStorage).completedUnitIds).not.toContain('unit-2')
+  })
+
+  it('completes Unit 2 only after the learner deliberately confirms review', async () => {
+    const user = userEvent.setup()
+    const view = renderUnit('/learn/unit-2')
+    const complete = screen.getByRole('button', { name: 'Mark Unit 2 complete' })
+
+    expect(complete).toBeEnabled()
+    expect(readProgress(localStorage).completedUnitIds).not.toContain('unit-2')
+    complete.focus()
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => expect(readProgress(localStorage).completedUnitIds).toContain('unit-2'))
+    expect(screen.getByRole('status')).toHaveTextContent('Unit 2 complete')
+    expect(complete).toBeDisabled()
+
+    view.unmount()
+    render(<MemoryRouter><HomePage /></MemoryRouter>)
+    expect(screen.getByText('1 of 7 units complete')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Continue learning' })).toHaveAttribute('href', '/learn/unit-2')
   })
 
   it('uses the approved Unit 3 heading above the ordered occupation journey', () => {

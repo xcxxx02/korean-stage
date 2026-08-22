@@ -53,7 +53,7 @@ The coursework PDF is the grading source. The Lec 1 PDF is the selected lesson s
 | Create a website name and briefly explain its purpose | `/`, `/team` | Korean Stage name and Lec 1 beginner purpose | Validator, Home, TeamGrid, readiness tests | PASS |
 | Introduce each member, including name and student ID | `/team` | Member cards deliberately say Member 1/2 and `Add your student ID`, marked `Replace before submission` | Identity validator and readiness tests | USER MEDIA/DATA BLOCKED - real names and IDs required |
 | Website is user-friendly and visually appealing | All primary routes | Consistent bilingual hierarchy, responsive Stage visual system, clear missing states | Root `design-qa.md`; 30 fresh screenshots; no open P0-P2 | PASS for tested development states; grader decides final creativity |
-| Include audio playback | `/learn/unit-1`, `/learn/unit-3`, `/dialogue` | Typed greeting/self-introduction and vocabulary/dialogue models have accessible `Listen to ...` controls; controls are disabled with written fallbacks while audio is absent | Validator/readiness require and precisely identify each Unit 1 model's human audio; HumanAudioButton, exact learner-content/audio-state, and media tests cover the UI; browser verifies both Unit 1 missing-audio controls and fallbacks | USER MEDIA BLOCKED - 2 Unit 1 and 8 vocabulary human-audio files are required |
+| Include audio playback | `/learn/unit-1`, `/learn/unit-3`, `/dialogue` | Typed greeting/self-introduction and vocabulary/dialogue models have accessible `Listen to ...` controls; controls are disabled with written fallbacks while audio is absent | Validator/readiness require and precisely identify Unit 1, vocabulary, and dialogue-line human audio; HumanAudioButton tests cover element errors, rejected `play()` promises, written fallback, and reset for a changed source; browser verifies both Unit 1 missing-audio controls | USER MEDIA BLOCKED - 2 Unit 1, 8 vocabulary, and 16 dialogue-line human-audio files are required |
 | Provide clear navigation | Global header, `/` course map | Six primary destinations, active route, mobile Menu, seven-unit map, Previous/Next | Shared manifest tests, accessibility keyboard audit, mutation test, 3-viewport browser journey | PASS |
 | Keep content well organized | All routes | Seven units, dedicated Vocabulary/Grammar/Practice/Dialogue/Team views, English task instructions | Route/accessibility tests; design QA; browser journey | PASS structurally |
 | Late submission loses 0.5 marks per working day | No route; submission process | Not a website behavior | Source-PDF verification only | USER ACTION REQUIRED - submit by the lecturer's deadline |
@@ -93,8 +93,10 @@ These are approved user/design requirements and must not be misattributed to the
 | Current 2 members; UI supports 2-6 | Team shows 2; TeamGrid test renders 6 without component changes | PASS structurally |
 | Human audio for both Unit 1 models | Validator/readiness identify the Korean/English model and owner for each missing file | USER MEDIA BLOCKED - 2 human-audio files required |
 | Matching human audio for all 8 vocabulary videos | Missing states and readiness report | USER MEDIA BLOCKED |
+| Human audio for all 16 dialogue lines | Validator/readiness identify the exact missing line numbers in each dialogue; each line has an accessible audio control and written fallback | USER MEDIA BLOCKED - 16 human-audio files required |
 | Captions or synchronized transcripts for all 8 vocabulary videos | Component supports caption tracks and adjacent transcript; no final recordings/captions exist | USER MEDIA BLOCKED |
 | Two complete 1-3 minute human drama videos | Missing states, duration validator | USER MEDIA BLOCKED |
+| Honest seven-unit completion | Unit 2 requires deliberate confirmation after review; Unit 3 completes only from item 8 Finish; Unit 7 requires both dialogue selections plus confirmation; saved Home progress/Continue reflect all three | PASS - native keyboard controls, persistence tests, and three-viewport browser flow |
 | Responsive, keyboard-complete flow | 1440 x 1024, 834 x 1194, 390 x 844 Playwright audit | PASS for tested states |
 
 ## Automated and browser evidence summary
@@ -104,8 +106,9 @@ These are approved user/design requirements and must not be misattributed to the
 - Visual-consistency TDD: Home/Unit 1 checks produced 2 expected failures, then Home/Learn/accessibility passed 23/23.
 - Review-fix TDD: duration/readiness, typed Unit 1 audio models, derived Home summary, matching validation/interaction/persistence, and qualitative checks moved through focused RED/GREEN runs; the complete suite contains 21 files and 159 tests.
 - Final re-review TDD: five focused expectations first proved missing/AI/inconsistent Unit 1 audio did not block readiness, then 40/40 passed after typed `introduction-model-media` validation and precise owner/model remediation. A separate duplicate-Korean matching test moved RED to 41/41 GREEN after pair uniqueness was completed.
-- Current full verification after the re-review: 21/21 files and 165/165 tests, typecheck, lint, production build, and 4/4 Sites tests passed.
-- Final browser run: 10 primary-journey states at each of 3 exact viewports; 0 real axe violations, 0 console/page errors, 0 horizontal-overflow failures; keyboard matching in Unit 4 and Practice, both Unit 1 missing-audio states, honest unverified duration readiness, qualitative-check presence, and the eight-item sequence all passed.
+- Final audit TDD added exact two-model Unit 1 structure/content/ownership checks, rejected-audio recovery, and explicit Unit 2/3/7 completion. Focused RED runs failed for the missing behavior and the focused GREEN runs passed 29/29 and 47/47.
+- Current full verification after the final audit: 21/21 files and 174/174 tests, typecheck, lint, production build, and 4/4 Sites tests passed.
+- Final browser run: 12 primary-journey states at each of 3 exact viewports; 0 real axe violations, 0 console/page errors, 0 horizontal-overflow failures; Unit 2 visit-only/explicit completion, Unit 3 Finish persistence, Unit 7 review/confirmation, keyboard matching, both Unit 1 missing-audio states, honest duration readiness, and the eight-item sequence all passed.
 - Final full command results are recorded in `.superpowers/sdd/2026-08-17-korean-stage-implementation/task-12-report.md`.
 
 ## Remaining user-supplied submission dependencies
@@ -115,9 +118,10 @@ These are approved user/design requirements and must not be misattributed to the
 3. Supply 8 real member selfie vocabulary videos, four per current member, showing the assigned member's face and using that member's own voice.
 4. Supply matching human audio for those 8 vocabulary items.
 5. Supply synchronized captions or transcripts for all 8 vocabulary videos.
-6. Supply 2 complete 1-3 minute drama videos showing the participating members' faces and using their own voices.
-7. Have a person review pronunciation, intonation, lighting, background noise, natural acting, and uninterrupted verbal flow.
-8. Have the lecturer or a fluent Korean reviewer check every Korean word, example, explanation, answer, and dialogue line.
-9. Confirm every final media file is human-recorded. **Any AI-generated voice receives 0 marks.**
+6. Supply 16 human-recorded dialogue-line audio files, one for each of the 8 lines in both dialogues.
+7. Supply 2 complete 1-3 minute drama videos showing the participating members' faces and using their own voices.
+8. Have a person review pronunciation, intonation, lighting, background noise, natural acting, and uninterrupted verbal flow.
+9. Have the lecturer or a fluent Korean reviewer check every Korean word, example, explanation, answer, and dialogue line.
+10. Confirm every final media file is human-recorded. **Any AI-generated voice receives 0 marks.**
 
-Until all nine submission items are complete and the readiness report is rerun against the real files, do not submit the site as coursework-ready.
+Until all ten submission items are complete and the readiness report is rerun against the real files, do not submit the site as coursework-ready.

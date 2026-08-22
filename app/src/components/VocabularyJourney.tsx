@@ -29,7 +29,7 @@ function grammarTip(item: VocabularyItem): { heading: string; explanation: strin
 }
 
 export function VocabularyJourney({ items, initialItemId, progressPath }: VocabularyJourneyProps) {
-  const { progress, markVocabularyComplete } = useCourseProgress()
+  const { progress, markUnitComplete, markVocabularyComplete } = useCourseProgress()
   const firstUnfinishedIndex = items.findIndex((item) => !progress.completedVocabularyIds.includes(item.id))
   const unlockedIndex = firstUnfinishedIndex === -1 ? Math.max(0, items.length - 1) : firstUnfinishedIndex
   const requestedIndex = Math.max(0, items.findIndex((item) => item.id === initialItemId))
@@ -56,6 +56,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
   const showNext = () => {
     markVocabularyComplete(item.id, progressPath)
     if (activeIndex === items.length - 1) {
+      markUnitComplete(item.unitId)
       setIsFinished(true)
     } else {
       setActiveIndex((current) => current + 1)

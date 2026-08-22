@@ -44,13 +44,32 @@ export function UnitPage() {
             Practise Unit 2 with flashcards
           </Link>
         </div>
+        <div className="mt-6 border-l border-stage-jade bg-stage-jade-soft p-6">
+          <h2 className="text-xl font-black text-stage-charcoal">Finish Unit 2</h2>
+          <p className="mt-2 text-stage-muted">After reviewing all eight country and nationality cards, mark this unit complete.</p>
+          <button
+            className="mt-4 inline-flex min-h-12 items-center justify-center rounded-xl bg-stage-vermilion px-5 py-3 font-bold text-stage-white hover:bg-stage-vermilion-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:bg-stage-disabled"
+            disabled={progress.completedUnitIds.includes('unit-2')}
+            onClick={() => markUnitComplete('unit-2')}
+            type="button"
+          >
+            Mark Unit 2 complete
+          </button>
+          {progress.completedUnitIds.includes('unit-2') ? <p className="mt-3 font-bold text-stage-jade-strong" role="status">Unit 2 complete</p> : null}
+        </div>
       </section>
     )
   }
 
   if (unitId === 'unit-3') return <VocabularyJourney items={occupationItems} progressPath="/learn/unit-3" />
 
-  if (unitId === 'unit-7') return <DialoguePage unit />
+  if (unitId === 'unit-7') {
+    return <DialoguePage
+      onUnitComplete={() => markUnitComplete('unit-7')}
+      unit
+      unitComplete={progress.completedUnitIds.includes('unit-7')}
+    />
+  }
 
   const grammarPoint = course.grammar.find((candidate) => candidate.unitId === unitId)
   if (grammarPoint) {

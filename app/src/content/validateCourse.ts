@@ -41,7 +41,26 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     }
   }
 
+  const courseMemberIds = new Set(course.members.map((member) => member.id))
+  const requiredIntroductionModelIds = ['greeting', 'self-introduction']
+  const introductionModelIds = new Set(course.introductionModels.map((model) => model.id))
+  const hasExactIntroductionModels = course.introductionModels.length === requiredIntroductionModelIds.length
+    && introductionModelIds.size === requiredIntroductionModelIds.length
+    && requiredIntroductionModelIds.every((id) => introductionModelIds.has(id))
+  if (!hasExactIntroductionModels) {
+    issues.push(issue('introduction-model-structure', 'error', 'Unit 1 needs exactly one greeting and one self-introduction model.'))
+  }
+
   for (const model of course.introductionModels) {
+    const hasCompleteContent = [model.korean, model.english, model.romanization, model.pronunciationHint, model.audioLabel]
+      .every((field) => field.trim())
+    if (!hasCompleteContent || !courseMemberIds.has(model.ownerId)) {
+      issues.push(issue('introduction-model-content', 'error', 'Each Unit 1 model needs complete bilingual guidance and an existing member owner.', {
+        introductionModelId: model.id,
+        memberId: model.ownerId,
+      }))
+    }
+
     if (!hasHumanMedia(model.audio)) {
       issues.push(issue('introduction-model-media', requiredSeverity, 'Each Unit 1 model needs human-recorded audio.', {
         introductionModelId: model.id,
@@ -95,7 +114,6 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     issues.push(issue('dialogue-count', 'error', 'The course must have 2-3 dialogues.'))
   }
 
-  const courseMemberIds = new Set(course.members.map((member) => member.id))
   const participatingMemberIds = new Set<string>()
   for (const dialogue of course.dialogues) {
     if (dialogue.speakerIds.length < 2 || dialogue.speakerIds.length > 3) {

@@ -72,6 +72,59 @@ describe('validateCourse', () => {
     ]))
   })
 
+  it.each([
+    ['a missing self-introduction', [validCourse.introductionModels[0]]],
+    ['duplicate greeting models', [validCourse.introductionModels[0], { ...validCourse.introductionModels[0] }]],
+  ])('requires exactly one greeting and one self-introduction for %s', (_label, introductionModels) => {
+    const invalidCourse = { ...validCourse, introductionModels }
+
+    expect(validateCourse(invalidCourse)).toContainEqual(expect.objectContaining({
+      code: 'introduction-model-structure',
+      severity: 'error',
+    }))
+  })
+
+  it('reports incomplete bilingual introduction content and an owner outside the course team', () => {
+    const invalidCourse = {
+      ...validCourse,
+      introductionModels: validCourse.introductionModels.map((model) => model.id === 'self-introduction'
+        ? {
+            ...model,
+            korean: '',
+            english: ' ',
+            romanization: '',
+            pronunciationHint: ' ',
+            audioLabel: '',
+            ownerId: 'former-member',
+          }
+        : model),
+    }
+
+    expect(validateCourse(invalidCourse)).toContainEqual(expect.objectContaining({
+      code: 'introduction-model-content',
+      introductionModelId: 'self-introduction',
+      memberId: 'former-member',
+      severity: 'error',
+    }))
+  })
+
+  it('does not misclassify an otherwise complete AI introduction as a structural content error', () => {
+    const invalidCourse = {
+      ...validCourse,
+      introductionModels: validCourse.introductionModels.map((model, index) => index === 0
+        ? { ...model, audio: { src: '/media/introduction/ai.mp3', kind: 'ai-generated' as const } }
+        : model),
+    }
+    const issues = validateCourse(invalidCourse)
+
+    expect(issues).not.toContainEqual(expect.objectContaining({ code: 'introduction-model-structure' }))
+    expect(issues).not.toContainEqual(expect.objectContaining({ code: 'introduction-model-content' }))
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'introduction-model-media' }),
+      expect.objectContaining({ code: 'ai-voice-prohibited' }),
+    ]))
+  })
+
   it('reports incorrect course metadata and missing member details', () => {
     const invalidCourse = {
       ...validCourse,

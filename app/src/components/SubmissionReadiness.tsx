@@ -16,6 +16,7 @@ const passedChecks: PassedCheck[] = [
   { label: 'Lec 1 source', issueCodes: ['source-lesson'] },
   { label: 'Website name', issueCodes: ['course-name'] },
   { label: 'Course purpose', issueCodes: ['course-purpose'] },
+  { label: 'Unit 1 introduction models', issueCodes: ['introduction-model-structure', 'introduction-model-content', 'introduction-model-media'] },
   { label: 'Member vocabulary counts', issueCodes: ['member-vocabulary-count'] },
   { label: 'Bilingual vocabulary content', issueCodes: ['vocabulary-bilingual-fields'] },
   { label: 'Grammar point count', issueCodes: ['grammar-count'] },
@@ -39,6 +40,7 @@ const qualitativeChecks = [
 const needsHumanMedia = (media: { kind: string, src: string | null }) => media.kind !== 'human-recording' || !media.src
 
 function joinWithAnd(names: string[]) {
+  if (names.length > 2) return `${names.slice(0, -1).join(', ')}, and ${names.at(-1)}`
   if (names.length === 2) return `${names[0]} and ${names[1]}`
   return names[0]
 }
@@ -73,6 +75,24 @@ function issueAction(course: Course, issue: CourseIssue) {
       return `${memberName} — add a real ${joinWithAnd(missingFields)}.`
     }
     case 'member-vocabulary-count': return `${memberName} — assign 3–5 recorded vocabulary items.`
+    case 'introduction-model-structure': return 'Keep exactly two distinct Unit 1 models: greeting and self-introduction.'
+    case 'introduction-model-content': {
+      const modelName = issue.introductionModelId === 'greeting' ? 'Greeting model' : 'Self-introduction model'
+      const missingFields = introductionModel
+        ? [
+            ...(!introductionModel.korean.trim() ? ['Korean'] : []),
+            ...(!introductionModel.english.trim() ? ['English'] : []),
+            ...(!introductionModel.romanization.trim() ? ['romanization'] : []),
+            ...(!introductionModel.pronunciationHint.trim() ? ['pronunciation guidance'] : []),
+            ...(!introductionModel.audioLabel.trim() ? ['audio label'] : []),
+          ]
+        : ['Korean', 'English', 'romanization', 'pronunciation guidance', 'audio label']
+      const actions = [
+        ...(missingFields.length > 0 ? [`add ${joinWithAnd(missingFields)}`] : []),
+        ...(!member ? ['assign an existing member'] : []),
+      ]
+      return `${modelName} — ${joinWithAnd(actions)}.`
+    }
     case 'introduction-model-media': return `${introductionModel?.korean ?? 'Unknown Unit 1 model'} / ${introductionModel?.english ?? 'Unknown meaning'} — ${memberName}: add human-recorded audio.`
     case 'vocabulary-bilingual-fields': return `${vocabularyName} — complete the Korean, English, romanization, and bilingual examples.`
     case 'vocabulary-media': {

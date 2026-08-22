@@ -11,6 +11,8 @@ export type CourseIssueCode =
   | 'course-purpose'
   | 'member-details'
   | 'member-vocabulary-count'
+  | 'introduction-model-structure'
+  | 'introduction-model-content'
   | 'introduction-model-media'
   | 'vocabulary-bilingual-fields'
   | 'vocabulary-media'
@@ -66,7 +68,7 @@ export type IntroductionModel = {
   korean: string
   english: string
   romanization: string
-  pronunciationHint?: string
+  pronunciationHint: string
   ownerId: string
   audioLabel: string
   audio: MediaSource

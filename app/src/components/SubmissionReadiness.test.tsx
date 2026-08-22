@@ -102,6 +102,43 @@ describe('SubmissionReadiness', () => {
     expect(within(needsContent).getByText('저는 다니엘이에요. / I am Daniel. — Daniel Lee: add human-recorded audio.')).toBeInTheDocument()
   })
 
+  it('blocks readiness when the required self-introduction model is absent', () => {
+    render(<SubmissionReadiness course={{
+      ...validCourse,
+      introductionModels: [validCourse.introductionModels[0]],
+    }} />)
+
+    expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Keep exactly two distinct Unit 1 models: greeting and self-introduction.',
+    )
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Unit 1 introduction models')
+  })
+
+  it('names every malformed self-introduction field and its invalid owner', () => {
+    const malformedCourse = {
+      ...validCourse,
+      introductionModels: validCourse.introductionModels.map((model) => model.id === 'self-introduction'
+        ? {
+            ...model,
+            korean: '',
+            english: '',
+            romanization: '',
+            pronunciationHint: '',
+            audioLabel: '',
+            ownerId: 'former-member',
+          }
+        : model),
+    }
+
+    render(<SubmissionReadiness course={malformedCourse} />)
+
+    expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Self-introduction model — add Korean, English, romanization, pronunciation guidance, and audio label and assign an existing member.',
+    )
+  })
+
   it.each([
     ['missing', { src: null, kind: 'development-missing' as const }],
     ['AI-generated', { src: '/media/dialogues/ai.mp4', kind: 'ai-generated' as const, durationSeconds: 90 }],

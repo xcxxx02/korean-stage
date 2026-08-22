@@ -64,6 +64,10 @@ body {
   min-height: 2.75rem;
 }
 
+:where(.site-brand, .desktop-navigation a, .mobile-navigation a) {
+  min-height: 2.75rem;
+}
+
 .app-shell {
   min-height: 100vh;
   background: var(--stage-white);
@@ -400,6 +404,11 @@ body {
   }
 
   .flashcard-motion {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .grammar-card {
     transition: none !important;
     transform: none !important;
   }

@@ -74,6 +74,7 @@ describe('DialoguePlayer', () => {
     expect(document.querySelector('audio')).not.toBeInTheDocument()
     for (const rule of recordingChecklist) expect(screen.getByText(rule)).toBeVisible()
     expect(screen.getAllByText('Audio coming soon')).toHaveLength(8)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('renders supplied human role-play video and line audio as the only playable media', () => {
@@ -102,6 +103,7 @@ describe('DialoguePlayer', () => {
     expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
     expect(screen.getByRole('heading', { name: 'AI-generated video is prohibited' })).toBeVisible()
     expect(screen.getAllByText('AI-generated audio is prohibited')).toHaveLength(8)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(document.querySelector('video')).not.toBeInTheDocument()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
   })
@@ -121,6 +123,7 @@ describe('DialoguePlayer', () => {
     expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
     expect(screen.getByRole('heading', { name: 'Member video unavailable' })).toBeVisible()
     expect(screen.getAllByText('Audio unavailable: invalid media source')).toHaveLength(8)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(document.querySelector('video')).not.toBeInTheDocument()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
   })
@@ -149,6 +152,14 @@ describe('DialoguePlayer', () => {
 })
 
 describe('dialogue entry points', () => {
+  it('keeps the selected dialogue index at full opacity for readable contrast', () => {
+    render(<DialoguePage />)
+
+    const selected = within(screen.getByRole('group', { name: 'Choose a dialogue' })).getAllByRole('button')[0]
+    const indexLabel = within(selected).getByText('Dialogue 1')
+    expect(indexLabel).not.toHaveClass('opacity-80')
+  })
+
   it('offers exactly the two approved dialogues and switches between their complete transcripts', async () => {
     const user = userEvent.setup()
     render(<DialoguePage />)

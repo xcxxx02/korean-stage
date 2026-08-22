@@ -34,7 +34,7 @@ export function HumanAudioButton({ source, memberName, label = `Listen to ${memb
         <SpeakerHigh aria-hidden="true" size={24} weight="fill" />
         {label}
       </button>
-      {status ? <span className="text-sm font-medium text-stage-muted" role="status">{status}</span> : null}
+      {status ? <span className="text-sm font-medium text-stage-muted" role={hasPlaybackError ? 'status' : undefined}>{status}</span> : null}
       {canPlay ? <audio onError={() => setHasPlaybackError(true)} ref={audioRef} src={source.src ?? undefined} /> : null}
     </div>
   )

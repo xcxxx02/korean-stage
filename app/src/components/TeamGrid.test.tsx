@@ -49,4 +49,23 @@ describe('TeamGrid', () => {
     const firstMemberCard = screen.getAllByRole('article')[0]
     expect(within(firstMemberCard).getByText('Replace before submission')).toBeInTheDocument()
   })
+
+  it('gives plain-English next actions when a member has no words or dialogue lines', () => {
+    const memberWithoutAssignments = validCourse.members[0]
+    const incompleteCourse = {
+      ...validCourse,
+      vocabulary: validCourse.vocabulary.filter((item) => item.ownerId !== memberWithoutAssignments.id),
+      dialogues: validCourse.dialogues.map((dialogue) => ({
+        ...dialogue,
+        lines: dialogue.lines.filter((line) => line.speakerId !== memberWithoutAssignments.id),
+        speakerIds: dialogue.speakerIds.filter((speakerId) => speakerId !== memberWithoutAssignments.id),
+      })),
+    }
+
+    render(<TeamGrid course={incompleteCourse} />)
+
+    const memberCard = screen.getByRole('article', { name: `${memberWithoutAssignments.name} contribution` })
+    expect(within(memberCard).getByText(/No vocabulary assigned yet/i)).toHaveTextContent(/assign 3–5 words/i)
+    expect(within(memberCard).getByText(/No speaking lines assigned yet/i)).toHaveTextContent(/add this member to a dialogue/i)
+  })
 })

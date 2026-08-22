@@ -30,7 +30,7 @@ export function DialoguePage({ unit = false }: DialoguePageProps) {
               onClick={() => setActiveDialogueId(dialogue.id)}
               type="button"
             >
-              <span className="block text-xs uppercase tracking-widest opacity-80">Dialogue {index + 1}</span>
+              <span className="block text-xs uppercase tracking-widest">Dialogue {index + 1}</span>
               <span className="mt-1 block text-lg">{dialogue.title}</span>
               {isActive ? <span className="mt-2 inline-block rounded-full bg-stage-white px-2 py-0.5 text-xs font-bold text-stage-cobalt">Selected dialogue</span> : null}
             </button>

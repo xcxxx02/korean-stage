@@ -200,6 +200,7 @@ describe('human media states', () => {
 
     expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
     expect(screen.getByText('Audio coming soon')).toBeVisible()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('turns missing member video into an actionable recording checklist', () => {
@@ -222,6 +223,7 @@ describe('human media states', () => {
 
     expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
     expect(screen.getByText('AI-generated audio is prohibited')).toBeVisible()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'AI-generated video is prohibited' })).toBeVisible()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
     expect(document.querySelector('video')).not.toBeInTheDocument()
@@ -236,6 +238,7 @@ describe('human media states', () => {
 
     expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
     expect(screen.getByText('Audio unavailable: invalid media source')).toBeVisible()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Member video unavailable' })).toBeVisible()
     expect(screen.getByText('This media source is invalid. Ask a course editor to replace it with a human recording.')).toBeVisible()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
@@ -249,8 +252,9 @@ describe('human media states', () => {
     />)
 
     const audio = document.querySelector('audio')!
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
     fireEvent.error(audio)
-    expect(screen.getByText('Audio playback unavailable. Continue with the written example.')).toBeVisible()
+    expect(screen.getByRole('status')).toHaveTextContent('Audio playback unavailable. Continue with the written example.')
     expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
   })
 

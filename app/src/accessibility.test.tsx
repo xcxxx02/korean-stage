@@ -7,19 +7,30 @@ import { AppShell } from './components/AppShell'
 import { FlashcardDeck } from './components/FlashcardDeck'
 import { HumanAudioButton } from './components/HumanAudioButton'
 import { course } from './content/course'
+import { appRouteManifest } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
+import { GrammarPage } from './pages/GrammarPage'
 import { HomePage } from './pages/HomePage'
+import { LearnPage } from './pages/LearnPage'
+import { NotFoundPage } from './pages/NotFoundPage'
 import { PracticePage } from './pages/PracticePage'
 import { TeamPage } from './pages/TeamPage'
 import { UnitPage } from './pages/UnitPage'
+import { VocabularyPage } from './pages/VocabularyPage'
+
+const primaryRoutes = appRouteManifest.flatMap((route): Array<readonly [string, string]> => {
+  if ('index' in route) return [['Home', '/']]
+  if ('primaryNavigationLabel' in route) return [[route.primaryNavigationLabel, `/${route.path}`]]
+  return []
+})
 
 const routes = [
-  ['Home', '/'],
+  ...primaryRoutes,
+  ['Unit 2', '/learn/unit-2'],
   ['Unit 3', '/learn/unit-3'],
   ['Unit 4', '/learn/unit-4'],
-  ['Practice', '/practice'],
-  ['Dialogue', '/dialogue'],
-  ['Team', '/team'],
+  ['Unit 7', '/learn/unit-7'],
+  ['Fallback', '/missing'],
 ] as const
 
 function renderRoute(path: string) {
@@ -28,10 +39,14 @@ function renderRoute(path: string) {
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<HomePage />} />
+          <Route path="learn" element={<LearnPage />} />
           <Route path="learn/:unitId" element={<UnitPage />} />
+          <Route path="vocabulary" element={<VocabularyPage />} />
+          <Route path="grammar" element={<GrammarPage />} />
           <Route path="practice" element={<PracticePage />} />
           <Route path="dialogue" element={<DialoguePage />} />
           <Route path="team" element={<TeamPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -44,6 +59,11 @@ function duplicateIds(container: HTMLElement) {
     return result
   }, {})
   return Object.entries(counts).filter(([, count]) => count > 1).map(([id]) => id)
+}
+
+async function tabTo(user: ReturnType<typeof userEvent.setup>, target: HTMLElement) {
+  for (let index = 0; index < 30 && document.activeElement !== target; index += 1) await user.tab()
+  expect(target).toHaveFocus()
 }
 
 beforeEach(() => localStorage.clear())
@@ -67,11 +87,12 @@ describe('default-route accessibility', () => {
     expect(results.violations).toEqual([])
   })
 
-  it('labels transcript media and announces unavailable human audio', () => {
+  it('labels transcript media without announcing static unavailable audio guidance', () => {
     renderRoute('/learn/unit-3')
 
     expect(screen.getByRole('figure', { name: 'Member 1 vocabulary video transcript' })).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Audio coming soon')
+    expect(screen.getByText('Audio coming soon')).toBeVisible()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })
 
@@ -90,13 +111,14 @@ describe('keyboard-complete primary flows', () => {
     renderRoute('/learn/unit-3')
 
     const menu = screen.getByRole('button', { name: 'Menu' })
-    menu.focus()
+    await tabTo(user, menu)
     await user.keyboard('[Enter]')
     expect(menu).toHaveAttribute('aria-expanded', 'true')
     expect(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })).toBeVisible()
+    await user.keyboard('[Escape]')
 
     const nextWord = screen.getByRole('button', { name: 'Next word' })
-    nextWord.focus()
+    await tabTo(user, nextWord)
     await user.keyboard('[Enter]')
     expect(screen.getByText('Word 2 of 8')).toBeVisible()
 
@@ -111,7 +133,7 @@ describe('keyboard-complete primary flows', () => {
     renderRoute('/learn/unit-4')
 
     const correctAnswer = screen.getByRole('radio', { name: '민수예요' })
-    correctAnswer.focus()
+    await tabTo(user, correctAnswer)
     await user.keyboard('[Space]')
     await user.tab()
     await user.keyboard('[Enter]')
@@ -120,7 +142,8 @@ describe('keyboard-complete primary flows', () => {
     cleanup()
     render(<FlashcardDeck items={[course.vocabulary[0]]} />)
     const flashcard = screen.getByRole('button', { name: 'Show meaning' })
-    flashcard.focus()
+    await user.tab()
+    expect(flashcard).toHaveFocus()
     await user.keyboard('[Space]')
     expect(screen.getByRole('button', { name: 'Show Korean' })).toHaveTextContent(course.vocabulary[0].english)
 
@@ -128,7 +151,9 @@ describe('keyboard-complete primary flows', () => {
     render(<DialoguePage />)
     const dialogueChoices = screen.getByRole('group', { name: 'Choose a dialogue' })
     const secondDialogue = within(dialogueChoices).getAllByRole('button')[1]
-    secondDialogue.focus()
+    await user.tab()
+    await user.tab()
+    expect(secondDialogue).toHaveFocus()
     await user.keyboard('[Enter]')
     expect(secondDialogue).toHaveAttribute('aria-pressed', 'true')
     expect(secondDialogue).toHaveTextContent('Selected dialogue')

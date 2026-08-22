@@ -53,12 +53,12 @@ export function TeamGrid({ course }: TeamGridProps) {
                     </li>
                   ))}
                 </ul>
-              ) : <p className="mt-4 text-sm text-stage-vermilion-strong">No vocabulary assigned yet.</p>}
+              ) : <p className="mt-4 text-sm text-stage-vermilion-strong">No vocabulary assigned yet. Assign 3–5 words to this member.</p>}
 
               <div className="mt-5 border-t border-stage-border pt-5">
                 <h4 className="text-sm font-black uppercase tracking-wider text-stage-muted">Dialogue participation</h4>
                 <p className="mt-2 text-sm text-stage-charcoal">
-                  {dialogueTitles.length > 0 ? dialogueTitles.join(' · ') : 'No speaking lines assigned yet.'}
+                  {dialogueTitles.length > 0 ? dialogueTitles.join(' · ') : 'No speaking lines assigned yet. Add this member to a dialogue.'}
                 </p>
               </div>
             </article>

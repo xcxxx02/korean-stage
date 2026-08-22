@@ -130,6 +130,63 @@ describe('validateCourse', () => {
     )
   })
 
+  it('requires the nine exercises to cover multiple choice, particle selection, matching, and sentence completion', () => {
+    expect(validateCourse(validCourse)).not.toContainEqual(
+      expect.objectContaining({ code: 'exercise-mode-coverage' }),
+    )
+
+    const courseWithoutMatching = {
+      ...validCourse,
+      grammar: validCourse.grammar.map((grammarPoint) => ({
+        ...grammarPoint,
+        exercises: grammarPoint.exercises.map((exercise) => exercise.type === 'matching'
+          ? {
+              id: exercise.id,
+              grammarId: exercise.grammarId,
+              type: 'multiple-choice' as const,
+              prompt: exercise.prompt,
+              koreanContext: exercise.koreanContext,
+              choices: ['정답'],
+              answer: '정답',
+              explanation: exercise.explanation,
+            }
+          : { ...exercise, type: 'multiple-choice' as const }),
+      })),
+    }
+    expect(validateCourse(courseWithoutMatching)).toContainEqual(
+      expect.objectContaining({ code: 'exercise-mode-coverage' }),
+    )
+  })
+
+  it('rejects a matching exercise without two complete, uniquely identified bilingual pairs', () => {
+    const invalidMatchingCourse = {
+      ...validCourse,
+      grammar: validCourse.grammar.map((grammarPoint, grammarIndex) => grammarIndex === 0
+        ? {
+            ...grammarPoint,
+            exercises: grammarPoint.exercises.map((exercise, exerciseIndex) => exerciseIndex === 0
+              ? {
+                  id: exercise.id,
+                  grammarId: exercise.grammarId,
+                  type: 'matching' as const,
+                  prompt: 'Match each sentence.',
+                  koreanContext: '문장을 연결하세요.',
+                  pairs: [
+                    { id: 'duplicate', korean: '학생이에요.', english: 'I am a student.' },
+                    { id: 'duplicate', korean: '', english: '' },
+                  ],
+                  explanation: 'Read both meanings.',
+                }
+              : exercise),
+          }
+        : grammarPoint),
+    }
+
+    expect(validateCourse(invalidMatchingCourse)).toContainEqual(
+      expect.objectContaining({ code: 'exercise-matching', grammarId: 'grammar-1' }),
+    )
+  })
+
   it('derives member dialogue participation from dialogue lines', () => {
     const courseWithSilentDeclaredMember = {
       ...validCourse,
@@ -170,6 +227,41 @@ describe('validateCourse', () => {
     )
   })
 
+  it.each([
+    ['missing', { src: null, kind: 'development-missing' as const }],
+    ['AI-generated', { src: '/media/dialogues/ai.mp4', kind: 'ai-generated' as const, durationSeconds: 90 }],
+    ['inconsistent development', { src: '/media/dialogues/placeholder.mp4', kind: 'development-missing' as const, durationSeconds: 90 }],
+  ])('treats a %s dialogue video as a media failure without duplicating a duration issue', (_label, video) => {
+    const invalidCourse = {
+      ...validCourse,
+      dialogues: [{ ...validCourse.dialogues[0], video }, validCourse.dialogues[1]],
+    }
+
+    const issues = validateCourse(invalidCourse)
+    expect(issues).toContainEqual(
+      expect.objectContaining({ code: 'dialogue-video-media', dialogueId: 'dialogue-1' }),
+    )
+    expect(issues).not.toContainEqual(
+      expect.objectContaining({ code: 'dialogue-video-duration', dialogueId: 'dialogue-1' }),
+    )
+  })
+
+  it.each([undefined, 45, 181])('requires a verified 60-180 second duration for a real human dialogue video (%s)', (durationSeconds) => {
+    const video = {
+      src: '/media/dialogues/dialogue-1.mp4',
+      kind: 'human-recording' as const,
+      ...(durationSeconds === undefined ? {} : { durationSeconds }),
+    }
+    const invalidCourse = {
+      ...validCourse,
+      dialogues: [{ ...validCourse.dialogues[0], video }, validCourse.dialogues[1]],
+    }
+
+    expect(validateCourse(invalidCourse)).toContainEqual(
+      expect.objectContaining({ code: 'dialogue-video-duration', dialogueId: 'dialogue-1' }),
+    )
+  })
+
   it('provides the complete Lec 1 development dataset without structural errors', () => {
     expect(course.sourceLesson).toBe('Lec 1')
     expect(course.vocabulary.filter((item) => item.ownerId !== null).map((item) => item.korean)).toEqual([
@@ -178,13 +270,19 @@ describe('validateCourse', () => {
     expect(course.vocabulary.filter((item) => item.ownerId === null).map((item) => item.korean)).toEqual([
       '중국', '일본', '미국', '한국', '프랑스', '독일', '호주', '영국',
     ])
-    expect(course.grammar.map((grammar) => grammar.exercises.map((exercise) => exercise.answer))).toEqual([
-      ['민수예요', '학생이에요', '제니예요'],
+    expect(course.grammar.map((grammar) => grammar.exercises.map((exercise) => exercise.type === 'matching' ? undefined : exercise.answer))).toEqual([
+      ['민수예요', '학생이에요', undefined],
       ['저는 학생이에요', '선생님은 한국 사람이에요', '제니는 가수예요'],
       ['미국 사람이 아니에요', '가수가 아니에요', '회사원이 아니에요'],
     ])
+    expect(course.grammar.flatMap((grammar) => grammar.exercises.map((exercise) => exercise.type))).toEqual([
+      'sentence-completion', 'sentence-completion', 'matching',
+      'particle', 'particle', 'particle',
+      'multiple-choice', 'multiple-choice', 'multiple-choice',
+    ])
     expect(course.dialogues).toHaveLength(2)
     expect(course.dialogues.every((dialogue) => dialogue.lines.length === 8)).toBe(true)
+    expect(course.dialogues.every((dialogue) => dialogue.video.durationSeconds === undefined)).toBe(true)
     expect(validateCourse(course, 'development').filter((courseIssue) => courseIssue.severity !== 'warning')).toEqual([])
   })
 })

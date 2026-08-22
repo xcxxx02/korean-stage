@@ -96,7 +96,14 @@ describe('grammar routes', () => {
 
     const exercises = screen.getAllByRole('group', { name: /of 3/i })
     for (let index = 0; index < exercises.length; index += 1) {
-      await user.click(within(exercises[index]).getByRole('radio', { name: ieyoYeyo.exercises[index].answer }))
+      const exercise = ieyoYeyo.exercises[index]
+      if (exercise.type === 'matching') {
+        for (const pair of exercise.pairs) {
+          await user.selectOptions(within(exercises[index]).getByRole('combobox', { name: `Match ${pair.korean} to its English meaning` }), pair.english)
+        }
+      } else {
+        await user.click(within(exercises[index]).getByRole('radio', { name: exercise.answer }))
+      }
       await user.click(within(exercises[index]).getByRole('button', { name: `Check answer ${index + 1}` }))
       await waitFor(() => expect(readProgress(localStorage).exerciseResults[ieyoYeyo.exercises[index].id]).toBe(true))
       if (index < 2) expect(readProgress(localStorage).completedUnitIds).not.toContain('unit-4')
@@ -131,7 +138,8 @@ describe('grammar routes', () => {
     expect(within(exercises[1]).getByRole('button', { name: 'Answer 2 correct' })).toBeDisabled()
     expect(screen.queryByText('Unit complete')).not.toBeInTheDocument()
 
-    await user.click(within(exercises[2]).getByRole('radio', { name: '제니예요' }))
+    await user.selectOptions(within(exercises[2]).getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' }), 'I am a student.')
+    await user.selectOptions(within(exercises[2]).getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' }), 'Jenny is a singer.')
     await user.click(within(exercises[2]).getByRole('button', { name: 'Check answer 3' }))
 
     await waitFor(() => expect(readProgress(localStorage)).toMatchObject({
@@ -167,6 +175,9 @@ describe('grammar routes', () => {
     expect(screen.getByText('Score: 3 of 3 correct')).toBeVisible()
     expect(screen.getByText('Unit complete')).toBeVisible()
     for (const radio of screen.getAllByRole('radio')) expect(radio).toBeDisabled()
+    for (const select of screen.getAllByRole('combobox')) expect(select).toBeDisabled()
+    expect(screen.getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' })).toHaveValue('I am a student.')
+    expect(screen.getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' })).toHaveValue('Jenny is a singer.')
     expect(screen.getAllByRole('button', { name: /Answer \d correct/ })).toHaveLength(3)
   })
 })

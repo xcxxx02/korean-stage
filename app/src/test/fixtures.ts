@@ -1,4 +1,4 @@
-import type { Course, MediaSource } from '../content/types'
+import type { Course, Exercise, MediaSource } from '../content/types'
 
 const humanMedia = (src: string, durationSeconds?: number): MediaSource => ({
   src,
@@ -13,6 +13,27 @@ export const validCourse: Course = {
   members: [
     { id: 'member-1', name: 'Amina Rahman', studentId: 'A12345', isDevelopmentIdentity: false },
     { id: 'member-2', name: 'Daniel Lee', studentId: 'B67890', isDevelopmentIdentity: false },
+  ],
+  introductionModels: [
+    {
+      id: 'greeting',
+      korean: '안녕하세요?',
+      english: 'Hello.',
+      romanization: 'annyeonghaseyo?',
+      pronunciationHint: 'an-nyeong-ha-se-yo',
+      ownerId: 'member-1',
+      audioLabel: 'Listen to Amina greeting',
+      audio: humanMedia('/media/introduction/greeting.mp3'),
+    },
+    {
+      id: 'self-introduction',
+      korean: '저는 아미나예요.',
+      english: 'I am Amina.',
+      romanization: 'jeoneun aminayeyo.',
+      ownerId: 'member-1',
+      audioLabel: 'Listen to Amina self-introduction',
+      audio: humanMedia('/media/introduction/self-introduction.mp3'),
+    },
   ],
   vocabulary: [
     ...['word-1', 'word-2', 'word-3', 'word-4'].map((id, index) => ({
@@ -48,16 +69,33 @@ export const validCourse: Course = {
     explanation: 'A clear explanation.',
     rules: ['A useful rule.'],
     examples: [{ korean: '예문이에요.', english: 'This is an example.' }],
-    exercises: ['1', '2', '3'].map((number) => ({
-      id: `${id}-exercise-${number}`,
-      grammarId: id,
-      type: 'multiple-choice' as const,
-      prompt: 'Choose the correct answer.',
-      koreanContext: '문장을 완성하세요.',
-      choices: ['정답'],
-      answer: '정답',
-      explanation: 'This is the correct answer.',
-    })),
+    exercises: ['1', '2', '3'].map((number): Exercise => {
+      if (grammarIndex === 0 && number === '3') {
+        return {
+          id: `${id}-exercise-${number}`,
+          grammarId: id,
+          type: 'matching',
+          prompt: 'Match each sentence.',
+          koreanContext: '문장을 연결하세요.',
+          pairs: [
+            { id: 'student', korean: '학생이에요.', english: 'I am a student.' },
+            { id: 'teacher', korean: '선생님이에요.', english: 'I am a teacher.' },
+          ],
+          explanation: 'Match each Korean sentence with its English meaning.',
+        }
+      }
+
+      return {
+        id: `${id}-exercise-${number}`,
+        grammarId: id,
+        type: grammarIndex === 0 ? 'sentence-completion' : grammarIndex === 1 ? 'particle' : 'multiple-choice',
+        prompt: 'Choose the correct answer.',
+        koreanContext: '문장을 완성하세요.',
+        choices: ['정답'],
+        answer: '정답',
+        explanation: 'This is the correct answer.',
+      }
+    }),
   })),
   dialogues: ['dialogue-1', 'dialogue-2'].map((id) => ({
     id,

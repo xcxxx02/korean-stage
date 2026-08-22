@@ -42,18 +42,18 @@ The coursework PDF is the grading source. The Lec 1 PDF is the selected lesson s
 | Speak clearly with correct pronunciation | `/learn/unit-3`, `/team` | Recording checklist says Speak clearly and Check pronunciation | Missing-media UI tests; readiness qualitative checks | HUMAN REVIEW REQUIRED after recordings |
 | Ensure good lighting and minimal background noise | `/learn/unit-3`, `/team` | Recording checklist includes both rules | Missing-media UI tests; browser media-state captures | HUMAN REVIEW REQUIRED after recordings |
 | Explain grammar from the selected lesson in clear English with examples | `/grammar`, `/learn/unit-4`, `/learn/unit-5`, `/learn/unit-6` | Three Lec 1 forms, English explanations, consonant/vowel rules, at least two bilingual examples each | GrammarLesson tests cover all three exact rule/example sets; browser Unit 4 | PASS structurally; fluent-human content review required |
-| Create 2-5 exercises for every selected grammar point | Units 4-6, `/practice` | **Exactly 3 exercises per grammar point**, 9 total | Validator requires exactly 3; GrammarLesson and Practice tests cover 3-per-point and 9-question scoring | PASS - exact user ruling satisfied |
-| Add quizzes, flashcards, and other engaging activities | `/practice`, Units 4-6 | 16-card bilingual deck, per-unit exercise feedback/retry, 9-question final challenge/results/review | ExerciseEngine, FlashcardDeck, GrammarLesson, Practice tests; browser flashcard/challenge states | PASS |
+| Create 2-5 exercises for every selected grammar point | Units 4-6, `/practice` | **Exactly 3 exercises per grammar point**, 9 total, with genuine sentence-completion, particle-selection, multiple-choice, and Korean-to-English matching modes | Validator requires exactly 3, all four modes, and complete unique matching pairs; engine/lesson/practice tests cover feedback, retry, persistence, hydration, scoring, completion, and review; browser exercises matching by keyboard in both contexts | PASS - exact user ruling satisfied |
+| Add quizzes, flashcards, and other engaging activities | `/practice`, Units 4-6 | 16-card bilingual deck, accessible two-pair matching, per-unit feedback/retry, and a 9-question final challenge/results/review | ExerciseEngine, FlashcardDeck, GrammarLesson, Practice tests; browser flashcard and matching-challenge states | PASS |
 | Create 2-3 dialogues adjusted to group size | `/dialogue`, `/learn/unit-7` | 2 dialogues for the current two-person group | Validator and source-data tests; browser Dialogue state | PASS structurally |
 | Each dialogue has 2-3 clearly labeled speakers | `/dialogue` | Each dialogue has 2 named development speakers and explicit line-owner labels | Validator speaker/line tests; DialoguePlayer tests | PASS structurally; replace identities |
 | Each dialogue is 6-8 lines | `/dialogue` | Both configured dialogues contain exactly 8 lines | Validator/source-data tests; DialoguePlayer transcript tests | PASS |
 | Dialogue is written in Korean with English translations | `/dialogue` | Every line keeps Korean and English together | Validator rejects incomplete bilingual lines; DialoguePlayer tests | PASS structurally; fluent-human review required |
 | Record a short drama-style video showing faces and voices, acting naturally | `/dialogue`, `/team` | Honest `Full role-play video coming soon` state; checklist includes faces, real voice, and natural acting | Human-only media tests; readiness reports missing video | USER MEDIA BLOCKED - 2 real drama videos required |
-| Dialogue video duration is 1-3 minutes | `/dialogue`, `/team` | UI labels the 1-3 minute requirement; placeholder metadata is 90 seconds but is not a recording | Validator rejects durations outside 60-180 seconds | USER MEDIA BLOCKED - verify final file durations |
+| Dialogue video duration is 1-3 minutes | `/dialogue`, `/team` | UI labels the 1-3 minute requirement; development data makes no duration claim, and Team does **not** show duration as passed while a real video is absent | Validator accepts duration only for a non-null `human-recording` video within 60-180 seconds and rejects missing/out-of-range real duration; browser asserts the missing-video state cannot show a duration pass | USER MEDIA BLOCKED - actual file duration is unverified until final videos exist |
 | Create a website name and briefly explain its purpose | `/`, `/team` | Korean Stage name and Lec 1 beginner purpose | Validator, Home, TeamGrid, readiness tests | PASS |
 | Introduce each member, including name and student ID | `/team` | Member cards deliberately say Member 1/2 and `Add your student ID`, marked `Replace before submission` | Identity validator and readiness tests | USER MEDIA/DATA BLOCKED - real names and IDs required |
 | Website is user-friendly and visually appealing | All primary routes | Consistent bilingual hierarchy, responsive Stage visual system, clear missing states | Root `design-qa.md`; 30 fresh screenshots; no open P0-P2 | PASS for tested development states; grader decides final creativity |
-| Include audio playback | `/learn/unit-3`, `/dialogue` | Accessible `Listen to ...` controls are present but disabled while audio is absent | HumanAudioButton and media tests; browser verifies honest disabled states | USER MEDIA BLOCKED - matching human audio required |
+| Include audio playback | `/learn/unit-1`, `/learn/unit-3`, `/dialogue` | Typed greeting/self-introduction and vocabulary/dialogue models have accessible `Listen to ...` controls; controls are disabled with written fallbacks while audio is absent | HumanAudioButton, exact Unit 1 learner-content/audio-state, and media tests; browser verifies both Unit 1 missing-audio controls and fallbacks | USER MEDIA BLOCKED - matching human audio required |
 | Provide clear navigation | Global header, `/` course map | Six primary destinations, active route, mobile Menu, seven-unit map, Previous/Next | Shared manifest tests, accessibility keyboard audit, mutation test, 3-viewport browser journey | PASS |
 | Keep content well organized | All routes | Seven units, dedicated Vocabulary/Grammar/Practice/Dialogue/Team views, English task instructions | Route/accessibility tests; design QA; browser journey | PASS structurally |
 | Late submission loses 0.5 marks per working day | No route; submission process | Not a website behavior | Source-PDF verification only | USER ACTION REQUIRED - submit by the lecturer's deadline |
@@ -79,7 +79,7 @@ Passing technical evidence does not predict or guarantee a mark; the lecturer ap
 | `N은/는 N이에요/예요` identification ending | Unit 4 | PASS |
 | `N은/는` topic marker | Unit 5 | PASS |
 | `N이/가 아니에요` negative identification | Unit 6 | PASS |
-| Informal self-introduction dialogue | Unit 1 models and two original Unit 7 dialogues | PASS structurally; fluent-human review required |
+| Informal greeting and self-introduction models | Typed Unit 1 models show Korean, English, romanization/pronunciation support, owner, and human-audio slots; two original Unit 7 dialogues extend them | PASS structurally; Unit 1 audio is visibly missing and fluent-human review remains required |
 
 ## Product/accessibility requirements beyond the coursework PDF
 
@@ -87,7 +87,7 @@ These are approved user/design requirements and must not be misattributed to the
 
 | Requirement | Evidence | Status |
 |---|---|---|
-| Exactly 3 exercises for each grammar point | 3 + 3 + 3 in Units 4-6; 9-question challenge | PASS |
+| Exactly 3 exercises for each grammar point | 3 + 3 + 3 in Units 4-6; 9-question challenge; four genuine interaction modes including matching | PASS |
 | Only Lec 1 split into 7 units | Home/Team source statement and seven-unit map | PASS |
 | Sequential vocabulary | Browser advances all eight distinct Unit 3 states in order at every viewport | PASS |
 | Current 2 members; UI supports 2-6 | Team shows 2; TeamGrid test renders 6 without component changes | PASS structurally |
@@ -101,7 +101,8 @@ These are approved user/design requirements and must not be misattributed to the
 - Initial gates before Task 12 fixes: 20/20 Vitest files and 142/142 tests passed; typecheck, lint, build, and 4/4 Sites worker tests passed.
 - Route-harness TDD: expected red (`createAppRouteObjects is not a function`), then 17/17 accessibility tests passed using production route objects. The test uses `route.index === true`, route-specific headings, and a mutated Team path so wildcard NotFound cannot pass silently.
 - Visual-consistency TDD: Home/Unit 1 checks produced 2 expected failures, then Home/Learn/accessibility passed 23/23.
-- Final browser run: 10 primary-journey states at each of 3 exact viewports; 0 real axe violations, 0 console/page errors, 0 horizontal-overflow failures; keyboard and eight-item sequence checks passed.
+- Review-fix TDD: duration/readiness, typed Unit 1 audio models, derived Home summary, matching validation/interaction/persistence, and qualitative checks moved through focused RED/GREEN runs; the complete suite contains 21 files and 159 tests.
+- Final browser run: 10 primary-journey states at each of 3 exact viewports; 0 real axe violations, 0 console/page errors, 0 horizontal-overflow failures; keyboard matching in Unit 4 and Practice, both Unit 1 missing-audio states, honest unverified duration readiness, qualitative-check presence, and the eight-item sequence all passed.
 - Final full command results are recorded in `.superpowers/sdd/2026-08-17-korean-stage-implementation/task-12-report.md`.
 
 ## Remaining user-supplied submission dependencies
@@ -115,4 +116,6 @@ These are approved user/design requirements and must not be misattributed to the
 7. Have the lecturer or a fluent Korean reviewer check every Korean word, example, explanation, answer, and dialogue line.
 8. Confirm every final media file is human-recorded. **Any AI-generated voice receives 0 marks.**
 
-Until all eight items are complete and the readiness report is rerun, do not submit the site as coursework-ready.
+The two typed Unit 1 models also still use explicit missing human-audio sources; their disabled controls and written fallbacks are development evidence, not final playback.
+
+Until all eight submission items are complete and the readiness report is rerun against the real files, do not submit the site as coursework-ready.

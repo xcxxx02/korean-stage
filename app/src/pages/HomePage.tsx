@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom'
 import { CourseMap } from '../components/CourseMap'
 import { ProgressSummary } from '../components/ProgressSummary'
 import { course, courseUnits } from '../content/course'
+import { getCourseSummary } from '../content/courseSummary'
 import { useCourseProgress } from '../hooks/useCourseProgress'
 
 export function HomePage() {
   const { progress } = useCourseProgress()
+  const summary = getCourseSummary(course)
   const firstUnitPath = `/learn/${courseUnits[0].id}`
   const hasSavedActivity = progress.lastPath !== firstUnitPath
     || progress.completedUnitIds.length > 0
@@ -35,9 +37,9 @@ export function HomePage() {
           <p className="text-sm font-black uppercase tracking-[0.16em] text-stage-jade-strong">One lesson, focused practice</p>
           <p className="mt-3 text-3xl font-black leading-tight text-stage-charcoal">Build a complete self-introduction one step at a time.</p>
           <ul className="mt-6 grid list-none gap-4 p-0 text-stage-charcoal">
-            <li className="border-t border-stage-jade pt-4"><strong>16 bilingual words</strong><span className="mt-1 block text-sm text-stage-muted">Countries, nationalities, and occupations</span></li>
-            <li className="border-t border-stage-jade pt-4"><strong>3 grammar patterns</strong><span className="mt-1 block text-sm text-stage-muted">Exactly three exercises for each point</span></li>
-            <li className="border-t border-stage-jade pt-4"><strong>2 role-play dialogues</strong><span className="mt-1 block text-sm text-stage-muted">Korean lines with nearby English meaning</span></li>
+            <li className="border-t border-stage-jade pt-4"><strong>{summary.vocabularyCount} bilingual words</strong><span className="mt-1 block text-sm text-stage-muted">Countries, nationalities, and occupations</span></li>
+            <li className="border-t border-stage-jade pt-4"><strong>{summary.grammarPointCount} grammar patterns</strong><span className="mt-1 block text-sm text-stage-muted">{summary.exercisesPerGrammarPoint === null ? 'Exercise counts need review' : `Exactly ${summary.exercisesPerGrammarPoint} exercises for each point`}</span></li>
+            <li className="border-t border-stage-jade pt-4"><strong>{summary.dialogueCount} role-play dialogues</strong><span className="mt-1 block text-sm text-stage-muted">Korean lines with nearby English meaning</span></li>
           </ul>
         </aside>
       </section>

@@ -1,4 +1,4 @@
-import type { Course, CourseIssue, MediaSource, Member } from './types'
+import type { Course, CourseIssue, Exercise, MediaSource, Member } from './types'
 
 type ValidationMode = 'development' | 'submission'
 
@@ -59,6 +59,25 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     if (grammar.exercises.length !== 3) {
       issues.push(issue('exercise-count', 'error', 'Each grammar point must have exactly 3 exercises.', { grammarId: grammar.id }))
     }
+
+    for (const exercise of grammar.exercises) {
+      if (exercise.type !== 'matching') continue
+      const pairIds = new Set(exercise.pairs.map((pair) => pair.id))
+      const englishAnswers = new Set(exercise.pairs.map((pair) => pair.english))
+      const hasCompletePairs = exercise.pairs.length >= 2
+        && exercise.pairs.every((pair) => pair.id.trim() && pair.korean.trim() && pair.english.trim())
+        && pairIds.size === exercise.pairs.length
+        && englishAnswers.size === exercise.pairs.length
+      if (!hasCompletePairs) {
+        issues.push(issue('exercise-matching', 'error', 'Matching exercises need at least two complete, uniquely identified bilingual pairs.', { grammarId: grammar.id }))
+      }
+    }
+  }
+
+  const exerciseModes = new Set(course.grammar.flatMap((grammar) => grammar.exercises.map((exercise) => exercise.type)))
+  const requiredExerciseModes: Exercise['type'][] = ['multiple-choice', 'particle', 'matching', 'sentence-completion']
+  if (!requiredExerciseModes.every((mode) => exerciseModes.has(mode))) {
+    issues.push(issue('exercise-mode-coverage', 'error', 'Exercises must include multiple choice, particle selection, matching, and sentence completion.'))
   }
 
   if (course.dialogues.length < 2 || course.dialogues.length > 3) {
@@ -90,11 +109,12 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
       }
     }
 
-    if (!hasHumanMedia(dialogue.video)) {
+    const hasHumanDialogueVideo = hasHumanMedia(dialogue.video)
+    if (!hasHumanDialogueVideo) {
       issues.push(issue('dialogue-video-media', requiredSeverity, 'Each dialogue needs a human-recorded video.', { dialogueId: dialogue.id }))
     }
 
-    if (dialogue.video.durationSeconds === undefined || dialogue.video.durationSeconds < 60 || dialogue.video.durationSeconds > 180) {
+    if (hasHumanDialogueVideo && (dialogue.video.durationSeconds === undefined || dialogue.video.durationSeconds < 60 || dialogue.video.durationSeconds > 180)) {
       issues.push(issue('dialogue-video-duration', 'error', 'Dialogue videos must be 60-180 seconds long.', { dialogueId: dialogue.id }))
     }
 
@@ -110,6 +130,7 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
   }
 
   const media: MediaSource[] = [
+    ...course.introductionModels.map((model) => model.audio),
     ...course.vocabulary.flatMap((item) => [item.video, item.audio]),
     ...course.dialogues.flatMap((dialogue) => [dialogue.video, ...dialogue.lines.map((line) => line.audio)]),
   ]

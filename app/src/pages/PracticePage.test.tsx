@@ -5,33 +5,48 @@ import { PracticePage } from './PracticePage'
 
 afterEach(cleanup)
 
-const correctAnswers = [
+type ChallengeAnswer = string | {
+  student: string
+  singer: string
+}
+
+const correctAnswers: readonly ChallengeAnswer[] = [
   '민수예요',
   '학생이에요',
-  '제니예요',
+  { student: 'I am a student.', singer: 'Jenny is a singer.' },
   '저는 학생이에요',
   '선생님은 한국 사람이에요',
   '제니는 가수예요',
   '미국 사람이 아니에요',
   '가수가 아니에요',
   '회사원이 아니에요',
-] as const
+]
 
-const wrongAnswers = [
+const wrongAnswers: readonly ChallengeAnswer[] = [
   '민수이에요',
   '학생예요',
-  '제니이에요',
+  { student: 'Jenny is a singer.', singer: 'I am a student.' },
   '저은 학생이에요',
   '선생님는 한국 사람이에요',
   '제니은 가수예요',
   '미국 사람 가 아니에요',
   '가수이 아니에요',
   '회사원가 아니에요',
-] as const
+]
 
-async function completeChallenge(user: ReturnType<typeof userEvent.setup>, answers: readonly string[]) {
-  for (const [index, answer] of answers.entries()) {
+async function answerCurrentQuestion(user: ReturnType<typeof userEvent.setup>, answer: ChallengeAnswer) {
+  if (typeof answer === 'string') {
     await user.click(screen.getByRole('radio', { name: answer }))
+    return
+  }
+
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' }), answer.student)
+  await user.selectOptions(screen.getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' }), answer.singer)
+}
+
+async function completeChallenge(user: ReturnType<typeof userEvent.setup>, answers: readonly ChallengeAnswer[]) {
+  for (const [index, answer] of answers.entries()) {
+    await answerCurrentQuestion(user, answer)
     await user.click(screen.getByRole('button', { name: 'Check answer' }))
     await user.click(screen.getByRole('button', { name: index === 8 ? 'See results' : 'Next question' }))
   }
@@ -93,6 +108,32 @@ describe('PracticePage', () => {
     expect(screen.getByText('Question 2 of 9').closest('legend')).toHaveClass('practice-focus-target')
   })
 
+  it('runs the matching exercise as a real two-control interaction with English feedback', async () => {
+    const user = userEvent.setup()
+    render(<PracticePage />)
+    await user.click(screen.getByRole('button', { name: 'Grammar Challenge' }))
+
+    for (const answer of correctAnswers.slice(0, 2)) {
+      await answerCurrentQuestion(user, answer)
+      await user.click(screen.getByRole('button', { name: 'Check answer' }))
+      await user.click(screen.getByRole('button', { name: 'Next question' }))
+    }
+
+    expect(screen.getByText('Question 3 of 9')).toBeVisible()
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument()
+    const studentMatch = screen.getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' })
+    const singerMatch = screen.getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' })
+    const submit = screen.getByRole('button', { name: 'Check answer' })
+    await user.selectOptions(studentMatch, 'Jenny is a singer.')
+    expect(submit).toBeDisabled()
+    await user.selectOptions(singerMatch, 'I am a student.')
+    await user.click(submit)
+
+    expect(screen.getByRole('status')).toHaveTextContent('아직 아니에요. Not quite.')
+    expect(screen.getByRole('status')).toHaveTextContent('Correct matches: 저는 학생이에요. — I am a student.; 제니는 가수예요. — Jenny is a singer.')
+    expect(screen.getByRole('status')).toHaveTextContent('이에요 follows consonant-ending 학생, while 예요 follows vowel-ending 가수.')
+  })
+
   it('ignores a duplicate submission instead of pre-answering the next question', async () => {
     const user = userEvent.setup()
     render(<PracticePage />)
@@ -149,7 +190,7 @@ describe('PracticePage', () => {
     await user.click(screen.getByRole('button', { name: 'Next question' }))
 
     for (const [index, answer] of correctAnswers.slice(1).entries()) {
-      await user.click(screen.getByRole('radio', { name: answer }))
+      await answerCurrentQuestion(user, answer)
       await user.click(screen.getByRole('button', { name: 'Check answer' }))
       if (index < 7) await user.click(screen.getByRole('button', { name: 'Next question' }))
     }

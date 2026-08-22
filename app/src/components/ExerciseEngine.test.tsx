@@ -8,6 +8,8 @@ afterEach(cleanup)
 
 const ieyoExercises = course.grammar.find((grammarPoint) => grammarPoint.id === 'ieyo-yeyo')!.exercises
 
+const matchingExercise = ieyoExercises[2]
+
 describe('ExerciseEngine', () => {
   it('locks a submitted wrong answer, then clears it and restores focus for retry', async () => {
     const user = userEvent.setup()
@@ -85,5 +87,54 @@ describe('ExerciseEngine', () => {
     expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite')
     expect(screen.getByRole('status')).toHaveTextContent('Correct')
     expect(onResult).toHaveBeenCalledWith('ieyo-yeyo-1', true)
+  })
+
+  it('uses accessible matching controls with complete-answer gating, feedback, retry, and scoring', async () => {
+    const user = userEvent.setup()
+    const onResult = vi.fn()
+    render(<ExerciseEngine exercises={[matchingExercise]} onResult={onResult} />)
+
+    const exercise = screen.getByRole('group', { name: /1 of 1.*Match each Korean sentence to its English meaning/i })
+    expect(within(exercise).queryByRole('radio')).not.toBeInTheDocument()
+    const studentMatch = within(exercise).getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' })
+    const singerMatch = within(exercise).getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' })
+    const submit = within(exercise).getByRole('button', { name: 'Check answer 1' })
+    expect(submit).toBeDisabled()
+
+    await user.selectOptions(studentMatch, 'Jenny is a singer.')
+    expect(submit).toBeDisabled()
+    await user.selectOptions(singerMatch, 'I am a student.')
+    await user.click(submit)
+
+    const wrongFeedback = within(exercise).getByRole('status')
+    expect(wrongFeedback).toHaveTextContent('Not quite')
+    expect(wrongFeedback).toHaveTextContent('Correct matches: 저는 학생이에요. — I am a student.; 제니는 가수예요. — Jenny is a singer.')
+    expect(wrongFeedback).toHaveTextContent('이에요 follows consonant-ending 학생, while 예요 follows vowel-ending 가수.')
+    expect(studentMatch).toBeDisabled()
+    expect(singerMatch).toBeDisabled()
+    expect(onResult).toHaveBeenLastCalledWith('ieyo-yeyo-3', false)
+
+    await user.click(within(exercise).getByRole('button', { name: 'Try again' }))
+    await waitFor(() => expect(studentMatch).toHaveFocus())
+    expect(studentMatch).toHaveValue('')
+    expect(singerMatch).toHaveValue('')
+
+    await user.selectOptions(studentMatch, 'I am a student.')
+    await user.selectOptions(singerMatch, 'Jenny is a singer.')
+    await user.click(within(exercise).getByRole('button', { name: 'Check answer 1' }))
+
+    expect(within(exercise).getByRole('status')).toHaveTextContent('Correct')
+    expect(screen.getByText('Score: 1 of 1 correct')).toBeVisible()
+    expect(onResult).toHaveBeenLastCalledWith('ieyo-yeyo-3', true)
+  })
+
+  it('hydrates a saved matching result as complete and locked', () => {
+    render(<ExerciseEngine exercises={[matchingExercise]} initialResults={{ 'ieyo-yeyo-3': true }} />)
+
+    expect(screen.getByText('Score: 1 of 1 correct')).toBeVisible()
+    expect(screen.getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' })).toHaveValue('I am a student.')
+    expect(screen.getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' })).toHaveValue('Jenny is a singer.')
+    for (const select of screen.getAllByRole('combobox')) expect(select).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Answer 1 correct' })).toBeDisabled()
   })
 })

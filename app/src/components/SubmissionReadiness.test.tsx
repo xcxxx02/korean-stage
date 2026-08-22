@@ -55,6 +55,7 @@ describe('SubmissionReadiness', () => {
     expect(within(needsContent).getByText('Who are you? — add a human-recorded dialogue video.')).toBeInTheDocument()
 
     const passed = screen.getByRole('region', { name: 'Passed' })
+    expect(within(passed).queryByText('Dialogue video durations')).not.toBeInTheDocument()
     for (const check of [
       'Member vocabulary counts',
       'Grammar point count',
@@ -69,7 +70,9 @@ describe('SubmissionReadiness', () => {
     }
 
     const humanReview = within(needsContent).getAllByText('Human review required')
-    expect(humanReview).toHaveLength(4)
+    expect(humanReview).toHaveLength(6)
+    expect(within(needsContent).getByText('Intonation')).toBeInTheDocument()
+    expect(within(needsContent).getByText('Uninterrupted verbal flow')).toBeInTheDocument()
     expect(within(passed).queryByText(/pronunciation|acting|lighting|background noise/i)).not.toBeInTheDocument()
   })
 
@@ -79,7 +82,23 @@ describe('SubmissionReadiness', () => {
     expect(screen.getByRole('heading', { name: 'Ready for human review' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Not ready for submission' })).not.toBeInTheDocument()
     expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent('No automated content gaps detected.')
-    expect(screen.getAllByText('Human review required')).toHaveLength(4)
+    expect(screen.getAllByText('Human review required')).toHaveLength(6)
+  })
+
+  it.each([
+    ['missing', { src: null, kind: 'development-missing' as const }],
+    ['AI-generated', { src: '/media/dialogues/ai.mp4', kind: 'ai-generated' as const, durationSeconds: 90 }],
+    ['inconsistent development', { src: '/media/dialogues/placeholder.mp4', kind: 'development-missing' as const, durationSeconds: 90 }],
+  ])('does not pass dialogue duration when the full video is %s', (_label, video) => {
+    const invalidCourse = {
+      ...validCourse,
+      dialogues: [{ ...validCourse.dialogues[0], video }, validCourse.dialogues[1]],
+    }
+
+    render(<SubmissionReadiness course={invalidCourse} />)
+
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Dialogue video durations')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent('Dialogue 1 — add a human-recorded dialogue video.')
   })
 
   it('reports an AI-only violation in Prohibited without inventing a content gap', () => {
@@ -170,6 +189,34 @@ describe('SubmissionReadiness', () => {
     expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Primary navigation')
     expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
       'Restore the Team primary navigation route at /team.',
+    )
+  })
+
+  it('does not pass exercises when the required interaction-mode mix is missing', () => {
+    const courseWithoutMatching = {
+      ...validCourse,
+      grammar: validCourse.grammar.map((grammarPoint) => ({
+        ...grammarPoint,
+        exercises: grammarPoint.exercises.map((exercise) => exercise.type === 'matching'
+          ? {
+              id: exercise.id,
+              grammarId: exercise.grammarId,
+              type: 'multiple-choice' as const,
+              prompt: exercise.prompt,
+              koreanContext: exercise.koreanContext,
+              choices: ['정답'],
+              answer: '정답',
+              explanation: exercise.explanation,
+            }
+          : exercise),
+      })),
+    }
+
+    render(<SubmissionReadiness course={courseWithoutMatching} />)
+
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Exercises per grammar point')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Include multiple choice, particle selection, matching, and sentence completion across the nine exercises.',
     )
   })
 

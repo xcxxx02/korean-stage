@@ -1,5 +1,12 @@
 import { useRef, useState, type FormEvent } from 'react'
-import type { Exercise } from '../content/types'
+import {
+  createCorrectExerciseAnswer,
+  formatCorrectExerciseAnswer,
+  isExerciseAnswerComplete,
+  isExerciseAnswerCorrect,
+} from '../content/exerciseAnswers'
+import type { Exercise, ExerciseAnswer } from '../content/types'
+import { ExerciseAnswerControl } from './ExerciseAnswerControl'
 
 type ExerciseEngineProps = {
   exercises: Exercise[]
@@ -12,9 +19,9 @@ type Feedback = {
 }
 
 export function ExerciseEngine({ exercises, initialResults = {}, onResult }: ExerciseEngineProps) {
-  const firstChoiceRefs = useRef<Record<string, HTMLInputElement | null>>({})
-  const [answers, setAnswers] = useState<Record<string, string>>(() => Object.fromEntries(
-    exercises.filter((exercise) => initialResults[exercise.id] === true).map((exercise) => [exercise.id, exercise.answer]),
+  const firstControlRefs = useRef<Record<string, HTMLInputElement | HTMLSelectElement | null>>({})
+  const [answers, setAnswers] = useState<Record<string, ExerciseAnswer>>(() => Object.fromEntries(
+    exercises.filter((exercise) => initialResults[exercise.id] === true).map((exercise) => [exercise.id, createCorrectExerciseAnswer(exercise)]),
   ))
   const [feedback, setFeedback] = useState<Record<string, Feedback>>(() => Object.fromEntries(
     exercises.filter((exercise) => initialResults[exercise.id] === true).map((exercise) => [exercise.id, { isCorrect: true }]),
@@ -25,9 +32,9 @@ export function ExerciseEngine({ exercises, initialResults = {}, onResult }: Exe
     event.preventDefault()
     if (feedback[exercise.id]?.isCorrect) return
     const selectedAnswer = answers[exercise.id]
-    if (!selectedAnswer) return
+    if (!isExerciseAnswerComplete(exercise, selectedAnswer)) return
 
-    const isCorrect = selectedAnswer === exercise.answer
+    const isCorrect = isExerciseAnswerCorrect(exercise, selectedAnswer)
     setFeedback((current) => ({ ...current, [exercise.id]: { isCorrect } }))
     onResult?.(exercise.id, isCorrect)
   }
@@ -43,7 +50,7 @@ export function ExerciseEngine({ exercises, initialResults = {}, onResult }: Exe
       delete next[exerciseId]
       return next
     })
-    window.setTimeout(() => firstChoiceRefs.current[exerciseId]?.focus(), 0)
+    window.setTimeout(() => firstControlRefs.current[exerciseId]?.focus(), 0)
   }
 
   return (
@@ -66,30 +73,18 @@ export function ExerciseEngine({ exercises, initialResults = {}, onResult }: Exe
                 <span className="mt-1 block">{exercise.prompt}</span>
                 <span className="mt-2 block rounded-xl bg-stage-soft p-3 text-xl text-stage-cobalt" lang="ko">{exercise.koreanContext}</span>
               </legend>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {exercise.choices.map((choice, choiceIndex) => (
-                  <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-stage-border p-4 font-semibold text-stage-charcoal has-checked:border-stage-cobalt has-checked:bg-stage-cobalt-soft" key={choice}>
-                    <input
-                      checked={answers[exercise.id] === choice}
-                      className="size-4 accent-stage-cobalt"
-                      disabled={Boolean(result)}
-                      name={`answer-${exercise.id}`}
-                      onChange={() => setAnswers((current) => ({ ...current, [exercise.id]: choice }))}
-                      ref={(element) => {
-                        if (choiceIndex === 0) firstChoiceRefs.current[exercise.id] = element
-                      }}
-                      type="radio"
-                      value={choice}
-                    />
-                    <span lang="ko">{choice}</span>
-                  </label>
-                ))}
-              </div>
+              <ExerciseAnswerControl
+                answer={answers[exercise.id]}
+                disabled={Boolean(result)}
+                exercise={exercise}
+                firstControlRef={(element) => { firstControlRefs.current[exercise.id] = element }}
+                onChange={(answer) => setAnswers((current) => ({ ...current, [exercise.id]: answer }))}
+              />
 
               {result ? (
                 <div aria-live="polite" className={`mt-4 rounded-xl p-4 ${result.isCorrect ? 'bg-stage-jade-soft text-stage-jade-strong' : 'bg-stage-yellow-soft text-stage-yellow-strong'}`} role="status">
                   <p className="font-bold">{result.isCorrect ? 'Correct' : 'Not quite'}</p>
-                  {!result.isCorrect ? <p className="mt-1">Correct answer: <span lang="ko">{exercise.answer}</span></p> : null}
+                  {!result.isCorrect ? <p className="mt-1">{exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={exercise.type === 'matching' ? undefined : 'ko'}>{formatCorrectExerciseAnswer(exercise)}</span></p> : null}
                   <p className="mt-1">{exercise.explanation}</p>
                 </div>
               ) : null}
@@ -100,7 +95,7 @@ export function ExerciseEngine({ exercises, initialResults = {}, onResult }: Exe
                     Try again
                   </button>
                 ) : (
-                  <button className="rounded-xl bg-stage-cobalt px-4 py-2 font-semibold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!answers[exercise.id] || result?.isCorrect} type="submit">
+                  <button className="rounded-xl bg-stage-cobalt px-4 py-2 font-semibold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!isExerciseAnswerComplete(exercise, answers[exercise.id]) || result?.isCorrect} type="submit">
                     {result?.isCorrect ? `Answer ${index + 1} correct` : `Check answer ${index + 1}`}
                   </button>
                 )}

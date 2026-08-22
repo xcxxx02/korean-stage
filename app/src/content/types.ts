@@ -36,16 +36,45 @@ export type VocabularyItem = {
   audio: MediaSource
 }
 
-export type Exercise = {
+export type IntroductionModel = {
+  id: string
+  korean: string
+  english: string
+  romanization: string
+  pronunciationHint?: string
+  ownerId: string
+  audioLabel: string
+  audio: MediaSource
+}
+
+type ExerciseBase = {
   id: string
   grammarId: string
-  type: 'multiple-choice' | 'particle' | 'sentence-completion'
   prompt: string
   koreanContext: string
-  choices: string[]
-  answer: string
   explanation: string
 }
+
+export type ChoiceExercise = ExerciseBase & {
+  type: 'multiple-choice' | 'particle' | 'sentence-completion'
+  choices: string[]
+  answer: string
+}
+
+export type MatchingPair = {
+  id: string
+  korean: string
+  english: string
+}
+
+export type MatchingExercise = ExerciseBase & {
+  type: 'matching'
+  pairs: MatchingPair[]
+}
+
+export type Exercise = ChoiceExercise | MatchingExercise
+
+export type ExerciseAnswer = string | Record<string, string>
 
 export type GrammarPoint = {
   id: string
@@ -79,6 +108,7 @@ export type Course = {
   name: 'Korean Stage'
   purpose: string
   members: Member[]
+  introductionModels: IntroductionModel[]
   vocabulary: VocabularyItem[]
   grammar: GrammarPoint[]
   dialogues: Dialogue[]

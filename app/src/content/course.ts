@@ -1,4 +1,4 @@
-import type { Course, DialogueLine, Exercise, MediaSource, VocabularyItem } from './types'
+import type { ChoiceExercise, Course, DialogueLine, Exercise, MediaSource, VocabularyItem } from './types'
 
 export const courseUnits = [
   { id: 'unit-1', title: 'Hello & Self-introduction' },
@@ -43,13 +43,22 @@ const vocabulary = (
 const exercise = (
   id: string,
   grammarId: string,
-  type: Exercise['type'],
+  type: ChoiceExercise['type'],
   prompt: string,
   koreanContext: string,
   choices: string[],
   answer: string,
   explanation: string,
 ): Exercise => ({ id, grammarId, type, prompt, koreanContext, choices, answer, explanation })
+
+const matchingExercise = (
+  id: string,
+  grammarId: string,
+  prompt: string,
+  koreanContext: string,
+  pairs: Array<{ id: string; korean: string; english: string }>,
+  explanation: string,
+): Exercise => ({ id, grammarId, type: 'matching', prompt, koreanContext, pairs, explanation })
 
 const dialogueLine = (id: string, speakerId: string, korean: string, english: string): DialogueLine => ({
   id,
@@ -66,6 +75,28 @@ export const course: Course = {
   members: [
     { id: 'member-1', name: 'Member 1', studentId: 'Add your student ID', isDevelopmentIdentity: true },
     { id: 'member-2', name: 'Member 2', studentId: 'Add your student ID', isDevelopmentIdentity: true },
+  ],
+  introductionModels: [
+    {
+      id: 'greeting',
+      korean: '안녕하세요?',
+      english: 'Hello.',
+      romanization: 'annyeonghaseyo?',
+      pronunciationHint: 'an-nyeong-ha-se-yo',
+      ownerId: 'member-1',
+      audioLabel: 'Listen to Member 1 greeting',
+      audio: developmentMedia(),
+    },
+    {
+      id: 'self-introduction',
+      korean: '저는 미나예요.',
+      english: 'I am Mina.',
+      romanization: 'jeoneun minayeyo.',
+      pronunciationHint: 'juh-nuhn mee-na-ye-yo',
+      ownerId: 'member-2',
+      audioLabel: 'Listen to Member 2 self-introduction',
+      audio: developmentMedia(),
+    },
   ],
   vocabulary: [
     vocabulary('china', 'unit-2', '중국', 'China', 'jungguk', undefined, '중국 사람이에요.', 'I am Chinese.', null),
@@ -100,7 +131,17 @@ export const course: Course = {
       exercises: [
         exercise('ieyo-yeyo-1', 'ieyo-yeyo', 'sentence-completion', 'Complete the sentence for Minsu.', '민수___', ['민수예요', '민수이에요'], '민수예요', '민수 ends in a vowel, so use 예요.'),
         exercise('ieyo-yeyo-2', 'ieyo-yeyo', 'sentence-completion', 'Complete the sentence for student.', '학생___', ['학생이에요', '학생예요'], '학생이에요', '학생 ends in a consonant, so use 이에요.'),
-        exercise('ieyo-yeyo-3', 'ieyo-yeyo', 'sentence-completion', 'Complete the sentence for Jenny.', '제니___', ['제니예요', '제니이에요'], '제니예요', '제니 ends in a vowel, so use 예요.'),
+        matchingExercise(
+          'ieyo-yeyo-3',
+          'ieyo-yeyo',
+          'Match each Korean sentence to its English meaning.',
+          '이에요 / 예요 문장을 연결하세요.',
+          [
+            { id: 'student', korean: '저는 학생이에요.', english: 'I am a student.' },
+            { id: 'singer', korean: '제니는 가수예요.', english: 'Jenny is a singer.' },
+          ],
+          '이에요 follows consonant-ending 학생, while 예요 follows vowel-ending 가수.',
+        ),
       ],
     },
     {
@@ -153,7 +194,7 @@ export const course: Course = {
         dialogueLine('dialogue-1-line-7', 'member-2', '미나는 한국 사람이에요?', 'Mina, are you Korean?'),
         dialogueLine('dialogue-1-line-8', 'member-1', '네, 저는 한국 사람이에요.', 'Yes, I am Korean.'),
       ],
-      video: developmentMedia(90),
+      video: developmentMedia(),
     },
     {
       id: 'dialogue-2',
@@ -169,7 +210,7 @@ export const course: Course = {
         dialogueLine('dialogue-2-line-7', 'member-2', '그럼, 미나는 가수예요?', 'Then, Mina, are you a singer?'),
         dialogueLine('dialogue-2-line-8', 'member-1', '네, 저는 가수예요.', 'Yes, I am a singer.'),
       ],
-      video: developmentMedia(90),
+      video: developmentMedia(),
     },
   ],
 }

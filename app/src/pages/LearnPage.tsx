@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { courseUnits } from '../content/course'
+import { HumanAudioButton } from '../components/HumanAudioButton'
+import { course, courseUnits } from '../content/course'
 import { useCourseProgress } from '../hooks/useCourseProgress'
 
 export function LearnPage() {
@@ -39,14 +40,21 @@ export function LearnPage() {
           <p className="text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">Say it aloud</p>
           <h2 className="mt-2 text-2xl font-black text-stage-charcoal" id="model-sentences-heading">Bilingual self-introduction models</h2>
           <ul aria-label="Bilingual self-introduction models" className="mt-6 grid list-none gap-4 p-0 sm:grid-cols-2">
-            <li className="border-l border-stage-cobalt bg-stage-cobalt-soft p-5">
-              <p className="text-2xl font-black text-stage-cobalt" lang="ko">안녕하세요?</p>
-              <p className="mt-2 font-semibold text-stage-charcoal">Hello.</p>
-            </li>
-            <li className="border-l border-stage-jade bg-stage-jade-soft p-5">
-              <p className="text-2xl font-black text-stage-jade-strong" lang="ko">저는 미나예요.</p>
-              <p className="mt-2 font-semibold text-stage-charcoal">I am Mina.</p>
-            </li>
+            {course.introductionModels.map((model, index) => {
+              const memberName = course.members.find((member) => member.id === model.ownerId)?.name ?? 'Unknown member'
+              return (
+                <li className={`border-l p-5 ${index % 2 === 0 ? 'border-stage-cobalt bg-stage-cobalt-soft' : 'border-stage-jade bg-stage-jade-soft'}`} key={model.id}>
+                  <p className={`text-2xl font-black ${index % 2 === 0 ? 'text-stage-cobalt' : 'text-stage-jade-strong'}`} lang="ko">{model.korean}</p>
+                  <p className="mt-2 font-semibold text-stage-charcoal">{model.english}</p>
+                  <p className="mt-4 text-sm text-stage-muted"><strong>Romanization:</strong> {model.romanization}</p>
+                  {model.pronunciationHint ? <p className="mt-1 text-sm text-stage-muted"><strong>Pronunciation:</strong> {model.pronunciationHint}</p> : null}
+                  <div className="mt-4">
+                    <HumanAudioButton label={model.audioLabel} memberName={memberName} source={model.audio} />
+                  </div>
+                  <p className="mt-3 text-xs font-semibold text-stage-muted">Presented by {memberName}</p>
+                </li>
+              )
+            })}
           </ul>
           <p className="mt-6 text-stage-muted">Replace 미나 with your own name. You will practise the ending 이에요 / 예요 in Unit 4.</p>
         </section>

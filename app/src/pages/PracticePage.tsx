@@ -1,13 +1,20 @@
 import { useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { FlashcardDeck } from '../components/FlashcardDeck'
+import { ExerciseAnswerControl } from '../components/ExerciseAnswerControl'
 import { course } from '../content/course'
-import type { Exercise } from '../content/types'
+import {
+  formatCorrectExerciseAnswer,
+  formatExerciseAnswer,
+  isExerciseAnswerComplete,
+  isExerciseAnswerCorrect,
+} from '../content/exerciseAnswers'
+import type { Exercise, ExerciseAnswer } from '../content/types'
 
 const exercises = course.grammar.flatMap((grammarPoint) => grammarPoint.exercises)
 
 type AnswerResult = {
   exercise: Exercise
-  answer: string
+  answer: ExerciseAnswer
   isCorrect: boolean
 }
 
@@ -16,7 +23,7 @@ type ChallengePhase = 'questions' | 'complete' | 'review'
 export function PracticePage() {
   const [mode, setMode] = useState<'flashcards' | 'challenge'>('flashcards')
   const [questionIndex, setQuestionIndex] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState('')
+  const [selectedAnswer, setSelectedAnswer] = useState<ExerciseAnswer | undefined>()
   const [results, setResults] = useState<AnswerResult[]>([])
   const [phase, setPhase] = useState<ChallengePhase>('questions')
   const questionLegendRef = useRef<HTMLLegendElement>(null)
@@ -39,12 +46,12 @@ export function PracticePage() {
 
   const checkAnswer = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!selectedAnswer || currentResult) return
+    if (!isExerciseAnswerComplete(currentExercise, selectedAnswer) || currentResult || selectedAnswer === undefined) return
 
     const result = {
       exercise: currentExercise,
       answer: selectedAnswer,
-      isCorrect: selectedAnswer === currentExercise.answer,
+      isCorrect: isExerciseAnswerCorrect(currentExercise, selectedAnswer),
     }
     const nextResults = [...results, result]
     setResults(nextResults)
@@ -53,13 +60,13 @@ export function PracticePage() {
   const nextQuestion = () => {
     shouldFocusQuestion.current = true
     setQuestionIndex((current) => current + 1)
-    setSelectedAnswer('')
+    setSelectedAnswer(undefined)
   }
 
   const tryAgain = () => {
     shouldFocusQuestion.current = true
     setQuestionIndex(0)
-    setSelectedAnswer('')
+    setSelectedAnswer(undefined)
     setResults([])
     setPhase('questions')
   }
@@ -112,22 +119,12 @@ export function PracticePage() {
                   <span className="mt-3 block rounded-xl bg-stage-soft p-4 text-xl text-stage-cobalt" lang="ko">{currentExercise.koreanContext}</span>
                 </legend>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                  {currentExercise.choices.map((choice) => (
-                    <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-stage-border p-4 font-semibold text-stage-charcoal has-checked:border-stage-cobalt has-checked:bg-stage-cobalt-soft" key={choice}>
-                      <input
-                        checked={selectedAnswer === choice}
-                        className="size-4 accent-stage-cobalt"
-                        disabled={Boolean(currentResult)}
-                        name={`answer-${currentExercise.id}`}
-                        onChange={() => setSelectedAnswer(choice)}
-                        type="radio"
-                        value={choice}
-                      />
-                      <span lang="ko">{choice}</span>
-                    </label>
-                  ))}
-                </div>
+                <ExerciseAnswerControl
+                  answer={selectedAnswer}
+                  disabled={Boolean(currentResult)}
+                  exercise={currentExercise}
+                  onChange={setSelectedAnswer}
+                />
 
                 {currentResult ? (
                   <div
@@ -140,7 +137,7 @@ export function PracticePage() {
                     <p className="font-bold">
                       {currentResult.isCorrect ? <><span lang="ko">맞았어요!</span> Correct!</> : <><span lang="ko">아직 아니에요.</span> Not quite.</>}
                     </p>
-                    {!currentResult.isCorrect ? <p className="mt-1">Correct answer: <span lang="ko">{currentExercise.answer}</span></p> : null}
+                    {!currentResult.isCorrect ? <p className="mt-1">{currentExercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={currentExercise.type === 'matching' ? undefined : 'ko'}>{formatCorrectExerciseAnswer(currentExercise)}</span></p> : null}
                     <p className="mt-1">{currentExercise.explanation}</p>
                   </div>
                 ) : null}
@@ -155,7 +152,7 @@ export function PracticePage() {
                       {questionIndex === exercises.length - 1 ? 'See results' : 'Next question'}
                     </button>
                   ) : (
-                    <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!selectedAnswer} type="submit">Check answer</button>
+                    <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!isExerciseAnswerComplete(currentExercise, selectedAnswer)} type="submit">Check answer</button>
                   )}
                 </div>
               </fieldset>
@@ -182,8 +179,8 @@ export function PracticePage() {
               {incorrectResults.map((result) => (
                 <article className="rounded-xl border border-stage-yellow bg-stage-yellow-soft p-5" key={result.exercise.id}>
                   <p className="text-xl font-bold text-stage-charcoal" lang="ko">{result.exercise.koreanContext}</p>
-                  <p className="mt-3">Your answer: <span lang="ko">{result.answer}</span></p>
-                  <p className="mt-1">Correct answer: <span lang="ko">{result.exercise.answer}</span></p>
+                  <p className="mt-3">Your answer: <span lang={result.exercise.type === 'matching' ? undefined : 'ko'}>{formatExerciseAnswer(result.exercise, result.answer)}</span></p>
+                  <p className="mt-1">{result.exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={result.exercise.type === 'matching' ? undefined : 'ko'}>{formatCorrectExerciseAnswer(result.exercise)}</span></p>
                   <p className="mt-2 text-stage-muted">{result.exercise.explanation}</p>
                 </article>
               ))}

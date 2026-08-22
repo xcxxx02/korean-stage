@@ -19,15 +19,22 @@ const passedChecks: PassedCheck[] = [
   { label: 'Member vocabulary counts', issueCodes: ['member-vocabulary-count'] },
   { label: 'Bilingual vocabulary content', issueCodes: ['vocabulary-bilingual-fields'] },
   { label: 'Grammar point count', issueCodes: ['grammar-count'] },
-  { label: 'Exercises per grammar point', issueCodes: ['exercise-count'] },
+  { label: 'Exercises per grammar point', issueCodes: ['exercise-count', 'exercise-mode-coverage', 'exercise-matching'] },
   { label: 'Dialogue count', issueCodes: ['dialogue-count'] },
   { label: 'Dialogue speaker counts', issueCodes: ['dialogue-speaker-count'] },
   { label: 'Dialogue line counts', issueCodes: ['dialogue-line-count', 'dialogue-line-details', 'dialogue-line-speaker'] },
-  { label: 'Dialogue video durations', issueCodes: ['dialogue-video-duration'] },
+  { label: 'Dialogue video durations', issueCodes: ['dialogue-video-media', 'dialogue-video-duration'] },
   { label: 'Member dialogue participation', issueCodes: ['member-dialogue-participation'] },
 ]
 
-const qualitativeChecks = ['Pronunciation accuracy', 'Dialogue acting', 'Video lighting', 'Background noise']
+const qualitativeChecks = [
+  'Pronunciation accuracy',
+  'Intonation',
+  'Dialogue acting',
+  'Video lighting',
+  'Background noise',
+  'Uninterrupted verbal flow',
+]
 
 const needsHumanMedia = (media: { kind: string, src: string | null }) => media.kind !== 'human-recording' || !media.src
 
@@ -77,6 +84,8 @@ function issueAction(course: Course, issue: CourseIssue) {
     }
     case 'grammar-count': return 'Keep exactly three grammar points.'
     case 'exercise-count': return `${grammarName} — keep exactly three exercises.`
+    case 'exercise-mode-coverage': return 'Include multiple choice, particle selection, matching, and sentence completion across the nine exercises.'
+    case 'exercise-matching': return `${grammarName} — add at least two complete, unique Korean-to-English matching pairs.`
     case 'dialogue-count': return 'Keep 2–3 dialogues.'
     case 'dialogue-speaker-count': return `${dialogueName} — include 2–3 speakers.`
     case 'dialogue-line-count': return `${dialogueName} — include 6–8 lines.`

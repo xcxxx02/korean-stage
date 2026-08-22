@@ -100,7 +100,7 @@ describe('Korean Stage visual-system contract', () => {
 
   it('rejects moving the sole elevation into a later unrelated rule', () => {
     const misplacedElevation = styles
-      .replace('  box-shadow: var(--stage-shadow-menu);\n', '')
+      .replace(/ {2}box-shadow: var\(--stage-shadow-menu\);\r?\n/, '')
       .concat('\n.unrelated-surface {\n  box-shadow: var(--stage-shadow-menu);\n}\n')
 
     expect(misplacedElevation.match(/\bbox-shadow\s*:/g)).toHaveLength(1)

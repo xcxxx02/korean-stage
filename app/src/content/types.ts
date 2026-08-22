@@ -5,11 +5,36 @@ export type MediaSource = {
   durationSeconds?: number
 }
 
+export type CourseIssueCode =
+  | 'source-lesson'
+  | 'course-name'
+  | 'course-purpose'
+  | 'member-details'
+  | 'member-vocabulary-count'
+  | 'introduction-model-media'
+  | 'vocabulary-bilingual-fields'
+  | 'vocabulary-media'
+  | 'grammar-count'
+  | 'exercise-count'
+  | 'exercise-matching'
+  | 'exercise-mode-coverage'
+  | 'dialogue-count'
+  | 'dialogue-speaker-count'
+  | 'dialogue-line-count'
+  | 'dialogue-line-details'
+  | 'dialogue-line-speaker'
+  | 'dialogue-video-media'
+  | 'dialogue-video-duration'
+  | 'dialogue-line-media'
+  | 'member-dialogue-participation'
+  | 'ai-voice-prohibited'
+
 export type CourseIssue = {
-  code: string
+  code: CourseIssueCode
   severity: 'warning' | 'error' | 'prohibited'
   message: string
   memberId?: string
+  introductionModelId?: string
   vocabularyId?: string
   grammarId?: string
   dialogueId?: string

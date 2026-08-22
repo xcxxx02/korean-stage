@@ -3,10 +3,10 @@ import type { Course, CourseIssue, Exercise, MediaSource, Member } from './types
 type ValidationMode = 'development' | 'submission'
 
 const issue = (
-  code: string,
+  code: CourseIssue['code'],
   severity: CourseIssue['severity'],
   message: string,
-  identifiers: Pick<CourseIssue, 'memberId' | 'vocabularyId' | 'grammarId' | 'dialogueId'> = {},
+  identifiers: Pick<CourseIssue, 'memberId' | 'introductionModelId' | 'vocabularyId' | 'grammarId' | 'dialogueId'> = {},
 ): CourseIssue => ({ code, severity, message, ...identifiers })
 
 const hasHumanMedia = (media: MediaSource) => media.kind === 'human-recording' && Boolean(media.src)
@@ -41,6 +41,15 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     }
   }
 
+  for (const model of course.introductionModels) {
+    if (!hasHumanMedia(model.audio)) {
+      issues.push(issue('introduction-model-media', requiredSeverity, 'Each Unit 1 model needs human-recorded audio.', {
+        introductionModelId: model.id,
+        memberId: model.ownerId,
+      }))
+    }
+  }
+
   for (const vocabulary of course.vocabulary) {
     if (![vocabulary.korean, vocabulary.english, vocabulary.koreanExample, vocabulary.englishExample, vocabulary.romanization].every((field) => field.trim())) {
       issues.push(issue('vocabulary-bilingual-fields', 'error', 'Vocabulary needs Korean, English, romanization, and bilingual examples.', { vocabularyId: vocabulary.id }))
@@ -63,13 +72,15 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     for (const exercise of grammar.exercises) {
       if (exercise.type !== 'matching') continue
       const pairIds = new Set(exercise.pairs.map((pair) => pair.id))
+      const koreanPrompts = new Set(exercise.pairs.map((pair) => pair.korean))
       const englishAnswers = new Set(exercise.pairs.map((pair) => pair.english))
       const hasCompletePairs = exercise.pairs.length >= 2
         && exercise.pairs.every((pair) => pair.id.trim() && pair.korean.trim() && pair.english.trim())
         && pairIds.size === exercise.pairs.length
+        && koreanPrompts.size === exercise.pairs.length
         && englishAnswers.size === exercise.pairs.length
       if (!hasCompletePairs) {
-        issues.push(issue('exercise-matching', 'error', 'Matching exercises need at least two complete, uniquely identified bilingual pairs.', { grammarId: grammar.id }))
+        issues.push(issue('exercise-matching', 'error', 'Matching exercises need at least two complete pairs with unique IDs, Korean prompts, and English answers.', { grammarId: grammar.id }))
       }
     }
   }

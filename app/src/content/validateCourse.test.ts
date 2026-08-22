@@ -31,6 +31,47 @@ describe('validateCourse', () => {
     )
   })
 
+  it.each([
+    ['missing', { src: null, kind: 'development-missing' as const }],
+    ['AI-generated', { src: '/media/introduction/ai.mp3', kind: 'ai-generated' as const }],
+    ['inconsistent development', { src: '/media/introduction/placeholder.mp3', kind: 'development-missing' as const }],
+  ])('requires human-recorded audio for an introduction model with %s media', (_label, audio) => {
+    const invalidCourse = {
+      ...validCourse,
+      introductionModels: [
+        { ...validCourse.introductionModels[0], audio },
+        validCourse.introductionModels[1],
+      ],
+    }
+
+    expect(validateCourse(invalidCourse)).toContainEqual(expect.objectContaining({
+      code: 'introduction-model-media',
+      introductionModelId: 'greeting',
+      memberId: 'member-1',
+      severity: 'error',
+    }))
+    expect(validateCourse(invalidCourse, 'development')).toContainEqual(expect.objectContaining({
+      code: 'introduction-model-media',
+      introductionModelId: 'greeting',
+      memberId: 'member-1',
+      severity: 'warning',
+    }))
+  })
+
+  it('keeps the global AI prohibition alongside the introduction-model media issue', () => {
+    const invalidCourse = {
+      ...validCourse,
+      introductionModels: validCourse.introductionModels.map((model, index) => index === 0
+        ? { ...model, audio: { src: '/media/introduction/ai.mp3', kind: 'ai-generated' as const } }
+        : model),
+    }
+
+    expect(validateCourse(invalidCourse)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'introduction-model-media', introductionModelId: 'greeting' }),
+      expect.objectContaining({ code: 'ai-voice-prohibited', severity: 'prohibited' }),
+    ]))
+  })
+
   it('reports incorrect course metadata and missing member details', () => {
     const invalidCourse = {
       ...validCourse,
@@ -183,6 +224,25 @@ describe('validateCourse', () => {
     }
 
     expect(validateCourse(invalidMatchingCourse)).toContainEqual(
+      expect.objectContaining({ code: 'exercise-matching', grammarId: 'grammar-1' }),
+    )
+  })
+
+  it('rejects duplicate Korean prompts in an otherwise complete matching exercise', () => {
+    const duplicateKoreanCourse = {
+      ...validCourse,
+      grammar: validCourse.grammar.map((grammarPoint) => ({
+        ...grammarPoint,
+        exercises: grammarPoint.exercises.map((exercise) => exercise.type === 'matching'
+          ? {
+              ...exercise,
+              pairs: [exercise.pairs[0], { ...exercise.pairs[1], korean: exercise.pairs[0].korean }],
+            }
+          : exercise),
+      })),
+    }
+
+    expect(validateCourse(duplicateKoreanCourse)).toContainEqual(
       expect.objectContaining({ code: 'exercise-matching', grammarId: 'grammar-1' }),
     )
   })

@@ -9,7 +9,7 @@ type SubmissionReadinessProps = {
 
 type PassedCheck = {
   label: string
-  issueCodes: string[]
+  issueCodes: Array<CourseIssue['code']>
 }
 
 const passedChecks: PassedCheck[] = [
@@ -52,6 +52,7 @@ function formatLineNumbers(numbers: number[]) {
 function issueAction(course: Course, issue: CourseIssue) {
   const member = course.members.find((candidate) => candidate.id === issue.memberId)
   const vocabulary = course.vocabulary.find((candidate) => candidate.id === issue.vocabularyId)
+  const introductionModel = course.introductionModels.find((candidate) => candidate.id === issue.introductionModelId)
   const grammar = course.grammar.find((candidate) => candidate.id === issue.grammarId)
   const dialogue = course.dialogues.find((candidate) => candidate.id === issue.dialogueId)
   const memberName = member?.name.trim() || member?.studentId.trim() || 'Unknown member'
@@ -72,6 +73,7 @@ function issueAction(course: Course, issue: CourseIssue) {
       return `${memberName} — add a real ${joinWithAnd(missingFields)}.`
     }
     case 'member-vocabulary-count': return `${memberName} — assign 3–5 recorded vocabulary items.`
+    case 'introduction-model-media': return `${introductionModel?.korean ?? 'Unknown Unit 1 model'} / ${introductionModel?.english ?? 'Unknown meaning'} — ${memberName}: add human-recorded audio.`
     case 'vocabulary-bilingual-fields': return `${vocabularyName} — complete the Korean, English, romanization, and bilingual examples.`
     case 'vocabulary-media': {
       const missingMedia = vocabulary
@@ -148,7 +150,7 @@ export function SubmissionReadiness({ course, routes = appRouteManifest }: Submi
             {contentIssues.length > 0 || navigationIssues.length > 0 ? (
               <ul className="mt-4 space-y-3">
                 {contentIssues.map((contentIssue, index) => (
-                  <li className="rounded-xl bg-stage-yellow-soft px-4 py-3 text-sm font-semibold text-stage-charcoal" key={`${contentIssue.code}-${contentIssue.memberId ?? contentIssue.vocabularyId ?? contentIssue.grammarId ?? contentIssue.dialogueId ?? index}`}>
+                  <li className="rounded-xl bg-stage-yellow-soft px-4 py-3 text-sm font-semibold text-stage-charcoal" key={`${contentIssue.code}-${contentIssue.introductionModelId ?? contentIssue.memberId ?? contentIssue.vocabularyId ?? contentIssue.grammarId ?? contentIssue.dialogueId ?? index}`}>
                     {issueAction(course, contentIssue)}
                   </li>
                 ))}

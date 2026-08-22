@@ -85,6 +85,23 @@ describe('SubmissionReadiness', () => {
     expect(screen.getAllByText('Human review required')).toHaveLength(6)
   })
 
+  it('keeps an otherwise complete course not ready and names each missing Unit 1 model audio owner', () => {
+    const missingIntroductionAudio = {
+      ...validCourse,
+      introductionModels: validCourse.introductionModels.map((model) => ({
+        ...model,
+        audio: developmentMissingMedia,
+      })),
+    }
+
+    render(<SubmissionReadiness course={missingIntroductionAudio} />)
+
+    expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeInTheDocument()
+    const needsContent = screen.getByRole('region', { name: 'Needs content' })
+    expect(within(needsContent).getByText('안녕하세요? / Hello. — Amina Rahman: add human-recorded audio.')).toBeInTheDocument()
+    expect(within(needsContent).getByText('저는 다니엘이에요. / I am Daniel. — Daniel Lee: add human-recorded audio.')).toBeInTheDocument()
+  })
+
   it.each([
     ['missing', { src: null, kind: 'development-missing' as const }],
     ['AI-generated', { src: '/media/dialogues/ai.mp4', kind: 'ai-generated' as const, durationSeconds: 90 }],

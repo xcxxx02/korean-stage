@@ -53,7 +53,7 @@ The coursework PDF is the grading source. The Lec 1 PDF is the selected lesson s
 | Create a website name and briefly explain its purpose | `/`, `/team` | Korean Stage name and Lec 1 beginner purpose | Validator, Home, TeamGrid, readiness tests | PASS |
 | Introduce each member, including name and student ID | `/team` | Member cards deliberately say Member 1/2 and `Add your student ID`, marked `Replace before submission` | Identity validator and readiness tests | USER MEDIA/DATA BLOCKED - real names and IDs required |
 | Website is user-friendly and visually appealing | All primary routes | Consistent bilingual hierarchy, responsive Stage visual system, clear missing states | Root `design-qa.md`; 30 fresh screenshots; no open P0-P2 | PASS for tested development states; grader decides final creativity |
-| Include audio playback | `/learn/unit-1`, `/learn/unit-3`, `/dialogue` | Typed greeting/self-introduction and vocabulary/dialogue models have accessible `Listen to ...` controls; controls are disabled with written fallbacks while audio is absent | HumanAudioButton, exact Unit 1 learner-content/audio-state, and media tests; browser verifies both Unit 1 missing-audio controls and fallbacks | USER MEDIA BLOCKED - matching human audio required |
+| Include audio playback | `/learn/unit-1`, `/learn/unit-3`, `/dialogue` | Typed greeting/self-introduction and vocabulary/dialogue models have accessible `Listen to ...` controls; controls are disabled with written fallbacks while audio is absent | Validator/readiness require and precisely identify each Unit 1 model's human audio; HumanAudioButton, exact learner-content/audio-state, and media tests cover the UI; browser verifies both Unit 1 missing-audio controls and fallbacks | USER MEDIA BLOCKED - 2 Unit 1 and 8 vocabulary human-audio files are required |
 | Provide clear navigation | Global header, `/` course map | Six primary destinations, active route, mobile Menu, seven-unit map, Previous/Next | Shared manifest tests, accessibility keyboard audit, mutation test, 3-viewport browser journey | PASS |
 | Keep content well organized | All routes | Seven units, dedicated Vocabulary/Grammar/Practice/Dialogue/Team views, English task instructions | Route/accessibility tests; design QA; browser journey | PASS structurally |
 | Late submission loses 0.5 marks per working day | No route; submission process | Not a website behavior | Source-PDF verification only | USER ACTION REQUIRED - submit by the lecturer's deadline |
@@ -91,6 +91,7 @@ These are approved user/design requirements and must not be misattributed to the
 | Only Lec 1 split into 7 units | Home/Team source statement and seven-unit map | PASS |
 | Sequential vocabulary | Browser advances all eight distinct Unit 3 states in order at every viewport | PASS |
 | Current 2 members; UI supports 2-6 | Team shows 2; TeamGrid test renders 6 without component changes | PASS structurally |
+| Human audio for both Unit 1 models | Validator/readiness identify the Korean/English model and owner for each missing file | USER MEDIA BLOCKED - 2 human-audio files required |
 | Matching human audio for all 8 vocabulary videos | Missing states and readiness report | USER MEDIA BLOCKED |
 | Captions or synchronized transcripts for all 8 vocabulary videos | Component supports caption tracks and adjacent transcript; no final recordings/captions exist | USER MEDIA BLOCKED |
 | Two complete 1-3 minute human drama videos | Missing states, duration validator | USER MEDIA BLOCKED |
@@ -102,20 +103,21 @@ These are approved user/design requirements and must not be misattributed to the
 - Route-harness TDD: expected red (`createAppRouteObjects is not a function`), then 17/17 accessibility tests passed using production route objects. The test uses `route.index === true`, route-specific headings, and a mutated Team path so wildcard NotFound cannot pass silently.
 - Visual-consistency TDD: Home/Unit 1 checks produced 2 expected failures, then Home/Learn/accessibility passed 23/23.
 - Review-fix TDD: duration/readiness, typed Unit 1 audio models, derived Home summary, matching validation/interaction/persistence, and qualitative checks moved through focused RED/GREEN runs; the complete suite contains 21 files and 159 tests.
+- Final re-review TDD: five focused expectations first proved missing/AI/inconsistent Unit 1 audio did not block readiness, then 40/40 passed after typed `introduction-model-media` validation and precise owner/model remediation. A separate duplicate-Korean matching test moved RED to 41/41 GREEN after pair uniqueness was completed.
+- Current full verification after the re-review: 21/21 files and 165/165 tests, typecheck, lint, production build, and 4/4 Sites tests passed.
 - Final browser run: 10 primary-journey states at each of 3 exact viewports; 0 real axe violations, 0 console/page errors, 0 horizontal-overflow failures; keyboard matching in Unit 4 and Practice, both Unit 1 missing-audio states, honest unverified duration readiness, qualitative-check presence, and the eight-item sequence all passed.
 - Final full command results are recorded in `.superpowers/sdd/2026-08-17-korean-stage-implementation/task-12-report.md`.
 
 ## Remaining user-supplied submission dependencies
 
 1. Replace Member 1 and Member 2 with every current member's real name and student ID.
-2. Supply 8 real member selfie vocabulary videos, four per current member, showing the assigned member's face and using that member's own voice.
-3. Supply matching human audio for those 8 vocabulary items.
-4. Supply synchronized captions or transcripts for all 8 vocabulary videos.
-5. Supply 2 complete 1-3 minute drama videos showing the participating members' faces and using their own voices.
-6. Have a person review pronunciation, intonation, lighting, background noise, natural acting, and uninterrupted verbal flow.
-7. Have the lecturer or a fluent Korean reviewer check every Korean word, example, explanation, answer, and dialogue line.
-8. Confirm every final media file is human-recorded. **Any AI-generated voice receives 0 marks.**
+2. Supply 2 human-recorded audio files for the typed Unit 1 greeting and self-introduction models, one from each assigned owner.
+3. Supply 8 real member selfie vocabulary videos, four per current member, showing the assigned member's face and using that member's own voice.
+4. Supply matching human audio for those 8 vocabulary items.
+5. Supply synchronized captions or transcripts for all 8 vocabulary videos.
+6. Supply 2 complete 1-3 minute drama videos showing the participating members' faces and using their own voices.
+7. Have a person review pronunciation, intonation, lighting, background noise, natural acting, and uninterrupted verbal flow.
+8. Have the lecturer or a fluent Korean reviewer check every Korean word, example, explanation, answer, and dialogue line.
+9. Confirm every final media file is human-recorded. **Any AI-generated voice receives 0 marks.**
 
-The two typed Unit 1 models also still use explicit missing human-audio sources; their disabled controls and written fallbacks are development evidence, not final playback.
-
-Until all eight submission items are complete and the readiness report is rerun against the real files, do not submit the site as coursework-ready.
+Until all nine submission items are complete and the readiness report is rerun against the real files, do not submit the site as coursework-ready.

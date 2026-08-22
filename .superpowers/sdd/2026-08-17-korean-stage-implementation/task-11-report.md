@@ -85,3 +85,42 @@ Included in the Task 11 commit with message `fix: complete accessibility and res
 ## Concerns
 
 - None blocking. Media in the course data remains intentionally unavailable until team members add real human recordings; the UI now announces that state and gives a written fallback.
+
+## Fix round 1
+
+### Reviewer dispositions
+
+- **Important 1 — static audio status spam: resolved.** Static missing, prohibited, and invalid audio guidance remains visible but no longer uses `role="status"`; only a runtime playback failure creates a live status.
+- **Important 2 — real selected-dialogue contrast: resolved.** The selected dialogue index no longer uses reduced opacity. Chromium measured effective contrast at 17.57:1 for the index and 5.21:1 for the selected badge, and axe's color-contrast rule passed the selected state.
+- **Important 3 — route and landmark coverage: resolved.** Axe now covers every primary route derived from the route manifest, plus representative Unit 2, Unit 3, Unit 4, Unit 7, and fallback routes. `GrammarPage` uses a section inside `AppShell` instead of nesting a second `main`.
+- **Important 4 — persistent navigation targets: resolved.** The site brand and desktop/mobile navigation links share a 2.75rem minimum height. Chromium at 390×844 confirmed the visible site brand, mobile navigation links, buttons, and selects were at least 44×44 CSS pixels.
+- **Important 5 — reduced-motion grammar lift: resolved.** Grammar links carry the `grammar-card` hook, and the reduced-motion rule removes their transition and transform as it already does for both flashcard faces. Chromium computed `transform: none` and `transition-duration: 0s` for grammar and flipped-flashcard states.
+- **Minor — Team empty-state next actions: resolved.** Missing vocabulary now tells editors to assign 3–5 words; missing participation tells them to add the member to a dialogue.
+- **Minor — genuine keyboard paths: resolved.** Tests and Chromium use sequential Tab presses rather than programmatic focus for menu navigation, vocabulary advance, grammar answer/submit, flashcard flip, and dialogue selection.
+
+### TDD and regression evidence
+
+- The prior fix-round agent recorded a focused RED run with exit 1 and 11 expected failures covering the reviewer findings, followed by 51/51 focused GREEN tests. This takeover preserved that evidence and did not manufacture another RED cycle for already-implemented behavior.
+- Fresh takeover verification exposed one separate test-code compile defect: `npm run typecheck` failed because literal route-manifest entries were accessed without narrowing. The minimal `in`-operator guard fix made typecheck pass while preserving manifest-derived route coverage; the focused suite then remained 51/51 GREEN.
+
+### Browser QA
+
+- The temporary local Playwright 1.62.1 runner completed 26 check groups at 390×844 with reduced motion enabled, then was deleted with its local server; no QA artifacts remain.
+- Axe-core 4.13.0 ran with `color-contrast` enabled on all seven primary routes and on Unit 3 word 2, Unit 4 after a correct answer, Practice after a keyboard flip, and Dialogue after keyboard-selecting dialogue 2. All 11 scans reported zero violations.
+- Browser checks also passed one-main/one-h1 structure, no Unit 3 horizontal overflow, first-Tab skip-link focus, client-route h1 focus, real Tab sequences, 44px targets, effective selected-state contrast, and computed reduced-motion styles.
+
+### Fresh full verification
+
+- `npm test -- src/accessibility.test.tsx src/responsive-contract.test.tsx src/components/DialoguePlayer.test.tsx src/components/TeamGrid.test.tsx src/components/VocabularyJourney.test.tsx` — exit 0; 5 files, 51 tests passed.
+- `npm test` — exit 0; 20 files, 142 tests passed.
+- `npm run typecheck` — exit 0.
+- `npm run lint` — exit 0 with no warnings.
+- `npm run build` — exit 0; Vite production build and Sites packaging completed.
+- `npm run test:sites` — exit 0; 4/4 tests passed.
+- `git diff --check` — exit 0; only Git line-ending conversion notices.
+
+### Exact implementation commit
+
+`aecc251c4907d70681305d97db8410a1665e16a8` (`fix: resolve task 11 accessibility review`)
+
+No blocking concerns remain. The intentionally unavailable course recordings still require real team-member media; this fix changes only how those static and runtime states are communicated.

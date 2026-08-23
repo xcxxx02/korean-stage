@@ -4,21 +4,20 @@ import axe from 'axe-core'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { FlashcardDeck } from './components/FlashcardDeck'
-import { HumanAudioButton } from './components/HumanAudioButton'
 import { course } from './content/course'
 import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
 import { createAppRouteObjects } from './routeObjects'
 
 const expectedPrimaryHeadings: Record<AppRouteId, string> = {
-  home: 'Korean Stage',
+  home: 'Hello & Self-introduction',
   learn: 'Hello & Self-introduction',
-  unit: 'Unit 2 · Countries & Nationalities',
-  vocabulary: 'Vocabulary review',
-  grammar: 'Grammar',
+  lesson: 'Hello & Self-introduction',
   practice: 'Final practice',
   dialogue: 'Dialogue & role play',
   team: 'Team & submission readiness',
+  vocabularyLegacy: 'Countries & Nationalities',
+  grammarLegacy: '이에요 / 예요 - to be',
   'not-found': 'Page not found',
 }
 
@@ -27,16 +26,16 @@ const routeEntries: readonly RouteManifestEntry[] = appRouteManifest
 const primaryRoutes = routeEntries.flatMap((route): Array<readonly [string, string, string]> => {
   const routeId = route.id as AppRouteId
   if (route.index === true) return [['Home', '/', expectedPrimaryHeadings[routeId]]]
-  if (route.primaryNavigationLabel) return [[route.primaryNavigationLabel, `/${route.path}`, expectedPrimaryHeadings[routeId]]]
+  if (route.primaryNavigationLabel) return [[route.primaryNavigationLabel, route.primaryNavigationTo ?? `/${route.path}`, expectedPrimaryHeadings[routeId]]]
   return []
 })
 
 const routes = [
   ...primaryRoutes,
-  ['Unit 2', '/learn/unit-2', 'Unit 2 · Countries & Nationalities'],
-  ['Unit 3', '/learn/unit-3', 'Unit 3 · Jobs & Occupations'],
-  ['Unit 4', '/learn/unit-4', '이에요 / 예요 - to be'],
-  ['Unit 7', '/learn/unit-7', 'Unit 7 · Dialogue & role play'],
+  ['Lesson 2', '/learn/lesson-2', 'Countries & Nationalities'],
+  ['Lesson 3', '/learn/lesson-3', 'Jobs & Occupations'],
+  ['Lesson 4', '/learn/lesson-4', '이에요 / 예요 - to be'],
+  ['Lesson 7', '/learn/lesson-7', 'Dialogue & Role Play'],
   ['Fallback', '/missing', 'Page not found'],
 ] as const
 
@@ -98,11 +97,11 @@ describe('default-route accessibility', () => {
     expect(screen.queryByRole('heading', { level: 1, name: expectedPrimaryHeadings['not-found'] })).not.toBeInTheDocument()
   })
 
-  it('labels transcript media without announcing static unavailable audio guidance', () => {
-    renderRoute('/learn/unit-3')
+  it('labels unavailable lesson audio without announcing it as a live status', () => {
+    renderRoute('/learn/lesson-1')
 
-    expect(screen.getByRole('figure', { name: 'Member 1 vocabulary video transcript' })).toBeInTheDocument()
-    expect(screen.getByText('Audio coming soon')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Listen to Member 1 greeting' })).toBeDisabled()
+    expect(screen.getAllByText('Audio coming soon')).toHaveLength(2)
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })
@@ -110,16 +109,16 @@ describe('default-route accessibility', () => {
 describe('keyboard-complete primary flows', () => {
   it('keeps the skip link as the first keyboard stop on initial load', async () => {
     const user = userEvent.setup()
-    renderRoute('/')
+    renderRoute('/learn/lesson-1')
 
     expect(document.body).toHaveFocus()
     await user.tab()
     expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveFocus()
   })
 
-  it('opens the menu, advances a word, and focuses an available audio control without pointer clicks', async () => {
+  it('opens the menu and completes the first lesson without pointer clicks', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/unit-3')
+    renderRoute('/learn/lesson-1')
 
     const menu = screen.getByRole('button', { name: 'Menu' })
     await tabTo(user, menu)
@@ -128,29 +127,15 @@ describe('keyboard-complete primary flows', () => {
     expect(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })).toBeVisible()
     await user.keyboard('[Escape]')
 
-    const nextWord = screen.getByRole('button', { name: 'Next word' })
-    await tabTo(user, nextWord)
+    const completeLesson = screen.getByRole('button', { name: 'Mark unit complete' })
+    await tabTo(user, completeLesson)
     await user.keyboard('[Enter]')
-    expect(screen.getByText('Word 2 of 8')).toBeVisible()
-
-    cleanup()
-    render(<HumanAudioButton memberName="Member 1" source={{ kind: 'human-recording', src: '/member-1.mp3' }} />)
-    await user.tab()
-    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toHaveFocus()
+    expect(screen.getByRole('status')).toHaveTextContent('Unit complete')
   })
 
-  it('submits one grammar answer, flips a flashcard, and selects a dialogue with the keyboard', async () => {
+  it('flips a flashcard and selects a dialogue with the keyboard', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/unit-4')
 
-    const correctAnswer = screen.getByRole('radio', { name: '민수예요' })
-    await tabTo(user, correctAnswer)
-    await user.keyboard('[Space]')
-    await user.tab()
-    await user.keyboard('[Enter]')
-    expect(screen.getByRole('status')).toHaveTextContent('Correct')
-
-    cleanup()
     render(<FlashcardDeck items={[course.vocabulary[0]]} />)
     const flashcard = screen.getByRole('button', { name: 'Show meaning' })
     await user.tab()

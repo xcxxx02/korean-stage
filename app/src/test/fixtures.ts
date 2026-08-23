@@ -11,8 +11,8 @@ export const validCourse: Course = {
   name: 'Korean Stage',
   purpose: 'A beginner-friendly Korean course adapted from Lec 1.',
   members: [
-    { id: 'member-1', name: 'Amina Rahman', studentId: 'A12345', isDevelopmentIdentity: false },
-    { id: 'member-2', name: 'Daniel Lee', studentId: 'B67890', isDevelopmentIdentity: false },
+    { id: 'member-1', name: 'Amina Rahman', studentId: 'A12345', isDevelopmentIdentity: false, role: 'Vocabulary presenter', contribution: 'Presents vocabulary and performs dialogue lines.' },
+    { id: 'member-2', name: 'Daniel Lee', studentId: 'B67890', isDevelopmentIdentity: false, role: 'Dialogue performer', contribution: 'Presents vocabulary and performs dialogue lines.' },
   ],
   introductionModels: [
     {
@@ -101,6 +101,7 @@ export const validCourse: Course = {
   dialogues: ['dialogue-1', 'dialogue-2'].map((id) => ({
     id,
     title: `Dialogue ${id.slice(-1)}`,
+    scenario: 'Practising a beginner Korean conversation.',
     speakerIds: ['member-1', 'member-2'],
     lines: Array.from({ length: 8 }, (_, index) => ({
       id: `${id}-line-${index + 1}`,

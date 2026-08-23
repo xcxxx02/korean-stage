@@ -22,6 +22,8 @@ describe('TeamGrid', () => {
       name: `Member ${number}`,
       studentId: `ID-${number}`,
       isDevelopmentIdentity: false,
+      role: 'Dialogue performer',
+      contribution: 'Performs assigned dialogue lines.',
     }))
     const sixMemberCourse = { ...validCourse, members: [...validCourse.members, ...extraMembers] }
 

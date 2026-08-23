@@ -8,6 +8,8 @@ Implemented state: `/learn/unit-3`, word 1 of 8, 1440 x 1024
 
 Combined evidence: `docs/design/vocabulary-side-by-side.png`
 
+Latest compact evidence: `docs/design/implementation-vocab-compact.png`
+
 ## Result
 
 The restored screen matches the approved visual direction: a white canvas, vivid cobalt/vermilion/jade/yellow accents, palace-gate brand mark, segmented Korean pattern band, subtle palace and Namsan line art, ordered bilingual vocabulary rail, central member-video area, detailed learning panel, word progress, and previous/next controls.
@@ -32,7 +34,9 @@ The central panel deliberately shows an honest `Member video coming soon` state 
 - 834 x 1194: no horizontal overflow; vocabulary rail becomes a compact bilingual selector.
 - 390 x 844: no horizontal overflow; mobile header, progress, selector, video state, and detail flow remain readable.
 - Primary interaction: Next word changed the active semantic marker from Word 1 to Word 2; Previous word returned to Word 1.
-- Automated verification: 181 tests passed; TypeScript and ESLint passed; production build passed.
+- Compact desktop fit: the video panel is height-limited, the new conversation-use prompt remains visible, and Next word ends at 759 px in a 1536 x 780 viewport, so it is clickable without scrolling.
+- Progress treatment: the generic long line is replaced by a contained vocabulary-path panel with eight numbered nodes, Korean cloud motifs, and cobalt/jade/vermilion/yellow progression cues.
+- Automated verification: 182 tests passed; TypeScript and ESLint passed; production build passed.
 
 ## Open limitation
 

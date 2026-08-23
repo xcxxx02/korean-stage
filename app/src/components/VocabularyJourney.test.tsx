@@ -94,6 +94,22 @@ describe('VocabularyJourney', () => {
     expect(screen.getAllByText('Student').length).toBeGreaterThan(0)
   })
 
+  it('adds a compact conversation-use prompt that advances with each word', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
+
+    expect(screen.getByText('Vocabulary path')).toBeVisible()
+    const prompt = screen.getByRole('region', { name: 'Use it in conversation' })
+    expect(within(prompt).getByText('저는 ___이에요 / 예요.')).toBeVisible()
+    expect(within(prompt).getByText('저는 선생님이에요.')).toBeVisible()
+    expect(within(prompt).getByText('I am a teacher.')).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Next word' }))
+
+    expect(within(prompt).getByText('저는 회사원이에요.')).toBeVisible()
+    expect(within(prompt).getByText('I am an office worker.')).toBeVisible()
+  })
+
   it('keeps all eight ordered bilingual occupations visible in its progress rail', () => {
     unlockThroughDoctor()
     render(<VocabularyJourney items={occupationItems} initialItemId="doctor" />)

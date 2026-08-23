@@ -1,4 +1,4 @@
-import { CaretLeft, CaretRight, Cloud, GraduationCap } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, ChatCircleText, Cloud, GraduationCap } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { course, courseUnits } from '../content/course'
 import type { VocabularyItem } from '../content/types'
@@ -47,6 +47,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
   }
 
   const item = items[Math.min(activeIndex, items.length - 1)]
+  const replacementItem = items[(activeIndex + 1) % items.length]
   const member = course.members.find((candidate) => candidate.id === item.ownerId)
   const memberName = member?.name ?? 'Course member'
   const tip = grammarTip(item)
@@ -115,7 +116,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
   )
 
   const media = (
-    <div>
+    <div className="stage-media-stack">
       <MemberVideo
         className="member-video--stage"
         key={`${item.id}:${item.video.kind}:${item.video.src ?? 'missing'}`}
@@ -123,7 +124,25 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
         source={item.video}
         transcript={`${item.koreanExample} ${item.englishExample}`}
       />
-      <p className="mt-4 text-center text-sm font-medium text-stage-muted">Presented by {memberName}</p>
+      <p className="stage-media-presenter">Presented by {memberName}</p>
+      <section aria-label="Use it in conversation" className="conversation-use-card">
+        <div className="conversation-use-card__intro">
+          <ChatCircleText aria-hidden="true" size={28} weight="duotone" />
+          <div>
+            <h2>Use it in conversation</h2>
+            <p>Introduce your job or role.</p>
+          </div>
+        </div>
+        <div className="conversation-use-card__pattern">
+          <span>Sentence pattern</span>
+          <strong>저는 ___이에요 / 예요.</strong>
+        </div>
+        <div className="conversation-use-card__swap">
+          <span>Try another word</span>
+          <strong>{replacementItem.koreanExample}</strong>
+          <small>{replacementItem.englishExample}</small>
+        </div>
+      </section>
     </div>
   )
 
@@ -194,7 +213,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
 
   const progressMarkers = (
     <div className="word-progress-line">
-      <Cloud aria-hidden="true" className="word-progress-cloud" size={42} weight="regular" />
+      <Cloud aria-hidden="true" className="word-progress-cloud" size={30} weight="duotone" />
       <ol aria-label="Word progress markers" className="word-progress-markers">
         {items.map((word, index) => (
           <li
@@ -203,11 +222,11 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
             className={index === activeIndex ? 'is-active' : index < activeIndex ? 'is-complete' : undefined}
             key={word.id}
           >
-            <span aria-hidden="true" />
+            <span aria-hidden="true">{index + 1}</span>
           </li>
         ))}
       </ol>
-      <Cloud aria-hidden="true" className="word-progress-cloud" size={42} weight="regular" />
+      <Cloud aria-hidden="true" className="word-progress-cloud" size={30} weight="duotone" />
     </div>
   )
 
@@ -218,6 +237,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
       heading={`Unit ${unitNumber} · ${unitTitle}`}
       media={media}
       progress={`Word ${activeIndex + 1} of ${items.length}`}
+      progressLabel="Vocabulary path"
       progressMarkers={progressMarkers}
       rail={rail}
     />

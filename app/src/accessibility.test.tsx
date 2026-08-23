@@ -13,7 +13,7 @@ const expectedPrimaryHeadings: Record<AppRouteId, string> = {
   home: 'Hello & Self-introduction',
   learn: 'Hello & Self-introduction',
   lesson: 'Hello & Self-introduction',
-  practice: 'Final practice',
+  practice: 'Practice by lesson',
   dialogue: 'Dialogue & role play',
   team: 'Team & submission readiness',
   vocabularyLegacy: 'Countries & Nationalities',

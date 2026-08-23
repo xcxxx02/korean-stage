@@ -89,6 +89,32 @@ describe('ExerciseEngine', () => {
     expect(onResult).toHaveBeenCalledWith('ieyo-yeyo-1', true)
   })
 
+  it('runs one quiz question at a time and moves focus through feedback and navigation', async () => {
+    const user = userEvent.setup()
+    render(<ExerciseEngine exercises={ieyoExercises} mode="quiz" title="Lesson 4 quiz" />)
+
+    expect(screen.getByRole('heading', { name: 'Lesson 4 quiz' })).toBeVisible()
+    expect(screen.getAllByRole('group', { name: /Question \d of 3/ })).toHaveLength(1)
+    expect(screen.getByText('Question 1 of 3')).toBeVisible()
+
+    await user.click(screen.getByRole('radio', { name: '민수이에요' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await waitFor(() => expect(screen.getByRole('status')).toHaveFocus())
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Next question' })).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+    await waitFor(() => expect(screen.getByRole('radio', { name: '민수예요' })).toHaveFocus())
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: '민수예요' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+
+    await waitFor(() => expect(screen.getByText('Question 2 of 3').closest('legend')).toHaveFocus())
+    expect(screen.getAllByRole('group', { name: /Question \d of 3/ })).toHaveLength(1)
+  })
+
   it('uses accessible matching controls with complete-answer gating, feedback, retry, and scoring', async () => {
     const user = userEvent.setup()
     const onResult = vi.fn()

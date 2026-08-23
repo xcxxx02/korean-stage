@@ -37,30 +37,22 @@ describe('AppShell', () => {
     expect(container.querySelector('.korean-stage-background')).toHaveAttribute('src', '/assets/culture/korean-stage-background-v2.png')
   })
 
-  it('exposes the primary course sections', () => {
-    renderShell()
+  it('renders exactly four primary destinations', () => {
+    renderShell('/learn/lesson-3')
 
     const navigation = screen.getByRole('navigation', { name: 'Primary navigation' })
-    for (const label of ['Learn', 'Vocabulary', 'Grammar', 'Practice', 'Dialogue', 'Team']) {
-      expect(navigation).toHaveTextContent(label)
-    }
+    expect(within(navigation).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'Learn', 'Practice', 'Dialogue', 'Team',
+    ])
+    expect(within(navigation).queryByText('Vocabulary')).not.toBeInTheDocument()
+    expect(within(navigation).queryByText('Grammar')).not.toBeInTheDocument()
+    expect(within(navigation).queryByText('Review')).not.toBeInTheDocument()
   })
 
-  it('marks the current primary route as active', () => {
-    renderShell('/grammar')
+  it('marks every Learn lesson route as active', () => {
+    renderShell('/learn/lesson-3')
 
-    expect(screen.getByRole('link', { name: 'Grammar' })).toHaveAttribute('aria-current', 'page')
-  })
-
-  it.each([
-    ['/learn/unit-3', 'Vocabulary'],
-    ['/learn/unit-4', 'Grammar'],
-    ['/learn/unit-7', 'Dialogue'],
-  ])('marks %s under its content section', (path, label) => {
-    renderShell(path)
-
-    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page')
-    expect(screen.getByRole('link', { name: 'Learn' })).not.toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Learn' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('opens and closes the accessible mobile menu', async () => {
@@ -88,11 +80,11 @@ describe('AppShell', () => {
     renderShell()
 
     await user.click(screen.getByRole('button', { name: 'Menu' }))
-    await user.click(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Vocabulary' }))
+    await user.click(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' }))
 
     expect(screen.getByRole('button', { name: 'Menu' })).toHaveAttribute('aria-expanded', 'false')
     expect(document.getElementById('primary-navigation-list')).toHaveAttribute('hidden')
-    expect(screen.getByRole('heading', { name: 'Vocabulary' })).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Practice' })).toHaveFocus()
   })
 
   it('shows a recovery route for an unknown address', () => {

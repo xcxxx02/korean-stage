@@ -42,6 +42,19 @@ describe('LearnPage', () => {
     expect(readProgress(localStorage).completedUnitIds).toEqual(['unit-1'])
   })
 
+  it('normalizes a public lesson slug to its internal unit', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/learn/lesson-1']}>
+        <Routes><Route path="learn/:lessonSlug" element={<LearnPage />} /></Routes>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Hello & Self-introduction' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Mark unit complete' }))
+    expect(readProgress(localStorage).completedUnitIds).toEqual(['unit-1'])
+  })
+
   it('defaults the parameterless learn route to Unit 1', () => {
     render(
       <MemoryRouter initialEntries={['/learn']}>

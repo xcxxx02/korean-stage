@@ -10,14 +10,13 @@ type PathRouteManifestEntry = {
   index?: false
   path: string
   primaryNavigationLabel?: string
+  primaryNavigationTo?: `/${string}`
 }
 
 export type RouteManifestEntry = IndexRouteManifestEntry | PathRouteManifestEntry
 
 const requiredPrimaryDestinations = [
-  { id: 'learn', path: 'learn', primaryNavigationLabel: 'Learn' },
-  { id: 'vocabulary', path: 'vocabulary', primaryNavigationLabel: 'Vocabulary' },
-  { id: 'grammar', path: 'grammar', primaryNavigationLabel: 'Grammar' },
+  { id: 'learn', path: 'learn', primaryNavigationLabel: 'Learn', primaryNavigationTo: '/learn/lesson-1' },
   { id: 'practice', path: 'practice', primaryNavigationLabel: 'Practice' },
   { id: 'dialogue', path: 'dialogue', primaryNavigationLabel: 'Dialogue' },
   { id: 'team', path: 'team', primaryNavigationLabel: 'Team' },
@@ -26,8 +25,10 @@ const requiredPrimaryDestinations = [
 export const appRouteManifest = [
   { id: 'home', index: true },
   requiredPrimaryDestinations[0],
-  { id: 'unit', path: 'learn/:unitId' },
+  { id: 'lesson', path: 'learn/:lessonSlug' },
   ...requiredPrimaryDestinations.slice(1),
+  { id: 'vocabularyLegacy', path: 'vocabulary' },
+  { id: 'grammarLegacy', path: 'grammar' },
   { id: 'not-found', path: '*' },
 ] as const satisfies readonly RouteManifestEntry[]
 
@@ -41,7 +42,7 @@ export type PrimaryNavigationIssue = {
 export function getPrimaryNavigationItems(routes: readonly RouteManifestEntry[] = appRouteManifest) {
   return routes.flatMap((route) => {
     if (route.index || !route.primaryNavigationLabel) return []
-    return [{ id: route.id, label: route.primaryNavigationLabel, to: `/${route.path}` }]
+    return [{ id: route.id, label: route.primaryNavigationLabel, to: route.primaryNavigationTo ?? `/${route.path}` }]
   })
 }
 

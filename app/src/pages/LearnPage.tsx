@@ -1,14 +1,15 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { HumanAudioButton } from '../components/HumanAudioButton'
-import { course, courseUnits } from '../content/course'
+import { course, courseUnits, getLessonBySlug } from '../content/course'
 import { useCourseProgress } from '../hooks/useCourseProgress'
 
 export function LearnPage() {
-  const { unitId } = useParams()
-  const unit = unitId === undefined
+  const { lessonSlug, unitId } = useParams()
+  const lessonId = lessonSlug ?? unitId
+  const unit = lessonId === undefined
     ? courseUnits[0]
-    : courseUnits.find((candidate) => candidate.id === unitId)
+    : getLessonBySlug(lessonId) ?? courseUnits.find((candidate) => candidate.id === lessonId)
   const { progress, visitUnit, markUnitComplete } = useCourseProgress()
   const isComplete = unit ? progress.completedUnitIds.includes(unit.id) : false
 

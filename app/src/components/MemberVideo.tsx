@@ -111,6 +111,7 @@ export function MemberVideo({
         aria-label={mediaLabel}
         className="aspect-video w-full rounded-xl bg-stage-charcoal object-cover"
         controls
+        key={sourceKey}
         onError={() => setPlaybackErrorKey(sourceKey)}
         ref={videoRef}
       >

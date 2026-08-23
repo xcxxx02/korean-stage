@@ -110,3 +110,51 @@ The extraction initially exposed a real MemberVideo regression: a playback error
 ## Commit
 
 Commit message: `feat: make vocabulary selection beginner friendly`
+
+## Review fix — reload native video when the word source changes
+
+The Task 4 review identified that React could reuse the same native `<video>` element while changing only its nested `<source src>`. Browsers do not reliably reload or restart an existing media element when the child source is replaced this way.
+
+### Behavioral regression test
+
+Added `remounts the native video when a different human source is supplied` to `MemberVideo.test.tsx`. The test renders one human-recorded source, retains the actual native video DOM node, rerenders with another member's human source, and verifies that:
+
+- the next native video is a different DOM element;
+- the original video has been removed from the document; and
+- the replacement video is connected to the document.
+
+This is a lifecycle assertion rather than a nested source-attribute assertion. Removing the source key causes the test to fail even if the new `<source src>` text appears in the DOM.
+
+### Red evidence
+
+`npm test -- src/components/MemberVideo.test.tsx`
+
+- 1 expected failure: the second render returned the exact same `<video>` object.
+- 5 existing MemberVideo safety tests still passed.
+
+### Implementation
+
+The native `<video>` now uses the existing `sourceKey` as its React key. A different media kind, URL, presenter, or accessible label mounts a fresh video element, which gives the browser a new media lifecycle. Existing source-keyed playback-error recovery, native controls, captions, transcript behavior, missing-media handling, malformed-source rejection, and AI-video prohibition are unchanged.
+
+### Review-fix verification
+
+`npm test -- src/components/MemberVideo.test.tsx src/components/VocabularyJourney.test.tsx`
+
+- 2 test files passed.
+- 14 tests passed.
+
+`npm test`
+
+- 25 test files passed.
+- 186 tests passed.
+- 0 failures.
+
+`npm run typecheck`
+
+- Passed with exit code 0.
+
+### Review-fix commit
+
+Commit message: `fix: remount member video on source change`
+
+This report is stored in that follow-up commit; its exact hash is recorded in the Task 4 handoff.

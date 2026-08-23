@@ -61,7 +61,7 @@ export function UnitPage() {
     )
   }
 
-  if (unitId === 'unit-3') return <VocabularyJourney items={occupationItems} progressPath="/learn/unit-3" />
+  if (unitId === 'unit-3') return <VocabularyJourney items={occupationItems} />
 
   if (unitId === 'unit-7') {
     return <DialoguePage

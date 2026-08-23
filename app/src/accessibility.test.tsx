@@ -97,11 +97,11 @@ describe('default-route accessibility', () => {
     expect(screen.queryByRole('heading', { level: 1, name: expectedPrimaryHeadings['not-found'] })).not.toBeInTheDocument()
   })
 
-  it('labels unavailable lesson audio without announcing it as a live status', () => {
-    renderRoute('/learn/lesson-1')
+  it('does not add a separate audio control to the member-video vocabulary flow', () => {
+    renderRoute('/learn/lesson-3')
 
-    expect(screen.getByRole('button', { name: 'Listen to Member 1 greeting' })).toBeDisabled()
-    expect(screen.getAllByText('Audio coming soon')).toHaveLength(2)
+    expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })
@@ -116,9 +116,9 @@ describe('keyboard-complete primary flows', () => {
     expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveFocus()
   })
 
-  it('opens the menu and completes the first lesson without pointer clicks', async () => {
+  it('opens the menu and freely selects a later vocabulary word without pointer clicks', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/lesson-1')
+    renderRoute('/learn/lesson-3')
 
     const menu = screen.getByRole('button', { name: 'Menu' })
     await tabTo(user, menu)
@@ -127,10 +127,11 @@ describe('keyboard-complete primary flows', () => {
     expect(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })).toBeVisible()
     await user.keyboard('[Escape]')
 
-    const completeLesson = screen.getByRole('button', { name: 'Mark unit complete' })
-    await tabTo(user, completeLesson)
+    const chef = screen.getByRole('button', { name: '8. 요리사, Chef' })
+    await tabTo(user, chef)
     await user.keyboard('[Enter]')
-    expect(screen.getByRole('status')).toHaveTextContent('Unit complete')
+    expect(screen.getByRole('heading', { name: '요리사' })).toHaveAttribute('lang', 'ko')
+    expect(localStorage.length).toBe(0)
   })
 
   it('flips a flashcard and selects a dialogue with the keyboard', async () => {

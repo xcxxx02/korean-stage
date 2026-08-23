@@ -13,6 +13,7 @@ type MemberVideoProps = {
   playbackErrorHeading?: string
   primaryControlLabel?: string
   showRecordingChecklist?: boolean
+  mode?: 'default' | 'learner'
   className?: string
 }
 
@@ -34,10 +35,13 @@ export function MemberVideo({
   playbackErrorHeading = 'Video playback unavailable',
   primaryControlLabel,
   showRecordingChecklist = true,
+  mode = 'default',
   className = '',
 }: MemberVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [hasPlaybackError, setHasPlaybackError] = useState(false)
+  const [playbackErrorKey, setPlaybackErrorKey] = useState<string | null>(null)
+  const sourceKey = `${source.kind}:${source.src ?? 'missing'}:${memberName}:${mediaLabel}`
+  const hasPlaybackError = playbackErrorKey === sourceKey
   const canPlay = source.kind === 'human-recording' && source.src !== null
   const isComingSoon = source.kind === 'development-missing' && source.src === null
 
@@ -51,7 +55,15 @@ export function MemberVideo({
       </div>
     )
   } else if (isComingSoon) {
-    mediaPanel = (
+    mediaPanel = mode === 'learner' ? (
+      <div className="member-video-missing" role="alert">
+        <Warning aria-hidden="true" size={32} weight="fill" />
+        <div>
+          <h2>{missingHeading}</h2>
+          <p>{missingDescription}</p>
+        </div>
+      </div>
+    ) : (
       <div className="coming-soon-state">
         <div className="coming-soon-artwork-frame">
           <img
@@ -99,7 +111,7 @@ export function MemberVideo({
         aria-label={mediaLabel}
         className="aspect-video w-full rounded-xl bg-stage-charcoal object-cover"
         controls
-        onError={() => setHasPlaybackError(true)}
+        onError={() => setPlaybackErrorKey(sourceKey)}
         ref={videoRef}
       >
         <source src={source.src ?? undefined} />
@@ -119,7 +131,7 @@ export function MemberVideo({
           disabled={!canPlay || hasPlaybackError}
           onClick={() => {
             const playback = videoRef.current?.play()
-            if (playback) void playback.catch(() => setHasPlaybackError(true))
+            if (playback) void playback.catch(() => setPlaybackErrorKey(sourceKey))
           }}
           type="button"
         >

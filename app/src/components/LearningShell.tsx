@@ -15,7 +15,7 @@ export function LearningShell({ heading, progress, progressLabel = 'Lesson progr
   return (
     <section className="stage-learning-shell mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-14 lg:py-5">
       <div className="stage-learning-header mb-5 grid gap-4">
-        <h1 className="m-0 text-3xl font-bold tracking-tight text-stage-charcoal sm:text-4xl">{heading}</h1>
+        <h2 className="m-0 text-3xl font-bold tracking-tight text-stage-charcoal sm:text-4xl">{heading}</h2>
         <div className="stage-learning-progress" aria-label={progress}>
           <p className="stage-learning-progress__label">
             <span>{progressLabel}</span>

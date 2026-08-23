@@ -19,22 +19,23 @@ beforeEach(() => localStorage.clear())
 afterEach(cleanup)
 
 describe('responsive beginner contracts', () => {
-  it('keeps every compact vocabulary option bilingual and identifies the current step without color alone', () => {
+  it('keeps every responsive vocabulary control bilingual and identifies the current word without color alone', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    const compact = screen.getByRole('group', { name: 'Compact vocabulary progress' })
-    const selector = within(compact).getByRole('combobox', { name: 'Choose vocabulary word' })
-    expect(within(selector).getAllByRole('option').map((option) => option.textContent)).toEqual([
-      '1. 학생 — Student',
-      '2. 선생님 — Teacher',
-      '3. 회사원 — Office worker',
-      '4. 기자 — Reporter',
-      '5. 의사 — Doctor',
-      '6. 가수 — Singer',
-      '7. 군인 — Soldier',
-      '8. 요리사 — Chef',
+    const rail = screen.getByRole('list', { name: 'Vocabulary words' })
+    const buttons = within(rail).getAllByRole('button')
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      '1. 학생, Student',
+      '2. 선생님, Teacher',
+      '3. 회사원, Office worker',
+      '4. 기자, Reporter',
+      '5. 의사, Doctor',
+      '6. 가수, Singer',
+      '7. 군인, Soldier',
+      '8. 요리사, Chef',
     ])
-    expect(within(compact).getByText('1 of 8 · 학생 · Student')).toHaveAttribute('aria-current', 'step')
+    expect(buttons[0]).toHaveAttribute('aria-current', 'true')
+    expect(within(buttons[0]).getByText('Now learning')).toBeVisible()
 
     cleanup()
     render(<DialoguePage />)
@@ -45,7 +46,7 @@ describe('responsive beginner contracts', () => {
 
   it('gives English next-step instructions in empty and unavailable media states', () => {
     render(<VocabularyJourney items={[]} />)
-    expect(screen.getByText(/There are no words/i)).toHaveTextContent(/return to the course map/i)
+    expect(screen.getByText(/There are no words/i)).toHaveTextContent(/choose another lesson from all lessons/i)
 
     cleanup()
     render(<FlashcardDeck items={[]} />)

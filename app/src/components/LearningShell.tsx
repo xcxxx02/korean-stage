@@ -3,28 +3,30 @@ import type { ReactNode } from 'react'
 type LearningShellProps = {
   heading: string
   progress: string
+  progressMarkers?: ReactNode
   rail: ReactNode
   media: ReactNode
   details: ReactNode
   controls: ReactNode
 }
 
-export function LearningShell({ heading, progress, rail, media, details, controls }: LearningShellProps) {
+export function LearningShell({ heading, progress, progressMarkers, rail, media, details, controls }: LearningShellProps) {
   return (
-    <section className="mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
-      <div className="mb-8 grid items-end gap-4 lg:grid-cols-[minmax(0,1fr)_2fr]">
+    <section className="stage-learning-shell mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-14 lg:py-8">
+      <div className="stage-learning-header mb-8 grid gap-4">
         <h1 className="m-0 text-3xl font-bold tracking-tight text-stage-charcoal sm:text-4xl">{heading}</h1>
-        <p className="m-0 justify-self-start rounded-full border border-stage-border px-4 py-2 text-sm font-semibold text-stage-muted lg:justify-self-center">
-          {progress}
-        </p>
+        <div className="stage-learning-progress" aria-label={progress}>
+          <p className="m-0 text-center text-sm font-semibold text-stage-charcoal">{progress}</p>
+          {progressMarkers}
+        </div>
       </div>
-      <div className="grid gap-8 lg:grid-cols-[11rem_minmax(0,1fr)_19rem] xl:grid-cols-[12rem_minmax(0,1fr)_21rem]">
-        <aside>{rail}</aside>
-        <div className="min-w-0">
+      <div className="stage-learning-grid grid gap-8">
+        <aside aria-label="Ordered vocabulary words" className="stage-learning-rail">{rail}</aside>
+        <section aria-label="Member vocabulary video" className="stage-learning-media min-w-0">
           {media}
           <div className="mt-7">{controls}</div>
-        </div>
-        <aside>{details}</aside>
+        </section>
+        <aside aria-label="Vocabulary learning details" className="stage-learning-details">{details}</aside>
       </div>
     </section>
   )

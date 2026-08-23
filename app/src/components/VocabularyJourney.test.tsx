@@ -56,6 +56,15 @@ function unlockThroughDoctor() {
 }
 
 describe('VocabularyJourney', () => {
+  it('uses the approved three-region learning composition with eight progress markers', () => {
+    render(<VocabularyJourney items={occupationItems} />)
+
+    expect(screen.getByRole('complementary', { name: 'Ordered vocabulary words' })).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Member vocabulary video' })).toBeVisible()
+    expect(screen.getByRole('complementary', { name: 'Vocabulary learning details' })).toBeVisible()
+    expect(within(screen.getByRole('list', { name: 'Word progress markers' })).getAllByRole('listitem')).toHaveLength(8)
+  })
+
   it('introduces one beginner word at a time with English learning support', async () => {
     const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)

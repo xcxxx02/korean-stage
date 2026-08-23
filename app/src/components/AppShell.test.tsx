@@ -29,6 +29,14 @@ function renderShell(initialEntry = '/') {
 }
 
 describe('AppShell', () => {
+  it('renders the approved Korean palace brand and cultural background assets', () => {
+    const { container } = renderShell()
+
+    expect(container.querySelector('.site-brand__image')).toHaveAttribute('src', '/assets/culture/palace-gate-mark-v2.png')
+    expect(container.querySelector('.obangsaek-band')).toHaveAttribute('src', '/assets/culture/obangsaek-band-v2.png')
+    expect(container.querySelector('.korean-stage-background')).toHaveAttribute('src', '/assets/culture/korean-stage-background-v2.png')
+  })
+
   it('exposes the primary course sections', () => {
     renderShell()
 
@@ -42,6 +50,17 @@ describe('AppShell', () => {
     renderShell('/grammar')
 
     expect(screen.getByRole('link', { name: 'Grammar' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it.each([
+    ['/learn/unit-3', 'Vocabulary'],
+    ['/learn/unit-4', 'Grammar'],
+    ['/learn/unit-7', 'Dialogue'],
+  ])('marks %s under its content section', (path, label) => {
+    renderShell(path)
+
+    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Learn' })).not.toHaveAttribute('aria-current', 'page')
   })
 
   it('opens and closes the accessible mobile menu', async () => {

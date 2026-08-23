@@ -13,6 +13,7 @@ type MemberVideoProps = {
   playbackErrorHeading?: string
   primaryControlLabel?: string
   showRecordingChecklist?: boolean
+  className?: string
 }
 
 const recordingChecks = [
@@ -33,6 +34,7 @@ export function MemberVideo({
   playbackErrorHeading = 'Video playback unavailable',
   primaryControlLabel,
   showRecordingChecklist = true,
+  className = '',
 }: MemberVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [hasPlaybackError, setHasPlaybackError] = useState(false)
@@ -110,7 +112,7 @@ export function MemberVideo({
   }
 
   return (
-    <figure aria-label={`${mediaLabel} transcript`} className="m-0 grid gap-4">
+    <figure aria-label={`${mediaLabel} transcript`} className={`member-video m-0 grid gap-4 ${className}`}>
       {primaryControlLabel ? (
         <button
           className="inline-flex min-h-12 items-center justify-center rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white hover:bg-stage-cobalt-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:bg-stage-disabled disabled:text-stage-muted"

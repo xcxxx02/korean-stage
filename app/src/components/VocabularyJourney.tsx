@@ -1,4 +1,4 @@
-import { CaretLeft, CaretRight, GraduationCap } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, Cloud, GraduationCap } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { course, courseUnits } from '../content/course'
 import type { VocabularyItem } from '../content/types'
@@ -117,6 +117,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
   const media = (
     <div>
       <MemberVideo
+        className="member-video--stage"
         key={`${item.id}:${item.video.kind}:${item.video.src ?? 'missing'}`}
         memberName={memberName}
         source={item.video}
@@ -129,8 +130,8 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
   const details = (
     <div className="grid gap-5">
       <div>
-        <p className="m-0 text-5xl font-black tracking-tight text-stage-cobalt">{item.korean}</p>
-        <p className="mt-2 text-2xl font-bold text-stage-charcoal">{item.english}</p>
+        <p className="m-0 text-5xl font-black tracking-tight text-stage-cobalt lg:text-6xl">{item.korean}</p>
+        <p className="mt-2 text-2xl font-bold text-stage-charcoal lg:text-3xl">{item.english}</p>
       </div>
       <dl className="m-0 grid gap-2 border-y border-stage-jade py-4 text-stage-charcoal">
         <div className="flex flex-wrap gap-2">
@@ -191,6 +192,25 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
     </nav>
   )
 
+  const progressMarkers = (
+    <div className="word-progress-line">
+      <Cloud aria-hidden="true" className="word-progress-cloud" size={42} weight="regular" />
+      <ol aria-label="Word progress markers" className="word-progress-markers">
+        {items.map((word, index) => (
+          <li
+            aria-current={index === activeIndex ? 'step' : undefined}
+            aria-label={`Word ${index + 1}: ${word.korean}, ${word.english}${index === activeIndex ? ', now learning' : ''}`}
+            className={index === activeIndex ? 'is-active' : index < activeIndex ? 'is-complete' : undefined}
+            key={word.id}
+          >
+            <span aria-hidden="true" />
+          </li>
+        ))}
+      </ol>
+      <Cloud aria-hidden="true" className="word-progress-cloud" size={42} weight="regular" />
+    </div>
+  )
+
   return (
     <LearningShell
       controls={controls}
@@ -198,6 +218,7 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
       heading={`Unit ${unitNumber} · ${unitTitle}`}
       media={media}
       progress={`Word ${activeIndex + 1} of ${items.length}`}
+      progressMarkers={progressMarkers}
       rail={rail}
     />
   )

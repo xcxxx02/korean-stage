@@ -12,15 +12,11 @@ describe('Korean cultural asset contract', () => {
     'dancheong-strip.png',
     'palace-line-art.png',
     'video-coming-soon.png',
+    'palace-gate-mark-v2.png',
+    'obangsaek-band-v2.png',
+    'korean-stage-background-v2.png',
   ])('ships %s in the public culture asset directory', (assetName) => {
     expect(existsSync(publicAsset(assetName))).toBe(true)
-  })
-
-  it('integrates the decorative shell assets', () => {
-    const appShell = sourceFile('AppShell.tsx')
-
-    expect(appShell).toContain('/assets/culture/dancheong-strip.png')
-    expect(appShell).toContain('/assets/culture/palace-line-art.png')
   })
 
   it('integrates the coming-soon media artwork', () => {

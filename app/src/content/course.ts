@@ -1,14 +1,20 @@
-import type { ChoiceExercise, Course, DialogueLine, Exercise, MediaSource, VocabularyItem } from './types'
+import type { ChoiceExercise, Course, CourseLesson, DialogueLine, Exercise, MediaSource, VocabularyItem } from './types'
 
-export const courseUnits = [
-  { id: 'unit-1', title: 'Hello & Self-introduction' },
-  { id: 'unit-2', title: 'Countries & Nationalities' },
-  { id: 'unit-3', title: 'Jobs & Occupations' },
-  { id: 'unit-4', title: '이에요 / 예요 - to be' },
-  { id: 'unit-5', title: '은 / 는 - topic marker' },
-  { id: 'unit-6', title: '이 / 가 아니에요 - to not be' },
-  { id: 'unit-7', title: 'Dialogue & Role Play' },
-] as const
+export const courseLessons = [
+  { id: 'unit-1', slug: 'lesson-1', title: 'Hello & Self-introduction' },
+  { id: 'unit-2', slug: 'lesson-2', title: 'Countries & Nationalities' },
+  { id: 'unit-3', slug: 'lesson-3', title: 'Jobs & Occupations' },
+  { id: 'unit-4', slug: 'lesson-4', title: '이에요 / 예요 - to be' },
+  { id: 'unit-5', slug: 'lesson-5', title: '은 / 는 - topic marker' },
+  { id: 'unit-6', slug: 'lesson-6', title: '이 / 가 아니에요 - to not be' },
+  { id: 'unit-7', slug: 'lesson-7', title: 'Dialogue & Role Play' },
+] as const satisfies readonly CourseLesson[]
+
+// Temporary compatibility alias until the old pages are removed in Task 8.
+export const courseUnits = courseLessons
+
+export const getLessonBySlug = (slug: string) =>
+  courseLessons.find((lesson) => lesson.slug === slug)
 
 const developmentMedia = (durationSeconds?: number): MediaSource => ({
   src: null,
@@ -73,8 +79,18 @@ export const course: Course = {
   name: 'Korean Stage',
   purpose: 'Korean Stage helps English-speaking beginners practise introductory Korean from Lec 1 with bilingual vocabulary, grammar, and role-play dialogues.',
   members: [
-    { id: 'member-1', name: 'Member 1', studentId: 'Add your student ID', isDevelopmentIdentity: true },
-    { id: 'member-2', name: 'Member 2', studentId: 'Add your student ID', isDevelopmentIdentity: true },
+    {
+      id: 'member-1', name: 'Member 1', studentId: 'Add your student ID',
+      isDevelopmentIdentity: true,
+      role: 'Vocabulary presenter & dialogue performer',
+      contribution: 'Presents the first four occupation words and performs in both dialogues.',
+    },
+    {
+      id: 'member-2', name: 'Member 2', studentId: 'Add your student ID',
+      isDevelopmentIdentity: true,
+      role: 'Vocabulary presenter & dialogue performer',
+      contribution: 'Presents the final four occupation words and performs in both dialogues.',
+    },
   ],
   introductionModels: [
     {
@@ -183,6 +199,7 @@ export const course: Course = {
     {
       id: 'dialogue-1',
       title: 'Hello, I am Mina',
+      scenario: 'Meeting someone for the first time',
       speakerIds: ['member-1', 'member-2'],
       lines: [
         dialogueLine('dialogue-1-line-1', 'member-1', '안녕하세요.', 'Hello.'),
@@ -199,6 +216,7 @@ export const course: Course = {
     {
       id: 'dialogue-2',
       title: 'Who are you?',
+      scenario: 'Talking about jobs',
       speakerIds: ['member-1', 'member-2'],
       lines: [
         dialogueLine('dialogue-2-line-1', 'member-1', '다니엘은 학생이에요?', 'Daniel, are you a student?'),

@@ -47,7 +47,17 @@ export type Member = {
   name: string
   studentId: string
   isDevelopmentIdentity: boolean
+  role: string
+  contribution: string
 }
+
+export type CourseLesson = {
+  id: `unit-${1 | 2 | 3 | 4 | 5 | 6 | 7}`
+  slug: `lesson-${1 | 2 | 3 | 4 | 5 | 6 | 7}`
+  title: string
+}
+
+export type LessonSlug = CourseLesson['slug']
 
 export type VocabularyItem = {
   id: string
@@ -125,6 +135,7 @@ export type DialogueLine = {
 export type Dialogue = {
   id: string
   title: string
+  scenario: string
   speakerIds: string[]
   lines: DialogueLine[]
   video: MediaSource

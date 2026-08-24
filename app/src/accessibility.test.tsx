@@ -15,7 +15,7 @@ const expectedPrimaryHeadings: Record<AppRouteId, string> = {
   lesson: 'Hello & Self-introduction',
   practice: 'Practice by lesson',
   dialogue: 'Dialogue & role play',
-  team: 'Team & submission readiness',
+  team: 'Meet the team',
   vocabularyLegacy: 'Countries & Nationalities',
   grammarLegacy: '이에요 / 예요 - to be',
   'not-found': 'Page not found',

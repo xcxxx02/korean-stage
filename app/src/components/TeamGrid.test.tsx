@@ -16,6 +16,21 @@ describe('TeamGrid', () => {
     }
   })
 
+  it('shows learner-facing roles, contributions, bilingual words, and dialogue titles without readiness copy', () => {
+    render(<TeamGrid course={validCourse} />)
+
+    for (const member of validCourse.members) {
+      const memberCard = screen.getByRole('article', { name: `${member.name} contribution` })
+      expect(within(memberCard).getByText(member.role)).toBeVisible()
+      expect(within(memberCard).getByText(member.contribution)).toBeVisible()
+    }
+
+    expect(screen.getByText('한국어 1')).toHaveAttribute('lang', 'ko')
+    expect(screen.getByText('Word 1')).toBeVisible()
+    expect(within(screen.getByRole('article', { name: 'Amina Rahman contribution' })).getByText('Dialogue 1 · Dialogue 2')).toBeVisible()
+    expect(screen.queryByText(/Replace before submission|count passed|Needs 3–5/i)).not.toBeInTheDocument()
+  })
+
   it('renders all six member contributions without a two-person assumption', () => {
     const extraMembers = [3, 4, 5, 6].map((number) => ({
       id: `member-${number}`,
@@ -38,7 +53,7 @@ describe('TeamGrid', () => {
   it.each([
     ['blank name', { name: '   ' }],
     ['blank student ID', { studentId: '   ' }],
-  ])('marks a member with a %s for replacement', (_case, identityOverride) => {
+  ])('keeps an incomplete identity free of readiness labels in the learner-facing grid', (_case, identityOverride) => {
     const partialIdentityCourse = {
       ...validCourse,
       members: validCourse.members.map((member, index) =>
@@ -48,11 +63,10 @@ describe('TeamGrid', () => {
 
     render(<TeamGrid course={partialIdentityCourse} />)
 
-    const firstMemberCard = screen.getAllByRole('article')[0]
-    expect(within(firstMemberCard).getByText('Replace before submission')).toBeInTheDocument()
+    expect(screen.queryByText('Replace before submission')).not.toBeInTheDocument()
   })
 
-  it('gives plain-English next actions when a member has no words or dialogue lines', () => {
+  it('uses neutral empty states when a member has no words or dialogue lines', () => {
     const memberWithoutAssignments = validCourse.members[0]
     const incompleteCourse = {
       ...validCourse,
@@ -67,7 +81,7 @@ describe('TeamGrid', () => {
     render(<TeamGrid course={incompleteCourse} />)
 
     const memberCard = screen.getByRole('article', { name: `${memberWithoutAssignments.name} contribution` })
-    expect(within(memberCard).getByText(/No vocabulary assigned yet/i)).toHaveTextContent(/assign 3–5 words/i)
-    expect(within(memberCard).getByText(/No speaking lines assigned yet/i)).toHaveTextContent(/add this member to a dialogue/i)
+    expect(within(memberCard).getByText('No assigned words yet.')).toBeVisible()
+    expect(within(memberCard).getByText('No dialogue titles yet.')).toBeVisible()
   })
 })

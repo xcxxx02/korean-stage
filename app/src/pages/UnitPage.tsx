@@ -63,13 +63,7 @@ export function UnitPage() {
 
   if (unitId === 'unit-3') return <VocabularyJourney items={occupationItems} />
 
-  if (unitId === 'unit-7') {
-    return <DialoguePage
-      onUnitComplete={() => markUnitComplete('unit-7')}
-      unit
-      unitComplete={progress.completedUnitIds.includes('unit-7')}
-    />
-  }
+  if (unitId === 'unit-7') return <DialoguePage />
 
   const grammarPoint = course.grammar.find((candidate) => candidate.unitId === unitId)
   if (grammarPoint) {

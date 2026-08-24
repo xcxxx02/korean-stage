@@ -49,9 +49,9 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
   const memberName = member?.name ?? 'Course member'
   const tip = grammarTip(item)
 
-  const closeChooser = (restoreFocus = true) => {
+  const closeChooser = () => {
     setChooserOpen(false)
-    if (restoreFocus) chooserTriggerRef.current?.focus()
+    chooserTriggerRef.current?.focus()
   }
 
   const selectChooserWord = (index: number) => {
@@ -122,8 +122,6 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
                     } else if (event.key === 'Escape') {
                       event.preventDefault()
                       closeChooser()
-                    } else if (event.key === 'Tab') {
-                      closeChooser(false)
                     }
                   }}
                   ref={(node) => { chooserOptionRefs.current[index] = node }}

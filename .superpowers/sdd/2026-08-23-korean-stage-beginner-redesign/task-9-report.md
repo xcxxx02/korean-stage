@@ -91,3 +91,23 @@ The final regression coverage rejects any `lang="ko"` subtree containing Latin c
 
 - None in the bilingual control implementation.
 - The pre-existing untracked `docs/audit/` directory remains untouched.
+
+## Second Review Follow-up — Native Tab Navigation (2026-08-24)
+
+The scoped re-review found that closing the listbox synchronously from an option's Tab keydown unmounted the focused option before the browser could resolve its native focus destination. This section supersedes the first follow-up's statement that Tab closes the listbox.
+
+### Resolution and TDD Evidence
+
+- Added separate forward-Tab and Shift+Tab regression tests before changing production code. Both failed against the reviewed implementation: forward Tab removed the listbox, while Shift+Tab encountered the removed-node focus race.
+- Removed only the destructive Tab close branch. The listbox now remains mounted while native Tab navigation completes: forward Tab reaches the next focusable control and Shift+Tab returns to the chooser trigger.
+- Escape still closes and restores trigger focus; Arrow keys, Home/End, Enter/Space selection, roving option focus, and the segmented Korean/English language boundaries are unchanged.
+
+### Second Follow-up Verification
+
+- Focused chooser suite: 1 file, 12 tests passed.
+- Focused language/accessibility/responsive/visual suite: 4 files, 48 tests passed.
+- Full Vitest suite: 21 files, 172 tests passed.
+- TypeScript: `npm run typecheck` passed.
+- ESLint: `npm run lint` passed.
+- `git diff --check`: passed with only existing Windows line-ending notices.
+- The pre-existing untracked `docs/audit/` directory remains untouched.

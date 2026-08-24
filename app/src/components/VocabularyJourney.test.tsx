@@ -58,6 +58,36 @@ describe('VocabularyJourney', () => {
     expect(screen.getByRole('button', { name: /Choose vocabulary word.*요리사.*Chef/ })).toHaveFocus()
   })
 
+  it('keeps the listbox mounted while Tab completes native forward focus navigation', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
+
+    const chooser = screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ })
+    const desktopRail = screen.getByRole('list', { name: 'Vocabulary words' })
+    const firstRailButton = within(desktopRail).getAllByRole('button')[0]
+    await user.click(chooser)
+    expect(screen.getByRole('option', { name: /학생.*Student/ })).toHaveFocus()
+
+    await user.tab()
+
+    expect(screen.getByRole('listbox', { name: 'Vocabulary words' })).toBeInTheDocument()
+    expect(firstRailButton).toHaveFocus()
+  })
+
+  it('keeps the listbox mounted while Shift+Tab returns focus to its trigger', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
+
+    const chooser = screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ })
+    await user.click(chooser)
+    expect(screen.getByRole('option', { name: /학생.*Student/ })).toHaveFocus()
+
+    await user.tab({ shift: true })
+
+    expect(screen.getByRole('listbox', { name: 'Vocabulary words' })).toBeInTheDocument()
+    expect(chooser).toHaveFocus()
+  })
+
   it('uses the assigned member video and never renders a speaker or audio selector', async () => {
     const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)

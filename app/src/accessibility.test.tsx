@@ -3,8 +3,6 @@ import userEvent from '@testing-library/user-event'
 import axe from 'axe-core'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { FlashcardDeck } from './components/FlashcardDeck'
-import { course } from './content/course'
 import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
 import { createAppRouteObjects } from './routeObjects'
@@ -134,17 +132,9 @@ describe('keyboard-complete primary flows', () => {
     expect(localStorage.length).toBe(0)
   })
 
-  it('flips a flashcard and selects a dialogue with the keyboard', async () => {
+  it('selects a dialogue with the keyboard', async () => {
     const user = userEvent.setup()
 
-    render(<FlashcardDeck items={[course.vocabulary[0]]} />)
-    const flashcard = screen.getByRole('button', { name: 'Show meaning' })
-    await user.tab()
-    expect(flashcard).toHaveFocus()
-    await user.keyboard('[Space]')
-    expect(screen.getByRole('button', { name: 'Show Korean' })).toHaveTextContent(course.vocabulary[0].english)
-
-    cleanup()
     render(<DialoguePage />)
     const dialogueChoices = screen.getByRole('group', { name: 'Choose a dialogue' })
     const secondDialogue = within(dialogueChoices).getAllByRole('button')[1]

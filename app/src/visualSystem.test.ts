@@ -185,11 +185,9 @@ describe('Korean Stage visual-system contract', () => {
 
   it('reserves full rounding for true status and progress indicators', () => {
     const allowedStatusPills: Record<string, RegExp> = {
-      'components/CourseMap.tsx': /\{index \+ 1\}|Complete/,
       'components/DialoguePlayer.tsx': /Current line/,
       'components/ExerciseEngine.tsx': /Score:/,
       'components/LearningShell.tsx': /\{progress\}/,
-      'components/ProgressSummary.tsx': /completedCount/,
       'components/SubmissionReadiness.tsx': /Passed|Human review required/,
       'components/TeamGrid.tsx': /Replace before submission|assignedVocabulary\.length/,
       'components/VocabularyJourney.tsx': /\{index \+ 1\}|Now learning/,

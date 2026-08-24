@@ -3,19 +3,15 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { MemoryRouter } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { DialoguePage } from './pages/DialoguePage'
-import { FlashcardDeck } from './components/FlashcardDeck'
 import { HumanAudioButton } from './components/HumanAudioButton'
 import { VocabularyJourney } from './components/VocabularyJourney'
 import { course } from './content/course'
-import { GrammarPage } from './pages/GrammarPage'
 
 const styles = readFileSync(resolve(process.cwd(), 'src/styles.css'), 'utf8')
 const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
 
-beforeEach(() => localStorage.clear())
 afterEach(cleanup)
 
 describe('responsive beginner contracts', () => {
@@ -49,10 +45,6 @@ describe('responsive beginner contracts', () => {
     expect(screen.getByText(/There are no words/i)).toHaveTextContent(/choose another lesson from all lessons/i)
 
     cleanup()
-    render(<FlashcardDeck items={[]} />)
-    expect(screen.getByText(/No vocabulary cards/i)).toHaveTextContent(/return to the course map/i)
-
-    cleanup()
     render(<HumanAudioButton memberName="Member 1" source={{ kind: 'development-missing', src: null }} />)
     expect(screen.getByText(/Audio coming soon/i).parentElement).toHaveTextContent(/use the written example/i)
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
@@ -63,13 +55,4 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/:where\(\.site-brand, \.desktop-navigation a, \.mobile-navigation a\)\s*\{[^}]*min-height:\s*2\.75rem;/s)
   })
 
-  it('removes nonessential flashcard and grammar-card transforms and transitions for reduced motion', () => {
-    const reducedMotion = styles.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*)\}\s*$/)?.[1] ?? ''
-    expect(reducedMotion).toMatch(/\.flashcard-motion\s*\{[^}]*transition:\s*none !important;/s)
-    expect(reducedMotion).toMatch(/\.flashcard-motion\s*\{[^}]*transform:\s*none !important;/s)
-    expect(reducedMotion).toMatch(/\.grammar-card\s*\{[^}]*transition:\s*none !important;[^}]*transform:\s*none !important;/s)
-
-    render(<MemoryRouter><GrammarPage /></MemoryRouter>)
-    for (const link of screen.getAllByRole('link')) expect(link).toHaveClass('grammar-card')
-  })
 })

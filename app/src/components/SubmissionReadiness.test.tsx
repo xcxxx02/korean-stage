@@ -255,6 +255,7 @@ describe('SubmissionReadiness', () => {
           ? {
               id: exercise.id,
               grammarId: exercise.grammarId,
+              answerLanguage: 'ko' as const,
               type: 'multiple-choice' as const,
               prompt: exercise.prompt,
               koreanContext: exercise.koreanContext,

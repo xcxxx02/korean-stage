@@ -33,7 +33,7 @@ export function ExerciseEngine({
   const feedbackRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const questionLegendRef = useRef<HTMLLegendElement>(null)
   const completionHeadingRef = useRef<HTMLHeadingElement>(null)
-  const shouldFocusQuestion = useRef(false)
+  const shouldFocusQuestion = useRef(mode === 'quiz')
   const [answers, setAnswers] = useState<Record<string, ExerciseAnswer>>(() => Object.fromEntries(
     exercises.filter((exercise) => initialResults[exercise.id] === true).map((exercise) => [exercise.id, createCorrectExerciseAnswer(exercise)]),
   ))
@@ -155,7 +155,7 @@ export function ExerciseEngine({
                   tabIndex={quizMode ? -1 : undefined}
                 >
                   <p className="font-bold">{result.isCorrect ? 'Correct' : 'Not quite'}</p>
-                  {!result.isCorrect ? <p className="mt-1">{exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={exercise.type === 'matching' ? undefined : 'ko'}>{formatCorrectExerciseAnswer(exercise)}</span></p> : null}
+                  {!result.isCorrect ? <p className="mt-1">{exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={exercise.type === 'matching' ? undefined : exercise.answerLanguage}>{formatCorrectExerciseAnswer(exercise)}</span></p> : null}
                   <p className="mt-1">{exercise.explanation}</p>
                 </div>
               ) : null}

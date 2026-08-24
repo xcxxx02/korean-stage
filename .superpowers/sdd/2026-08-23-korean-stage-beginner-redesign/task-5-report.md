@@ -108,3 +108,25 @@ The first full-suite run had one failure: `accessibility.test.tsx` still expecte
 Commit message: `feat: group Korean quizzes by lesson`
 
 The exact commit hash is reported in the Task 5 handoff.
+
+## Fix round 1 — language metadata and focus restoration
+
+### Review findings resolved
+
+- Added required per-exercise `answerLanguage` metadata. Derived Lesson 2 and Lesson 3 vocabulary answers are `en`; the existing Korean grammar exercises and fixture exercises are `ko`.
+- `ExerciseAnswerControl` now applies the exercise metadata to choice labels, and incorrect-answer feedback applies it to the shown correct answer. Matching controls retain their existing bilingual behavior.
+- Quiz mode now focuses the first question legend immediately when it mounts, including direct `?lesson=lesson-N` entry.
+- Leaving a quiz through `All lesson quizzes` returns focus to the selected lesson or mixed-quiz card after the quiz unmounts.
+
+### Regression coverage and verification
+
+- Lesson 2 and Lesson 3 tests each assert English `lang` values for a vocabulary choice and incorrect-answer feedback; the existing grammar exercise test asserts Korean `lang` values for both a choice and the shown correct answer.
+- Keyboard test asserts Enter opens a lesson quiz with focus on Question 1 and Enter on `All lesson quizzes` returns focus to the originating Lesson 3 card.
+- Focused command: `npm test -- src/content/practiceCatalog.test.ts src/pages/PracticePage.test.tsx src/components/ExerciseEngine.test.tsx` — 3 files, 16 tests passed.
+- Full command: `npm test -- --reporter=verbose` — 26 files, 189 tests passed.
+- `npm run typecheck` — passed.
+- `git diff --check` — passed (only existing CRLF checkout notices).
+
+### Commit
+
+`fix: repair practice answer language and quiz focus`

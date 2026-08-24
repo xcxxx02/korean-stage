@@ -21,6 +21,7 @@ const vocabularyGroup = (
     .map((item, index, items) => ({
       id: `${item.id}-meaning`,
       grammarId: lessonSlug,
+      answerLanguage: 'en',
       type: 'multiple-choice',
       prompt: `Choose the English meaning of ${item.korean}.`,
       koreanContext: item.korean,

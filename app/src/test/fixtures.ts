@@ -75,6 +75,7 @@ export const validCourse: Course = {
         return {
           id: `${id}-exercise-${number}`,
           grammarId: id,
+          answerLanguage: 'ko',
           type: 'matching',
           prompt: 'Match each sentence.',
           koreanContext: '문장을 연결하세요.',
@@ -89,6 +90,7 @@ export const validCourse: Course = {
       return {
         id: `${id}-exercise-${number}`,
         grammarId: id,
+        answerLanguage: 'ko',
         type: grammarIndex === 0 ? 'sentence-completion' : grammarIndex === 1 ? 'particle' : 'multiple-choice',
         prompt: 'Choose the correct answer.',
         koreanContext: '문장을 완성하세요.',

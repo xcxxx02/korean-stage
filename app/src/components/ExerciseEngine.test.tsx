@@ -18,6 +18,7 @@ describe('ExerciseEngine', () => {
 
     const firstExercise = screen.getByRole('group', { name: /1 of 3.*Complete the sentence for Minsu/i })
     const wrongAnswer = within(firstExercise).getByRole('radio', { name: '민수이에요' })
+    expect(within(firstExercise).getByText('민수이에요')).toHaveAttribute('lang', 'ko')
     await user.click(wrongAnswer)
     await user.click(within(firstExercise).getByRole('button', { name: 'Check answer 1' }))
 
@@ -25,6 +26,7 @@ describe('ExerciseEngine', () => {
     expect(feedback).toHaveTextContent('Not quite')
     expect(feedback).toHaveTextContent('Correct answer: 민수예요')
     expect(feedback).toHaveTextContent('민수 ends in a vowel, so use 예요.')
+    expect(within(feedback).getByText('민수예요')).toHaveAttribute('lang', 'ko')
     expect(wrongAnswer).toBeChecked()
     for (const radio of within(firstExercise).getAllByRole('radio')) expect(radio).toBeDisabled()
     expect(within(firstExercise).getByRole('button', { name: 'Try again' })).toBeVisible()
@@ -96,6 +98,7 @@ describe('ExerciseEngine', () => {
     expect(screen.getByRole('heading', { name: 'Lesson 4 quiz' })).toBeVisible()
     expect(screen.getAllByRole('group', { name: /Question \d of 3/ })).toHaveLength(1)
     expect(screen.getByText('Question 1 of 3')).toBeVisible()
+    await waitFor(() => expect(screen.getByText('Question 1 of 3').closest('legend')).toHaveFocus())
 
     await user.click(screen.getByRole('radio', { name: '민수이에요' }))
     await user.click(screen.getByRole('button', { name: 'Check answer' }))

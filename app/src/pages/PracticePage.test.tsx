@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -29,22 +29,42 @@ describe('PracticePage', () => {
     expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   })
 
-  it('opens a selected lesson quiz and explains an incorrect answer in English', async () => {
+  it.each([
+    ['Lesson 2', 'Countries & Nationalities', '중국', 'Japan', 'China'],
+    ['Lesson 3', 'Jobs & Occupations', '학생', 'Teacher', 'Student'],
+  ])('uses English language metadata for $0 vocabulary choices and feedback', async (_lessonNumber, lessonTitle, korean, wrongChoice, correctChoice) => {
     const user = userEvent.setup()
     renderPractice()
 
-    await user.click(screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ }))
-    expect(screen.getByRole('heading', { name: 'Lesson 3 · Jobs & Occupations quiz' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: new RegExp(lessonTitle) }))
     expect(screen.getByText('Question 1 of 8')).toBeVisible()
+    expect(screen.getByText(wrongChoice)).toHaveAttribute('lang', 'en')
 
-    await user.click(screen.getByRole('radio', { name: 'Teacher' }))
+    await user.click(screen.getByRole('radio', { name: wrongChoice }))
     await user.click(screen.getByRole('button', { name: 'Check answer' }))
 
     const feedback = screen.getByRole('status')
     expect(feedback).toHaveTextContent('Not quite')
-    expect(feedback).toHaveTextContent('학생 means Student.')
+    expect(feedback).toHaveTextContent(`${korean} means ${correctChoice}.`)
+    expect(within(feedback).getByText(correctChoice)).toHaveAttribute('lang', 'en')
     expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
     expect(localStorage.length).toBe(0)
+  })
+
+  it('moves keyboard focus into a selected quiz and returns it to the originating lesson card', async () => {
+    const user = userEvent.setup()
+    renderPractice()
+    const lessonCard = screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ })
+
+    lessonCard.focus()
+    await user.keyboard('[Enter]')
+
+    await waitFor(() => expect(screen.getByText('Question 1 of 8').closest('legend')).toHaveFocus())
+    const backButton = screen.getByRole('button', { name: 'All lesson quizzes' })
+    backButton.focus()
+    await user.keyboard('[Enter]')
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ })).toHaveFocus())
   })
 
   it('opens the requested grammar lesson from the Learn guide query', () => {

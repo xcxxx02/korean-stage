@@ -55,7 +55,7 @@ const exercise = (
   choices: string[],
   answer: string,
   explanation: string,
-): Exercise => ({ id, grammarId, type, prompt, koreanContext, choices, answer, explanation })
+): Exercise => ({ id, grammarId, answerLanguage: 'ko', type, prompt, koreanContext, choices, answer, explanation })
 
 const matchingExercise = (
   id: string,
@@ -64,7 +64,7 @@ const matchingExercise = (
   koreanContext: string,
   pairs: Array<{ id: string; korean: string; english: string }>,
   explanation: string,
-): Exercise => ({ id, grammarId, type: 'matching', prompt, koreanContext, pairs, explanation })
+): Exercise => ({ id, grammarId, answerLanguage: 'ko', type: 'matching', prompt, koreanContext, pairs, explanation })
 
 const dialogueLine = (id: string, speakerId: string, korean: string, english: string): DialogueLine => ({
   id,

@@ -32,6 +32,7 @@ describe('practice catalog', () => {
       koreanContext: '학생',
       choices: ['Student', 'Teacher', 'Office worker'],
       answer: 'Student',
+      answerLanguage: 'en',
       explanation: '학생 means Student.',
     })
     expect(jobs.exercises.every((exercise) => exercise.type !== 'matching' && exercise.choices.includes(exercise.answer))).toBe(true)
@@ -43,6 +44,7 @@ describe('practice catalog', () => {
       const group = practiceGroups.find((candidate) => candidate.lessonSlug === lesson.slug)!
       expect(group.exercises).toEqual(grammarPoint.exercises)
       expect(group.exercises).toHaveLength(3)
+      expect(group.exercises.every((exercise) => exercise.answerLanguage === 'ko')).toBe(true)
     }
   })
 })

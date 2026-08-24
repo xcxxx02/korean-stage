@@ -87,6 +87,7 @@ export type IntroductionModel = {
 type ExerciseBase = {
   id: string
   grammarId: string
+  answerLanguage: 'en' | 'ko'
   prompt: string
   koreanContext: string
   explanation: string

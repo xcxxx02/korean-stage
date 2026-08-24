@@ -51,7 +51,7 @@ export function ExerciseAnswerControl({ exercise, answer, disabled, onChange, fi
             type="radio"
             value={choice}
           />
-          <span lang="ko">{choice}</span>
+          <span lang={exercise.answerLanguage}>{choice}</span>
         </label>
       ))}
     </div>

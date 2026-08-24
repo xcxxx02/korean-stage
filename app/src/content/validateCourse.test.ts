@@ -237,6 +237,7 @@ describe('validateCourse', () => {
           ? {
               id: exercise.id,
               grammarId: exercise.grammarId,
+              answerLanguage: 'ko' as const,
               type: 'multiple-choice' as const,
               prompt: exercise.prompt,
               koreanContext: exercise.koreanContext,
@@ -262,6 +263,7 @@ describe('validateCourse', () => {
               ? {
                   id: exercise.id,
                   grammarId: exercise.grammarId,
+                  answerLanguage: 'ko' as const,
                   type: 'matching' as const,
                   prompt: 'Match each sentence.',
                   koreanContext: '문장을 연결하세요.',

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ExerciseEngine } from '../components/ExerciseEngine'
 import { practiceGroups, type PracticeGroup } from '../content/practiceCatalog'
@@ -32,6 +32,19 @@ export function PracticePage() {
   const [activeQuiz, setActiveQuiz] = useState<PracticeSelection | null>(
     requestedGroup ? lessonSelection(requestedGroup) : null,
   )
+  const quizCardRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const pendingReturnFocus = useRef<string | null>(null)
+
+  useLayoutEffect(() => {
+    if (activeQuiz || !pendingReturnFocus.current) return
+    quizCardRefs.current[pendingReturnFocus.current]?.focus()
+    pendingReturnFocus.current = null
+  }, [activeQuiz])
+
+  const closeQuiz = () => {
+    pendingReturnFocus.current = activeQuiz?.id ?? null
+    setActiveQuiz(null)
+  }
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-5 sm:p-8">
@@ -47,7 +60,7 @@ export function PracticePage() {
         <section aria-label="Active lesson quiz" className="space-y-6">
           <button
             className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt hover:bg-stage-cobalt-soft"
-            onClick={() => setActiveQuiz(null)}
+            onClick={closeQuiz}
             type="button"
           >
             All lesson quizzes
@@ -75,6 +88,7 @@ export function PracticePage() {
                       aria-label={`Lesson ${number} · ${group.title} · ${group.exercises.length} questions`}
                       className="flex h-full w-full flex-col items-start rounded-xl border border-stage-border bg-stage-white p-5 text-left transition hover:-translate-y-1 hover:border-stage-cobalt focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-stage-focus motion-reduce:transition-none"
                       onClick={() => setActiveQuiz(lessonSelection(group))}
+                      ref={(element) => { quizCardRefs.current[group.lessonSlug] = element }}
                       type="button"
                     >
                       <span className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lesson {number}</span>
@@ -95,6 +109,7 @@ export function PracticePage() {
               aria-label={`${mixedSelection.title} · ${mixedSelection.exercises.length} questions`}
               className="mt-4 rounded-xl bg-stage-vermilion px-5 py-3 font-bold text-stage-white hover:bg-stage-vermilion-strong"
               onClick={() => setActiveQuiz(mixedSelection)}
+              ref={(element) => { quizCardRefs.current[mixedSelection.id] = element }}
               type="button"
             >
               Mixed Lec 1 quiz · {mixedSelection.exercises.length} questions

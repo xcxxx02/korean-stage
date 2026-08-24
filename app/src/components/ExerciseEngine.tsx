@@ -7,6 +7,7 @@ import {
 } from '../content/exerciseAnswers'
 import type { Exercise, ExerciseAnswer } from '../content/types'
 import { ExerciseAnswerControl } from './ExerciseAnswerControl'
+import { LanguageAwareText } from './LanguageAwareText'
 
 type ExerciseEngineProps = {
   exercises: Exercise[]
@@ -107,7 +108,7 @@ export function ExerciseEngine({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Check your understanding</p>
-          <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="exercise-heading">{title}</h2>
+          <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="exercise-heading"><LanguageAwareText text={title} /></h2>
         </div>
         {!quizMode ? (
           <p className="rounded-full bg-stage-cobalt-soft px-4 py-2 font-semibold text-stage-cobalt">Score: {correctCount} of {exercises.length} correct</p>
@@ -135,8 +136,8 @@ export function ExerciseEngine({
                 tabIndex={quizMode ? -1 : undefined}
               >
                 <span className="block text-sm font-semibold text-stage-faint">{quizMode ? 'Question ' : ''}{index + 1} of {exercises.length}</span>
-                <span className="mt-1 block">{exercise.prompt}</span>
-                <span className="mt-2 block rounded-xl bg-stage-soft p-3 text-xl text-stage-cobalt" lang="ko">{exercise.koreanContext}</span>
+                <span className="mt-1 block"><LanguageAwareText text={exercise.prompt} /></span>
+                <span className="language-aware-text__ko mt-2 block rounded-xl bg-stage-soft p-3 text-xl text-stage-cobalt" lang="ko">{exercise.koreanContext}</span>
               </legend>
               <ExerciseAnswerControl
                 answer={answers[exercise.id]}
@@ -155,8 +156,8 @@ export function ExerciseEngine({
                   tabIndex={quizMode ? -1 : undefined}
                 >
                   <p className="font-bold">{result.isCorrect ? 'Correct' : 'Not quite'}</p>
-                  {!result.isCorrect ? <p className="mt-1">{exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={exercise.type === 'matching' ? undefined : exercise.answerLanguage}>{formatCorrectExerciseAnswer(exercise)}</span></p> : null}
-                  <p className="mt-1">{exercise.explanation}</p>
+                  {!result.isCorrect ? <p className="mt-1">{exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <LanguageAwareText text={formatCorrectExerciseAnswer(exercise)} /></p> : null}
+                  <p className="mt-1"><LanguageAwareText text={exercise.explanation} /></p>
                 </div>
               ) : null}
 

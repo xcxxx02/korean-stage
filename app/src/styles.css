@@ -264,6 +264,13 @@ body {
   outline-offset: 3px;
 }
 
+.language-aware-text__ko {
+  display: inline-block;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
 .korean-stage-background {
   position: absolute;
   bottom: 0;

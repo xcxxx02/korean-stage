@@ -86,4 +86,8 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-media video,[\s\S]*?height:\s*clamp\(14rem, 28vh, 19rem\);/)
   })
 
+  it('keeps Korean runs in mixed Practice copy from breaking between syllables', () => {
+    expect(styles).toMatch(/\.language-aware-text__ko\s*\{[^}]*display:\s*inline-block;[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;[^}]*white-space:\s*nowrap;/s)
+  })
+
 })

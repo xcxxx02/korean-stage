@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ExerciseEngine } from '../components/ExerciseEngine'
+import { LanguageAwareText } from '../components/LanguageAwareText'
 import { practiceGroups, type PracticeGroup } from '../content/practiceCatalog'
 import type { Exercise } from '../content/types'
 
@@ -85,14 +86,13 @@ export function PracticePage() {
                 return (
                   <li key={group.lessonSlug}>
                     <button
-                      aria-label={`Lesson ${number} · ${group.title} · ${group.exercises.length} questions`}
                       className="flex h-full w-full flex-col items-start rounded-xl border border-stage-border bg-stage-white p-5 text-left transition hover:-translate-y-1 hover:border-stage-cobalt focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-stage-focus motion-reduce:transition-none"
                       onClick={() => setActiveQuiz(lessonSelection(group))}
                       ref={(element) => { quizCardRefs.current[group.lessonSlug] = element }}
                       type="button"
                     >
                       <span className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lesson {number}</span>
-                      <strong className="mt-2 text-xl text-stage-charcoal">{group.title}</strong>
+                      <strong className="mt-2 text-xl text-stage-charcoal"><LanguageAwareText text={group.title} /></strong>
                       <span className="mt-4 text-sm font-semibold text-stage-muted">{group.exercises.length} questions</span>
                     </button>
                   </li>

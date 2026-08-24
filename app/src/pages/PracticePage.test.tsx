@@ -51,6 +51,44 @@ describe('PracticePage', () => {
     expect(localStorage.length).toBe(0)
   })
 
+  it('keeps mixed vocabulary prompts and feedback in explicit language boundaries', async () => {
+    const user = userEvent.setup()
+    renderPractice()
+
+    await user.click(screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ }))
+    const question = screen.getByRole('group', { name: /Question 1 of 8/ })
+    const prompt = [...question.querySelectorAll('legend > span')].find(
+      (element) => element.textContent === 'Choose the English meaning of 학생.',
+    )
+    expect(prompt).toBeDefined()
+    expect(within(prompt as HTMLElement).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(prompt as HTMLElement).getByText(/Choose the English meaning of/)).toHaveAttribute('lang', 'en')
+
+    await user.click(within(question).getByRole('radio', { name: 'Teacher' }))
+    await user.click(within(question).getByRole('button', { name: 'Check answer' }))
+
+    const feedback = within(question).getByRole('status')
+    const explanation = [...feedback.querySelectorAll('p')].find(
+      (element) => element.textContent === '학생 means Student.',
+    )
+    expect(explanation).toBeDefined()
+    expect(within(explanation as HTMLElement).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(explanation as HTMLElement).getByText(/means Student\./)).toHaveAttribute('lang', 'en')
+
+    for (const root of [prompt as HTMLElement, feedback]) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+      const untaggedHangul: string[] = []
+      let textNode = walker.nextNode()
+      while (textNode) {
+        if (/[가-힣]/.test(textNode.textContent ?? '') && !textNode.parentElement?.closest('[lang="ko"]')) {
+          untaggedHangul.push(textNode.textContent ?? '')
+        }
+        textNode = walker.nextNode()
+      }
+      expect(untaggedHangul).toEqual([])
+    }
+  })
+
   it('moves keyboard focus into a selected quiz and returns it to the originating lesson card', async () => {
     const user = userEvent.setup()
     renderPractice()

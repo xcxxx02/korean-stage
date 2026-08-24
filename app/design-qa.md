@@ -26,7 +26,7 @@
 - Repeated exact implementation capture: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-desktop-learn-lesson-3-pass2-1440x1024.png`.
 - Both implementation files are 1440 x 1024 RGB screenshots captured from a 1440 x 1024 CSS viewport at device pixel ratio 1; no density resampling was used.
 - Initial same-input comparison: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-approved-vs-implementation-1440x1024-comparison.png`.
-- Repeated same-input comparison: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-approved-vs-implementation-pass2-comparison.png`.
+- Final same-input comparison (tracked with the report): `design-qa-assets/approved-vocabulary-vs-lesson-3.png`.
 - The comparison sheets place the normalized 1440 x 1024 source and 1440 x 1024 implementation at natural scale with a 24 px neutral divider.
 - Focused-region comparison was not needed: the source and implementation were also opened at original resolution together, and the requested rail, media, details, word controls, typography, wrapping, cultural line art, colors, and radii were all legible in that input.
 
@@ -47,30 +47,35 @@
 - Mobile captures: `task-10-mobile-390x844-learn.png`, `task-10-mobile-390x844-practice.png`, `task-10-mobile-390x844-dialogue.png`, and `task-10-mobile-390x844-team.png` in the same directory.
 - Mobile menu: `task-10-mobile-390x844-menu-open.png`; the DOM exposes only the four approved destinations.
 - Free selection: `task-10-mobile-390x844-chef-selected.png`; selecting `8. 요리사 - Chef` updates the Korean heading, English meaning, trigger copy, and attribution to `Presented by Member 2` without overflow.
-- Practice feedback: `task-10-mobile-390x844-practice-feedback.png`; an incorrect Lesson 3 answer shows `Not quite`, the correct answer, the English explanation `학생 means Student.`, `Try again`, and `Next question`.
+- Historical Practice feedback capture: `task-10-mobile-390x844-practice-feedback.png`; an incorrect Lesson 3 answer shows `Not quite`, the correct answer, the bilingual explanation `학생 means Student.`, `Try again`, and `Next question`. A subsequent P2 review found that this mixed prompt/feedback copy lacked nested language boundaries and allowed `학생` to split at 390 px, so this pre-fix capture is not used as acceptance evidence. The structured renderer and no-break Korean-run style now cover both the prompt and incorrect-feedback state in passing DOM and source-contract regressions.
 - Dialogue: selecting Dialogue 2 updates the active scenario to `Who are you?`, retains the honest coming-soon state, and exposes neither line-audio controls nor a contributor checklist.
-- Team: two member cards render by default with no `Submission readiness` or `Replace before submission` warning.
+- Team: two member cards render by default with no `Submission readiness` or `Replace before submission` warning. Automated Team coverage also supplies four additional valid members and verifies all six contribution articles and accessible names, directly exercising the required 2–6-member range endpoints.
 - Browser console: zero warnings and zero errors across the checked routes and states.
 
 ## Automated verification evidence
 
-- `npm test`: passed, 21 files and 172 tests, 0 failures.
+- `npm test`: passed, 21 files and 174 tests, 0 failures. The Practice regression selects Lesson 3, asserts that the vocabulary prompt and incorrect explanation expose Hangul only inside `lang="ko"` descendants and English inside `lang="en"` descendants, and walks both DOM subtrees to reject any untagged Hangul text node. The responsive source contract requires each Korean run to be an inline-block with `word-break: keep-all`, `overflow-wrap: normal`, and `white-space: nowrap`.
 - `npm run typecheck`: passed.
 - `npm run lint`: passed.
-- `npm run build`: passed; Vite transformed 4607 modules and emitted the production client and Sites package.
+- `npm run build`: passed; Vite transformed 4608 modules and emitted the production client and Sites package.
 - `npm run test:sites`: passed, 4 tests, 0 failures.
 - Required artifacts verified: `dist/client/index.html`, `dist/server/index.js`, and `dist/.openai/hosting.json`.
+- Runtime learner-progress storage: `App.test.tsx` spies on `Storage.prototype.getItem` and `setItem` while advancing a Lesson 3 word and navigating to Practice. It permits only React Router's own transition key, observes no application read, and observes no write. The full learner journey therefore has explicit no-runtime-progress-storage acceptance coverage.
+- Human-speech requirement: `validateCourse.test.ts` asserts the global prohibited `ai-voice-prohibited` issue, keeps that prohibition alongside media-specific errors, and exercises AI-generated introduction and dialogue media. The validator gathers introduction audio, vocabulary video/audio, dialogue video, and dialogue-line audio before rejecting any `ai-generated` source. `HumanAudioButton.test.tsx` and `MemberVideo.test.tsx` additionally verify that AI-generated audio/video never renders or enables playback.
+- Team size: `TeamGrid.test.tsx` verifies the real two-member course and a constructed six-member course, checking every contribution article and accessible name at both required range endpoints.
 
 ## Comparison history
 
-1. Initial pass compared the normalized approved vocabulary mock and fresh `/learn/lesson-3` browser capture together at 1440 x 1024. It found no actionable P0, P1, or P2 issue. The hierarchy, three-column anatomy, compact video slot, bilingual rail, word controls, palette, radii, cultural assets, and wrapping were intact.
-2. No production fix was justified. The source's larger finished video, duplicate audio action, six-item navigation, and Vocabulary active state conflict with the later approved specification and current missing course media, so copying those differences would regress the product contract.
-3. A fresh second browser capture was made at the same route, state, viewport, density, and crop. The repeated combined comparison remained visually stable and found no actionable P0, P1, or P2 issue.
+1. Initial pass compared the normalized approved vocabulary mock and fresh `/learn/lesson-3` browser capture together at 1440 x 1024. The hierarchy, three-column anatomy, compact video slot, bilingual rail, word controls, palette, radii, cultural assets, and wrapping were intact.
+2. No Learn production fix was justified. The source's larger finished video, duplicate audio action, six-item navigation, and Vocabulary active state conflict with the later approved specification and current missing course media, so copying those differences would regress the product contract.
+3. A fresh second Learn capture at the same route, state, viewport, density, and crop remained visually stable. The final portable combined comparison is stored beside this report.
+4. Follow-up interaction review found one Practice P2 outside that Learn comparison: flat mixed-language prompt and feedback strings inherited English and could split a Korean word between syllables at 390 px. Practice now uses structured language-aware runs across exercise titles, prompts, contexts, answers, explanations, and lesson headings; the focused DOM/accessibility and responsive no-break regressions pass.
 
 ## Findings
 
-- No actionable P0, P1, or P2 findings remain.
+- The Practice mixed-language P2 is fixed and covered by DOM/accessibility and responsive no-break regressions. No actionable P0, P1, or P2 findings remain after the fix.
 - Accepted product constraint: real member and dialogue recordings have not been supplied. The application correctly keeps honest coming-soon states and no false playback controls; media content readiness remains separate from UI readiness.
+- Live verification limitation: after the fix and production rebuild, the Browser skill's inferred-URL connection reported no available browser backend. Per the Browser recovery contract, no standalone Playwright or unrelated browser surface was substituted. A fresh post-fix `/practice` 390 x 844 spot check remains pending browser reconnection; the earlier defect-state capture is explicitly excluded above.
 - Residual evidence limit: the in-app browser's synthetic Tab command did not advance focus in this subagent thread. Browser-rendered responsive focus order and the passing native-navigation regression tests verify the intended destinations, but a final physical-key spot check may still be useful before coursework submission.
 
 ## Final acceptance checklist
@@ -81,11 +86,11 @@
 - [x] Course ownership selects the member; no speaker selector or duplicate learner audio exists.
 - [x] Korean, English, romanization, spoken hint, bilingual example, and usage support are visible.
 - [x] Compact member media and word controls fit above the target desktop fold.
-- [x] Practice is lesson-grouped and explains errors in English.
+- [x] Practice is lesson-grouped, explains errors in English, and preserves explicit Korean/English language boundaries without mid-word Hangul wrapping.
 - [x] Dialogue shows one active main video state, context, roles, and bilingual transcript.
 - [x] Team is clean by default and supports the tested member cards without readiness warnings.
 - [x] Desktop, tablet, and mobile routes have no horizontal overflow.
 - [x] Keyboard focus order, Korean language boundaries, contrast contracts, and reduced motion have passing automated coverage.
 - [x] Test, typecheck, lint, production build, and Sites worker checks exit 0.
 
-final result: passed
+final result: automated fix passed; live Practice 390 px recheck pending browser reconnection

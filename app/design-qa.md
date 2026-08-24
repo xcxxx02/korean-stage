@@ -1,90 +1,91 @@
 # Task 10 Design QA
 
+## Beginner-first redesign verification
+
+- Date: 2026-08-24.
+- Approved source: refined Direction A Learn mock.
+- Compared route: `/learn/lesson-3`, word 1 of 8.
+- Desktop CSS viewport: 1440 x 1024 at device pixel ratio 1.
+- Tablet CSS viewport: 768 x 1024 at device pixel ratio 1.
+- Mobile CSS viewport: 390 x 844 at device pixel ratio 1.
+- Tablet and mobile routes checked: Learn, Practice, Dialogue, and Team.
+
 ## Source visual truth
 
-- `../docs/design/korean-stage-approved-ui.png`
-- Source pixels: 1484 x 1060, RGB.
-- State: Unit 3, word 1 of 8, desktop learning view.
+- Primary approved vocabulary mock: `C:/Users/Nitro/AppData/Local/Temp/codex-clipboard-570191f1-a34b-4c90-bcaf-905f49e88c38.png`.
+- Refined prior direction: `C:/Users/Nitro/.codex/generated_images/01a00e73-4a35-7c00-8237-c6f4815271b8/exec-0326bc35-7758-4b26-a72e-042aa14fd78c.png`.
+- Primary source pixels: 1484 x 1060, RGB, with no device frame.
+- Refined prior pixels: 1487 x 1058, RGB, with no device frame.
+- The primary source was center-cropped from 1484 x 1060 to 1484 x 1055, then bicubically normalized to 1440 x 1024. This preserves the source aspect ratio while matching the implementation capture exactly.
+- Normalized source: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-approved-vocabulary-mock-normalized-1440x1024.png`.
+- State difference accepted before comparison: the source depicts a finished member recording and obsolete Vocabulary/Grammar navigation. The binding beginner-first specification requires four destinations, a compact video slot, an honest missing-media state when no recording exists, and no separate audio control.
 
-## Current rendered implementation evidence
+## Browser-rendered implementation evidence
 
-- Fix-round-2 desktop screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix2-desktop-1480.png`
-- Fix-round-2 source/history comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix2-desktop-comparison.png`
-- Fix-round-2 mobile comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix2-mobile-comparison.png`
-- Fix-round-2 focused-state comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix2-focused-comparison.png`
-- Fix-round-2 semantic-status evidence: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix2-team-statuses.png`
-- Desktop screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-desktop-1480.png`
-- Source/implementation comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-comparison.png`
-- Responsive comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-responsive-sheet.png`
-- Focus-state comparison: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-focus-sheet.png`
-- Mobile full-page screenshot: `../.superpowers/sdd/2026-08-17-korean-stage-implementation/task-10-fix1-mobile-390-full.png`
-- Tablet/mobile menu focus: `task-10-fix1-tablet-menu-focus.png` and `task-10-fix1-mobile-menu-focus.png` in the same report directory.
-- Practice focus: `task-10-fix1-practice-feedback-focus.png`, `task-10-fix1-practice-legend-focus.png`, and `task-10-fix1-practice-completion-focus.png` in the same report directory.
-- Route and state: `/learn/unit-3`, word 1 of 8, missing-member-video state; `/practice`, answer feedback, next question, and completion states.
-- Desktop CSS viewport and capture: 1480 x 1060 at devicePixelRatio 1. The 1484 x 1060 source and 1480 x 1060 implementation were placed together at natural scale with a 16 px divider; no density resampling was needed.
-- Responsive CSS viewports and captures: 768, 900, 1024, 1100, and 1280 x 900 at devicePixelRatio 1.
-- Mobile CSS viewport: 390 x 844 at devicePixelRatio 1. Full-page capture: 390 x 1683.
-- Fix-round-2 captures use the same 1480 x 1060 desktop and 390 x 844 mobile CSS viewports at devicePixelRatio 1; the current mobile full-page image is 390 x 1683. A 768 x 900 tablet capture verifies the compact selector state.
-
-## Full-view comparison evidence
-
-- The final desktop render preserves the selected mockup's white canvas, compact shell, bilingual hierarchy, three-column learning layout, cobalt primary emphasis, jade instructional accents, vermilion forward action, restrained borders, and lower-corner architectural detail.
-- The approved missing-recording artwork truthfully replaces the mockup's completed human video without introducing a generic placeholder. Its 16:9 subject, white background, and cultural linework remain crisp and do not compete with the learning controls.
-- The source/implementation comparison shows consistent 12 px radii, one-pixel rules, no non-menu elevation, and a clean white/obangsaek surface system throughout the visible product.
-- All breakpoint metrics report document, body, and header scroll widths equal to their client widths. Compact navigation remains active at 768, 900, 1024, and 1100 px; desktop navigation activates at 1280 px and remains clear at 1480 px.
-- The 390 px full-page capture includes the stacked media, transcript, navigation controls, details, audio state, example, tip, and low-opacity palace artwork without clipping or horizontal overflow.
-
-## Focused comparison evidence
-
-- The responsive sheet makes the header, title wrapping, rail-to-compact-selector transition, media crop, detail rail, and controls readable across four representative widths. The standalone 900 px capture covers the fifth requested metric width.
-- The focus sheet shows the open tablet menu's first link, Practice feedback, and Practice completion heading with visible cobalt focus indicators. Separate evidence confirms the next-question legend and the mobile menu link.
-- Tablet and mobile menu links compute to a 3 px solid `rgb(7, 94, 229)` outline with `-3px` offset. Practice feedback, legend, and completion targets compute to the same 3 px outline with 3 px offset.
+- Initial exact implementation capture: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-desktop-learn-lesson-3-viewport-1440x1024.png`.
+- Repeated exact implementation capture: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-desktop-learn-lesson-3-pass2-1440x1024.png`.
+- Both implementation files are 1440 x 1024 RGB screenshots captured from a 1440 x 1024 CSS viewport at device pixel ratio 1; no density resampling was used.
+- Initial same-input comparison: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-approved-vs-implementation-1440x1024-comparison.png`.
+- Repeated same-input comparison: `../.superpowers/sdd/2026-08-23-korean-stage-beginner-redesign/task-10-approved-vs-implementation-pass2-comparison.png`.
+- The comparison sheets place the normalized 1440 x 1024 source and 1440 x 1024 implementation at natural scale with a 24 px neutral divider.
+- Focused-region comparison was not needed: the source and implementation were also opened at original resolution together, and the requested rail, media, details, word controls, typography, wrapping, cultural line art, colors, and radii were all legible in that input.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: Noto Sans KR/Noto Sans variable fonts render both scripts consistently. Heading, navigation, word hierarchy, body copy, and checklist weights remain clear. Intermediate content titles wrap naturally while the header remains unwrapped and collision-free.
-- Spacing and layout rhythm: shell alignment, compact-to-desktop transitions, 12 px radii, one-pixel borders, menu-only shadow, and lower-corner artwork match the approved direction. No breakpoint clips or overlaps.
-- Colors and visual tokens: every product surface now uses the Stage white/charcoal/cobalt/vermilion/yellow/jade semantic palette. Selected, success, warning, prohibited, disabled, and instructional states remain distinct and legible.
-- Contrast: `stage-faint` now measures 4.93:1 on white and 4.67:1 on Stage soft; white on the vermilion primary control measures 4.62:1; `stage-border-strong` measures 3.25:1 on white and 3.08:1 on Stage soft. The yellow semantic boundary measures 3.36:1 and 3.18:1 on those surfaces. Audited cobalt, jade, prohibited, status, and disabled token pairings meet their applicable WCAG normal-text or non-text thresholds.
-- Image quality and asset fidelity: all three approved assets remain sharp at their natural aspect ratios. The transparent strip and palace art integrate cleanly; no CSS illustration, handcrafted SVG, emoji, watermark, or placeholder art is used.
-- Copy and content: existing Korean/English learning copy and behavior are unchanged. The missing-recording description, checklist, transcript, and attribution remain coherent.
-- Accessibility and motion: keyboard focus is visible on compact-menu links and every Practice programmatic target. With `prefers-reduced-motion: reduce`, the flashcard computes transition and animation durations to `1e-05s` with one animation iteration. Browser console and page errors: none.
+- Fonts and typography: the implementation renders English and Korean with the local Noto Sans KR/Noto Sans variable stack. The lesson hierarchy, Korean word, English meaning, romanization, spoken hint, example, and grammar note remain distinct with no truncation. At 390 px, `Jobs & Occupations` wraps cleanly and the bilingual chooser retains both languages.
+- Spacing and layout rhythm: desktop keeps the specified 192 px bilingual rail, 790.4 px media track, and 336 px details track. The compact missing-media slot is 509.7 x 286.7 px; the right-column word controls end at y=870.9, above the 1024 px fold. The denser media and rail are intentional changes from the oversized source, not fidelity regressions.
+- Colors and visual tokens: white canvas, charcoal text, cobalt selection, vermilion forward action, jade teaching support, and warm yellow warning treatment preserve the approved obangsaek direction. Selected and missing states use text, shape, and color.
+- Image quality and asset fidelity: the palace-gate mark, slim patterned strip, and low-contrast palace/Namsan line art are sharp and correctly restricted to unused edge space. No fake member image, generated voice, CSS illustration, handcrafted SVG replacement, emoji, or broken media control appears.
+- Copy and content: Korean/English labels, romanization, `Say it like`, example, grammar note, member attribution, and honest missing-media wording are coherent and visible. The current Learn label, four destinations, and absence of duplicate audio match the binding specification even though the earlier mock shows the superseded IA.
+- Layout and responsiveness: Learn, Practice, Dialogue, and Team were inspected at 1440 px, 768 px, and 390 px. Every route reported zero horizontal overflow. Tablet and mobile preserve the bilingual chooser, readable stacked media/details, responsive quiz cards, dialogue transcript, and Team cards.
+- Accessibility and interaction: the mobile menu exposes exactly Learn, Practice, Dialogue, and Team. The browser-rendered 390 px focus order with the chooser open is `chooser trigger -> active option -> Next word`, so Shift+Tab resolves to the chooser trigger and Tab resolves to Next word after responsive visibility is applied. Escape still closes to the trigger. A direct synthetic Tab injection did not advance focus in this subagent browser surface, so the rendered browser order is paired with the passing focused Tab/Shift+Tab interaction tests rather than claimed as a physical-key recording.
+
+## Route and interaction evidence
+
+- Desktop captures: `task-10-desktop-learn-lesson-1-1440x1024.png`, `task-10-desktop-learn-lesson-3-1440x1024.png`, `task-10-desktop-practice-1440x1024.png`, `task-10-desktop-dialogue-1440x1024.png`, and `task-10-desktop-team-1440x1024.png` in the Task 10 report directory.
+- Tablet captures: `task-10-tablet-768x1024-learn.png`, `task-10-tablet-768x1024-practice.png`, `task-10-tablet-768x1024-dialogue.png`, and `task-10-tablet-768x1024-team.png` in the same directory.
+- Mobile captures: `task-10-mobile-390x844-learn.png`, `task-10-mobile-390x844-practice.png`, `task-10-mobile-390x844-dialogue.png`, and `task-10-mobile-390x844-team.png` in the same directory.
+- Mobile menu: `task-10-mobile-390x844-menu-open.png`; the DOM exposes only the four approved destinations.
+- Free selection: `task-10-mobile-390x844-chef-selected.png`; selecting `8. 요리사 - Chef` updates the Korean heading, English meaning, trigger copy, and attribution to `Presented by Member 2` without overflow.
+- Practice feedback: `task-10-mobile-390x844-practice-feedback.png`; an incorrect Lesson 3 answer shows `Not quite`, the correct answer, the English explanation `학생 means Student.`, `Try again`, and `Next question`.
+- Dialogue: selecting Dialogue 2 updates the active scenario to `Who are you?`, retains the honest coming-soon state, and exposes neither line-audio controls nor a contributor checklist.
+- Team: two member cards render by default with no `Submission readiness` or `Replace before submission` warning.
+- Browser console: zero warnings and zero errors across the checked routes and states.
+
+## Automated verification evidence
+
+- `npm test`: passed, 21 files and 172 tests, 0 failures.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed.
+- `npm run build`: passed; Vite transformed 4607 modules and emitted the production client and Sites package.
+- `npm run test:sites`: passed, 4 tests, 0 failures.
+- Required artifacts verified: `dist/client/index.html`, `dist/server/index.js`, and `dist/.openai/hosting.json`.
 
 ## Comparison history
 
-1. Initial Task 10 comparison found P2 programmatic-focus, desktop-title wrapping, and vertical-fit issues. Those were fixed and the original baseline passed.
-2. Fix round 1 source review found unsafe intermediate navigation activation, broad focus suppression, and generic product-surface styling. The implementation moved desktop navigation to 1120 px, restored explicit focus, and migrated all product surfaces to Stage tokens and approved geometry.
-3. First fix-round render found one P2 layout issue: the compact trigger remained centered between the brand and an empty navigation element while its menu panel was right-aligned. The trigger was visually detached from the opened panel.
-4. Fix: added a contract for automatic left margin on the compact trigger and applied `margin-left: auto`. Post-fix captures show the trigger aligned at the header's right edge across 390-1100 px, with the menu panel immediately below it.
-5. Post-fix Playwright run passed every responsive, keyboard-focus, reduced-motion, overflow, and console assertion. The final side-by-side review found no remaining P0/P1/P2 issue.
-6. Fix round 2 measured the semantic token pairs and found four contract failures: faint text, white text on vermilion, strong borders, and yellow boundaries. The four targeted token adjustments bring each pairing over its applicable threshold.
-7. The current desktop, mobile, primary-control, compact-selector, Practice-focus, and team-status captures were compared together with the approved source and fix-round-1 renders. The stronger colors remain vivid and restrained; they do not make the white interface muddy or visually heavy. No new P0/P1/P2 issue was introduced.
-8. Fix round 3 is test-only contract hardening. It broadens detection of Tailwind custom-property colors, multi-segment shadows, and JSX inline surface shorthands while explicitly locking menu elevation to `.mobile-navigation`. No production visual value or component changed, so the fix-round-2 rendered comparisons remain current and no screenshot recapture was required.
-9. Fix round 4 corrects that test-only elevation check: CSS rule bodies are now extracted before evaluating shadows, so a declaration in a later unrelated rule cannot satisfy the `.mobile-navigation` contract. Production visuals remain unchanged and the fix-round-2 captures remain current.
+1. Initial pass compared the normalized approved vocabulary mock and fresh `/learn/lesson-3` browser capture together at 1440 x 1024. It found no actionable P0, P1, or P2 issue. The hierarchy, three-column anatomy, compact video slot, bilingual rail, word controls, palette, radii, cultural assets, and wrapping were intact.
+2. No production fix was justified. The source's larger finished video, duplicate audio action, six-item navigation, and Vocabulary active state conflict with the later approved specification and current missing course media, so copying those differences would regress the product contract.
+3. A fresh second browser capture was made at the same route, state, viewport, density, and crop. The repeated combined comparison remained visually stable and found no actionable P0, P1, or P2 issue.
 
 ## Findings
 
 - No actionable P0, P1, or P2 findings remain.
-- Accepted product constraint: the source depicts a completed human video and marks Vocabulary active, while the application correctly marks Learn active and renders its approved missing-recording state. Changing either would alter existing navigation or content behavior outside Task 10.
+- Accepted product constraint: real member and dialogue recordings have not been supplied. The application correctly keeps honest coming-soon states and no false playback controls; media content readiness remains separate from UI readiness.
+- Residual evidence limit: the in-app browser's synthetic Tab command did not advance focus in this subagent thread. Browser-rendered responsive focus order and the passing native-navigation regression tests verify the intended destinations, but a final physical-key spot check may still be useful before coursework submission.
 
-## Open questions
+## Final acceptance checklist
 
-- None.
-
-## Implementation checklist
-
-- [x] Keep compact navigation through 1100 px and verify desktop navigation at 1280/1480 px.
-- [x] Align the compact trigger with its right-anchored panel.
-- [x] Preserve visible keyboard focus on the open menu and Practice programmatic transitions.
-- [x] Apply Stage semantic tokens and approved surface geometry throughout the product.
-- [x] Verify desktop, intermediate, mobile full-page, reduced-motion, and console states.
-- [x] Compare the rendered desktop and focused regions with the source visual.
-- [x] Measure meaningful text and component-boundary token pairings against WCAG thresholds.
-- [x] Re-capture and compare the higher-contrast vermilion control, compact boundary, Practice legend, and semantic status surfaces.
-- [x] Protect the approved palette, geometry, and menu-only elevation from additional Tailwind v4 and inline-style escape forms.
-
-## Follow-up polish
-
-- P3 only: replace the standard icon if a separate approved palace wordmark asset is supplied later.
+- [x] `/` reaches Lesson 1 without Start or Continue UI.
+- [x] Primary navigation contains only Learn, Practice, Dialogue, and Team.
+- [x] Learn allows free bilingual word selection and sequential Previous/Next navigation.
+- [x] Course ownership selects the member; no speaker selector or duplicate learner audio exists.
+- [x] Korean, English, romanization, spoken hint, bilingual example, and usage support are visible.
+- [x] Compact member media and word controls fit above the target desktop fold.
+- [x] Practice is lesson-grouped and explains errors in English.
+- [x] Dialogue shows one active main video state, context, roles, and bilingual transcript.
+- [x] Team is clean by default and supports the tested member cards without readiness warnings.
+- [x] Desktop, tablet, and mobile routes have no horizontal overflow.
+- [x] Keyboard focus order, Korean language boundaries, contrast contracts, and reduced motion have passing automated coverage.
+- [x] Test, typecheck, lint, production build, and Sites worker checks exit 0.
 
 final result: passed

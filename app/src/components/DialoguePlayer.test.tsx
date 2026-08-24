@@ -21,7 +21,7 @@ describe('DialoguePlayer', () => {
     expect(screen.getByRole('heading', { name: dialogue.title })).toBeVisible()
     expect(screen.getByText(dialogue.scenario)).toBeVisible()
     expect(screen.getByText('Member 1 and Member 2').parentElement).toHaveTextContent('Roles: Member 1 and Member 2')
-    expect(screen.getAllByLabelText(`${dialogue.title} role-play video transcript`)).toHaveLength(1)
+    expect(screen.getAllByRole('figure')).toHaveLength(1)
 
     const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
     const lines = within(transcript).getAllByRole('listitem')
@@ -29,6 +29,21 @@ describe('DialoguePlayer', () => {
     expect(lines[0]).toHaveTextContent('Line 1 · Member 1')
     expect(within(lines[0]).getByText('안녕하세요.')).toHaveAttribute('lang', 'ko')
     expect(within(lines[0]).getByText('Hello.')).toHaveAttribute('lang', 'en')
+  })
+
+  it('renders every Korean dialogue occurrence once and inside a Korean language boundary', () => {
+    render(<DialoguePlayer dialogue={course.dialogues[0]} members={course.members} />)
+
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    const koreanTextNodes: Text[] = []
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (/[가-힣]/.test(node.textContent ?? '')) koreanTextNodes.push(node as Text)
+    }
+
+    expect(koreanTextNodes).toHaveLength(8)
+    for (const node of koreanTextNodes) {
+      expect(node.parentElement?.closest('[lang="ko"]')).not.toBeNull()
+    }
   })
 
   it('does not show line selection, line audio, or contributor recording instructions', () => {
@@ -76,7 +91,7 @@ describe('DialoguePage', () => {
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('Meeting someone for the first time')).toBeVisible()
     expect(screen.queryByText('Talking about jobs')).not.toBeInTheDocument()
-    expect(screen.getAllByLabelText(/role-play video transcript/)).toHaveLength(1)
+    expect(screen.getAllByRole('figure')).toHaveLength(1)
 
     await user.click(secondDialogue)
 
@@ -86,7 +101,7 @@ describe('DialoguePage', () => {
     expect(screen.getByText('Talking about jobs')).toBeVisible()
     expect(screen.getByText('다니엘은 학생이에요?')).toHaveAttribute('lang', 'ko')
     expect(screen.getByText('Daniel, are you a student?')).toHaveAttribute('lang', 'en')
-    expect(screen.getAllByLabelText(/role-play video transcript/)).toHaveLength(1)
+    expect(screen.getAllByRole('figure')).toHaveLength(1)
   })
 
   it('does not write learner progress or show completion controls', async () => {

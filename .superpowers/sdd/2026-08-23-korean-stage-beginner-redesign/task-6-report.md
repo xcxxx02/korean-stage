@@ -102,3 +102,27 @@ Result: 2 test files passed; 35 tests passed; 0 failures. Dialogue counts, speak
 Commit message: `feat: simplify beginner dialogue experience`
 
 The exact commit hash is reported in the Task 6 handoff.
+
+## Fix round 1 — remove untagged duplicate dialogue transcript
+
+### Review finding resolved
+
+- Removed the second complete mixed-language dialogue string that `DialoguePlayer` passed to `MemberVideo` while the ordered bilingual transcript already supplied the accessible adjacent text.
+- Made `MemberVideo.transcript` optional and render its figcaption only when a caller supplies one. Vocabulary and other existing callers retain their current adjacent transcript; Dialogue omits only the redundant copy.
+- Kept the single dialogue media figure, native video label/controls for human media, honest missing-media alert, and the ordered transcript beside the media.
+- Added a DOM-level regression test that collects every rendered Hangul text node, requires exactly the eight coursework lines, and verifies every occurrence is inside a `lang="ko"` boundary. Before the fix it found nine occurrences because the untagged mixed figcaption duplicated all lines.
+
+### TDD and verification
+
+- RED: `npm test -- src/components/DialoguePlayer.test.tsx` — 1 file failed; the new test expected 8 Korean text nodes and found 9.
+- Focused GREEN: `npm test -- src/components/DialoguePlayer.test.tsx src/components/MemberVideo.test.tsx` — 2 files, 13 tests passed.
+- Full suite: `npm test` — 26 files, 184 tests passed.
+- `npm run typecheck` — passed.
+- `npm run lint` — passed.
+- `git diff --check` — passed with only the repository's LF-to-CRLF checkout notices.
+
+### Fix commit
+
+Commit message: `fix: remove duplicate dialogue transcript`
+
+The exact commit hash is reported in the Task 6 fix-round handoff.

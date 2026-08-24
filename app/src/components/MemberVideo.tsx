@@ -5,7 +5,7 @@ import type { MediaSource } from '../content/types'
 type MemberVideoProps = {
   source: MediaSource
   memberName: string
-  transcript: string
+  transcript?: string
   mediaLabel?: string
   missingDescription?: string
   missingHeading?: string
@@ -125,7 +125,7 @@ export function MemberVideo({
   }
 
   return (
-    <figure aria-label={`${mediaLabel} transcript`} className={`member-video m-0 grid gap-4 ${className}`}>
+    <figure aria-label={transcript ? `${mediaLabel} transcript` : undefined} className={`member-video m-0 grid gap-4 ${className}`}>
       {primaryControlLabel ? (
         <button
           className="inline-flex min-h-12 items-center justify-center rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white hover:bg-stage-cobalt-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:bg-stage-disabled disabled:text-stage-muted"
@@ -140,10 +140,12 @@ export function MemberVideo({
         </button>
       ) : null}
       {mediaPanel}
-      <figcaption className="border-l border-stage-jade pl-4 text-sm leading-6 text-stage-muted">
-        <span className="block font-semibold text-stage-charcoal">Transcript</span>
-        {transcript}
-      </figcaption>
+      {transcript ? (
+        <figcaption className="border-l border-stage-jade pl-4 text-sm leading-6 text-stage-muted">
+          <span className="block font-semibold text-stage-charcoal">Transcript</span>
+          {transcript}
+        </figcaption>
+      ) : null}
     </figure>
   )
 }

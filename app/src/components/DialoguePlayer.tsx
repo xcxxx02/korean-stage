@@ -9,9 +9,6 @@ type DialoguePlayerProps = {
 export function DialoguePlayer({ dialogue, members }: DialoguePlayerProps) {
   const memberName = (speakerId: string) => members.find((member) => member.id === speakerId)?.name ?? 'Course member'
   const speakers = dialogue.speakerIds.map(memberName).join(' and ')
-  const fullTranscript = dialogue.lines
-    .map((line) => `${memberName(line.speakerId)}: ${line.korean} ${line.english}`)
-    .join(' ')
 
   return (
     <section aria-labelledby={`${dialogue.id}-heading`} className="grid gap-8">
@@ -33,7 +30,6 @@ export function DialoguePlayer({ dialogue, members }: DialoguePlayerProps) {
         playbackErrorHeading="Dialogue video unavailable"
         showRecordingChecklist={false}
         source={dialogue.video}
-        transcript={fullTranscript}
       />
 
       <div>

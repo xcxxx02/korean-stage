@@ -49,14 +49,16 @@ export function getPrimaryNavigationItems(routes: readonly RouteManifestEntry[] 
 export function validatePrimaryNavigation(routes: readonly RouteManifestEntry[] = appRouteManifest): PrimaryNavigationIssue[] {
   return requiredPrimaryDestinations.flatMap((required) => {
     const registered = routes.find((route) => route.id === required.id)
+    const requiredDestination = 'primaryNavigationTo' in required ? required.primaryNavigationTo : undefined
     const matches = registered
       && !registered.index
       && registered.path === required.path
       && registered.primaryNavigationLabel === required.primaryNavigationLabel
+      && registered.primaryNavigationTo === requiredDestination
 
     return matches ? [] : [{
       id: required.id,
-      message: `Restore the ${required.primaryNavigationLabel} primary navigation route at /${required.path}.`,
+      message: `Restore the ${required.primaryNavigationLabel} primary navigation route at ${requiredDestination ?? `/${required.path}`}.`,
     }]
   })
 }

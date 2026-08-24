@@ -83,6 +83,12 @@ describe('Korean Stage visual-system contract', () => {
     expect(styles).toMatch(/\.mobile-navigation a:focus-visible\s*\{[\s\S]*?outline-offset:\s*-3px;/)
   })
 
+  it('keeps strong focus treatment and removes nonessential motion when requested', () => {
+    expect(styles).toMatch(/:where\(a, button, select, input\):focus-visible\s*\{[^}]*outline:\s*3px solid var\(--stage-focus\);[^}]*outline-offset:\s*3px;/s)
+    expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition-duration:\s*0\.01ms !important;/)
+    expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?scroll-behavior:\s*auto !important;/)
+  })
+
   it('allows elevation only on the compact navigation menu', () => {
     const rules = cssRuleBodies(styles)
     const menuRules = rules.filter(({ selector }) => selector === '.mobile-navigation')

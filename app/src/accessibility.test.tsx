@@ -102,6 +102,24 @@ describe('default-route accessibility', () => {
     expect(document.querySelector('audio')).not.toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
+
+  it('marks every rendered Korean text run in Learn with the Korean language', () => {
+    const { container } = renderRoute('/learn/lesson-3')
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+    const untaggedKorean: string[] = []
+
+    while (walker.nextNode()) {
+      const textNode = walker.currentNode
+      const text = textNode.textContent?.trim() ?? ''
+      const parent = textNode.parentElement
+      if (/[가-힯]/.test(text) && !parent?.closest('[lang="ko"]')) untaggedKorean.push(text)
+    }
+
+    expect(untaggedKorean).toEqual([])
+    for (const node of container.querySelectorAll('[data-korean-content]')) {
+      expect(node).toHaveAttribute('lang', 'ko')
+    }
+  })
 })
 
 describe('keyboard-complete primary flows', () => {

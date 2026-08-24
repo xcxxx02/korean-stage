@@ -47,7 +47,7 @@ export function LearnPage() {
         )
 
   return (
-    <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 lg:py-16">
+    <section className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:py-12">
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div className="max-w-3xl">
           <p className="m-0 text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">

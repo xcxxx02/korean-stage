@@ -55,4 +55,29 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/:where\(\.site-brand, \.desktop-navigation a, \.mobile-navigation a\)\s*\{[^}]*min-height:\s*2\.75rem;/s)
   })
 
+  it('uses a bilingual mobile vocabulary chooser without horizontal scrolling', () => {
+    render(<VocabularyJourney items={occupationItems} />)
+
+    const chooser = screen.getByRole('combobox', { name: 'Choose vocabulary word' })
+    expect(within(chooser).getByRole('option', { name: '1. 학생 — Student' })).toBeVisible()
+    expect(within(chooser).getByRole('option', { name: '8. 요리사 — Chef' })).toBeVisible()
+    expect(styles).toMatch(/\.learn-word-chooser\s*\{[^}]*display:\s*grid;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-word-chooser\s*\{[^}]*display:\s*none;/)
+  })
+
+  it('stacks Learn by default and uses the approved three-column anatomy at 70rem', () => {
+    render(<VocabularyJourney items={occupationItems} />)
+
+    expect(screen.getByRole('region', { name: 'Choose a word' })).toHaveClass('learn-layout')
+    expect(screen.getByRole('complementary', { name: 'Ordered vocabulary words' })).toHaveClass('learn-word-rail')
+    expect(screen.getByRole('region', { name: 'Member vocabulary video' })).toHaveClass('learn-media')
+    const details = screen.getByRole('complementary', { name: 'Vocabulary learning details' })
+    expect(details).toHaveClass('learn-details')
+    expect(within(details).getByRole('navigation', { name: 'Word navigation' })).toBeVisible()
+
+    expect(styles).toMatch(/\.learn-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*gap:\s*1\.25rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout\s*\{[^}]*grid-template-columns:\s*12rem minmax\(24rem, 1fr\) minmax\(18rem, 21rem\);/)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-media video,[\s\S]*?height:\s*clamp\(14rem, 28vh, 19rem\);/)
+  })
+
 })

@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { courseLessons } from '../content/course'
 import type { LessonSlug } from '../content/types'
 
 export function LessonSelector({ activeSlug }: { activeSlug: LessonSlug }) {
   const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key !== 'Escape' || !open) return
+      setOpen(false)
+      triggerRef.current?.focus()
     }
 
     window.addEventListener('keydown', closeOnEscape)
     return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [])
+  }, [open])
 
   return (
     <div className="lesson-selector relative">
@@ -21,6 +24,7 @@ export function LessonSelector({ activeSlug }: { activeSlug: LessonSlug }) {
         aria-expanded={open}
         className="inline-flex min-h-12 items-center rounded-xl border border-stage-border bg-stage-white px-4 py-3 font-bold text-stage-charcoal hover:border-stage-cobalt hover:text-stage-cobalt"
         onClick={() => setOpen((value) => !value)}
+        ref={triggerRef}
         type="button"
       >
         All lessons
@@ -35,6 +39,7 @@ export function LessonSelector({ activeSlug }: { activeSlug: LessonSlug }) {
               <Link
                 aria-current={lesson.slug === activeSlug ? 'page' : undefined}
                 className="grid rounded-xl px-3 py-2 text-stage-charcoal no-underline hover:bg-stage-cobalt-soft hover:text-stage-cobalt"
+                onClick={() => setOpen(false)}
                 to={`/learn/${lesson.slug}`}
               >
                 <span className="text-xs font-bold uppercase tracking-wide text-stage-muted">

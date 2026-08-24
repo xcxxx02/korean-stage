@@ -317,4 +317,17 @@ describe('SubmissionReadiness', () => {
       'Restore the Team primary navigation route at /team.',
     )
   })
+
+  it('does not pass navigation when Learn loses its direct Lesson 1 destination', () => {
+    const routes = appRouteManifest.map((route) => route.id === 'learn'
+      ? { id: 'learn', path: 'learn', primaryNavigationLabel: 'Learn' }
+      : route)
+
+    render(<SubmissionReadiness course={validCourse} {...{ routes }} />)
+
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Primary navigation')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Restore the Learn primary navigation route at /learn/lesson-1.',
+    )
+  })
 })

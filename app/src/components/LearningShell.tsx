@@ -13,7 +13,7 @@ type LearningShellProps = {
 
 export function LearningShell({ heading, progress, progressLabel = 'Lesson progress', progressMarkers, rail, media, details, controls }: LearningShellProps) {
   return (
-    <section className="stage-learning-shell mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-14 lg:py-5">
+    <section className="stage-learning-shell w-full py-8 lg:py-5">
       <div className="stage-learning-header mb-5 grid gap-4">
         <h2 className="m-0 text-3xl font-bold tracking-tight text-stage-charcoal sm:text-4xl">{heading}</h2>
         <div className="stage-learning-progress" aria-label={progress}>
@@ -24,13 +24,15 @@ export function LearningShell({ heading, progress, progressLabel = 'Lesson progr
           {progressMarkers}
         </div>
       </div>
-      <div className="stage-learning-grid grid gap-8">
-        <aside aria-label="Ordered vocabulary words" className="stage-learning-rail">{rail}</aside>
-        <section aria-label="Member vocabulary video" className="stage-learning-media min-w-0">
+      <div aria-label={heading} className="learn-layout stage-learning-grid" role="region">
+        <aside aria-label="Ordered vocabulary words" className="learn-word-rail stage-learning-rail">{rail}</aside>
+        <section aria-label="Member vocabulary video" className="learn-media stage-learning-media">
           {media}
-          <div className="mt-4">{controls}</div>
         </section>
-        <aside aria-label="Vocabulary learning details" className="stage-learning-details">{details}</aside>
+        <aside aria-label="Vocabulary learning details" className="learn-details stage-learning-details">
+          {details}
+          {controls}
+        </aside>
       </div>
     </section>
   )

@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const publicAsset = (name: string) => resolve(process.cwd(), 'public', 'assets', 'culture', name)
-const sourceFile = (name: string) => readFileSync(resolve(process.cwd(), 'src', 'components', name), 'utf8')
+const componentSource = (name: string) => readFileSync(resolve(process.cwd(), 'src', 'components', name), 'utf8')
 
 describe('Korean cultural asset contract', () => {
   it.each([
@@ -20,6 +20,14 @@ describe('Korean cultural asset contract', () => {
   })
 
   it('integrates the coming-soon media artwork', () => {
-    expect(sourceFile('MemberVideo.tsx')).toContain('/assets/culture/video-coming-soon.png')
+    expect(componentSource('MemberVideo.tsx')).toContain('/assets/culture/video-coming-soon.png')
+  })
+
+  it('keeps the approved palace gate, obangsaek band, and palace line art in the application shell', () => {
+    const shell = componentSource('AppShell.tsx')
+
+    expect(shell).toContain('/assets/culture/palace-gate-mark-v2.png')
+    expect(shell).toContain('/assets/culture/obangsaek-band-v2.png')
+    expect(shell).toContain('/assets/culture/korean-stage-background-v2.png')
   })
 })

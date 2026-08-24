@@ -13,7 +13,7 @@ function grammarTip(item: VocabularyItem) {
   const noun = item.unitId === 'unit-2' ? '사람' : item.korean
   const ending = item.koreanExample.endsWith('이에요.') ? 'consonant' : 'vowel'
   const copula = ending === 'consonant' ? '이에요' : '예요'
-  return `${noun} ends in a ${ending}, so use ${copula}.`
+  return { noun, ending, copula }
 }
 
 export function VocabularyJourney({ items }: VocabularyJourneyProps) {
@@ -32,31 +32,49 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
   const item = items[safeActiveIndex]
   const member = course.members.find((candidate) => candidate.id === item.ownerId)
   const memberName = member?.name ?? 'Course member'
+  const tip = grammarTip(item)
 
   const rail = (
-    <ol aria-label="Vocabulary words" className="vocabulary-word-list">
-      {items.map((word, index) => {
-        const isActive = index === safeActiveIndex
-        return (
-          <li key={word.id}>
-            <button
-              aria-current={isActive ? 'true' : undefined}
-              aria-label={`${index + 1}. ${word.korean}, ${word.english}`}
-              className="vocabulary-word-button"
-              onClick={() => setActiveIndex(index)}
-              type="button"
-            >
-              <span aria-hidden="true" className="vocabulary-word-number">{index + 1}</span>
-              <span className="vocabulary-word-copy">
-                <span data-korean-content lang="ko">{word.korean}</span>
-                <span lang="en">{word.english}</span>
-                {isActive ? <span className="vocabulary-word-current">Now learning</span> : null}
-              </span>
-            </button>
-          </li>
-        )
-      })}
-    </ol>
+    <>
+      <label className="learn-word-chooser">
+        <span>Choose vocabulary word</span>
+        <select
+          aria-label="Choose vocabulary word"
+          onChange={(event) => {
+            const nextIndex = items.findIndex((word) => word.id === event.target.value)
+            if (nextIndex >= 0) setActiveIndex(nextIndex)
+          }}
+          value={item.id}
+        >
+          {items.map((word, index) => (
+            <option key={word.id} lang="ko" value={word.id}>{index + 1}. {word.korean} — {word.english}</option>
+          ))}
+        </select>
+      </label>
+      <ol aria-label="Vocabulary words" className="vocabulary-word-list">
+        {items.map((word, index) => {
+          const isActive = index === safeActiveIndex
+          return (
+            <li key={word.id}>
+              <button
+                aria-current={isActive ? 'true' : undefined}
+                aria-label={`${index + 1}. ${word.korean}, ${word.english}`}
+                className="vocabulary-word-button"
+                onClick={() => setActiveIndex(index)}
+                type="button"
+              >
+                <span aria-hidden="true" className="vocabulary-word-number">{index + 1}</span>
+                <span className="vocabulary-word-copy">
+                  <span data-korean-content lang="ko">{word.korean}</span>
+                  <span lang="en">{word.english}</span>
+                  {isActive ? <span className="vocabulary-word-current">Now learning</span> : null}
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </>
   )
 
   const media = (
@@ -66,7 +84,7 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
         memberName={memberName}
         mode="learner"
         source={item.video}
-        transcript={`${item.koreanExample} ${item.englishExample}`}
+        transcript={{ korean: item.koreanExample, english: item.englishExample }}
       />
       <p className="stage-media-presenter">Presented by {memberName}</p>
     </div>
@@ -100,7 +118,11 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
         <GraduationCap aria-hidden="true" size={26} weight="fill" />
         <div>
           <h3 id={`${item.id}-grammar-heading`}>Grammar tip</h3>
-          <p>{grammarTip(item)}</p>
+          <p>
+            <span data-korean-content lang="ko">{tip.noun}</span>
+            {' '}ends in a {tip.ending}, so use{' '}
+            <span data-korean-content lang="ko">{tip.copula}</span>.
+          </p>
         </div>
       </section>
     </div>

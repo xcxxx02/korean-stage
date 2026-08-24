@@ -84,7 +84,18 @@ describe('VocabularyJourney', () => {
     expect(within(details).getByText('저는 학생이에요.')).toHaveAttribute('lang', 'ko')
     expect(within(details).getByText('I am a student.')).toHaveAttribute('lang', 'en')
     expect(within(details).getByRole('heading', { name: 'Grammar tip' })).toBeVisible()
-    expect(within(details).getByText('학생 ends in a consonant, so use 이에요.')).toBeVisible()
+    const grammarTip = within(details).getByRole('region', { name: 'Grammar tip' })
+    expect(grammarTip).toHaveTextContent('학생 ends in a consonant, so use 이에요.')
+    expect(within(grammarTip).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(grammarTip).getByText('이에요')).toHaveAttribute('lang', 'ko')
+  })
+
+  it('keeps Korean and English transcript runs in separate language boundaries', () => {
+    render(<VocabularyJourney items={occupationItems} />)
+
+    const transcript = screen.getByLabelText('Member 1 vocabulary video transcript')
+    expect(within(transcript).getByText('저는 학생이에요.')).toHaveAttribute('lang', 'ko')
+    expect(within(transcript).getByText('I am a student.')).toHaveAttribute('lang', 'en')
   })
 
   it('uses a compact honest alert when the assigned member video is missing', () => {

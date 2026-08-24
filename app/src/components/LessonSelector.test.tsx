@@ -23,10 +23,25 @@ describe('LessonSelector', () => {
 
     await user.click(screen.getByRole('button', { name: 'All lessons' }))
     expect(screen.getByRole('list', { name: 'Choose a lesson' })).toBeVisible()
+    await user.tab()
+    expect(screen.getByRole('link', { name: /Lesson 1 of 7/ })).toHaveFocus()
 
     await user.keyboard('{Escape}')
 
     expect(screen.queryByRole('list', { name: 'Choose a lesson' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'All lessons' })).toHaveAttribute('aria-expanded', 'false')
+    const trigger = screen.getByRole('button', { name: 'All lessons' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(trigger).toHaveFocus()
+  })
+
+  it('closes the lesson list after selecting a lesson', async () => {
+    const user = userEvent.setup()
+    renderApp(['/learn/lesson-3'])
+
+    await user.click(screen.getByRole('button', { name: 'All lessons' }))
+    await user.click(screen.getByRole('link', { name: /Lesson 4 of 7.*to be/ }))
+
+    expect(screen.queryByRole('list', { name: 'Choose a lesson' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: '이에요 / 예요 - to be' })).toBeVisible()
   })
 })

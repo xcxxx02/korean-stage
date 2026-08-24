@@ -5,7 +5,10 @@ import type { MediaSource } from '../content/types'
 type MemberVideoProps = {
   source: MediaSource
   memberName: string
-  transcript?: string
+  transcript?: {
+    korean: string
+    english: string
+  }
   mediaLabel?: string
   missingDescription?: string
   missingHeading?: string
@@ -143,7 +146,8 @@ export function MemberVideo({
       {transcript ? (
         <figcaption className="border-l border-stage-jade pl-4 text-sm leading-6 text-stage-muted">
           <span className="block font-semibold text-stage-charcoal">Transcript</span>
-          {transcript}
+          <span className="block" data-korean-content lang="ko">{transcript.korean}</span>
+          <span className="block" lang="en">{transcript.english}</span>
         </figcaption>
       ) : null}
     </figure>

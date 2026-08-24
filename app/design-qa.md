@@ -47,7 +47,7 @@
 - Mobile captures: `task-10-mobile-390x844-learn.png`, `task-10-mobile-390x844-practice.png`, `task-10-mobile-390x844-dialogue.png`, and `task-10-mobile-390x844-team.png` in the same directory.
 - Mobile menu: `task-10-mobile-390x844-menu-open.png`; the DOM exposes only the four approved destinations.
 - Free selection: `task-10-mobile-390x844-chef-selected.png`; selecting `8. 요리사 - Chef` updates the Korean heading, English meaning, trigger copy, and attribution to `Presented by Member 2` without overflow.
-- Historical Practice feedback capture: `task-10-mobile-390x844-practice-feedback.png`; an incorrect Lesson 3 answer shows `Not quite`, the correct answer, the bilingual explanation `학생 means Student.`, `Try again`, and `Next question`. A subsequent P2 review found that this mixed prompt/feedback copy lacked nested language boundaries and allowed `학생` to split at 390 px, so this pre-fix capture is not used as acceptance evidence. The structured renderer and no-break Korean-run style now cover both the prompt and incorrect-feedback state in passing DOM and source-contract regressions.
+- Historical Practice feedback capture: `task-10-mobile-390x844-practice-feedback.png`; an incorrect Lesson 3 answer shows `Not quite`, the correct answer, the bilingual explanation `학생 means Student.`, `Try again`, and `Next question`. A subsequent P2 review found that this mixed prompt/feedback copy lacked nested language boundaries and allowed `학생` to split at 390 px, so this pre-fix capture is not used as acceptance evidence. The structured renderer and no-break Korean-run style now cover both the prompt and incorrect-feedback state in passing DOM and source-contract regressions. In the fresh 390 px viewport override (375 px client width), both visible `학생` prompt runs rendered with `lang="ko"`, `white-space: nowrap`, one client rect, and zero horizontal overflow. After choosing `Teacher`, feedback rendered `학생` with `lang="ko"`, `white-space: nowrap`, and one client rect; `Student` and `means Student.` rendered with `lang="en"`; horizontal overflow remained zero.
 - Dialogue: selecting Dialogue 2 updates the active scenario to `Who are you?`, retains the honest coming-soon state, and exposes neither line-audio controls nor a contributor checklist.
 - Team: two member cards render by default with no `Submission readiness` or `Replace before submission` warning. Automated Team coverage also supplies four additional valid members and verifies all six contribution articles and accessible names, directly exercising the required 2–6-member range endpoints.
 - Browser console: zero warnings and zero errors across the checked routes and states.
@@ -75,7 +75,7 @@
 
 - The Practice mixed-language P2 is fixed and covered by DOM/accessibility and responsive no-break regressions. No actionable P0, P1, or P2 findings remain after the fix.
 - Accepted product constraint: real member and dialogue recordings have not been supplied. The application correctly keeps honest coming-soon states and no false playback controls; media content readiness remains separate from UI readiness.
-- Live verification limitation: after the fix and production rebuild, the Browser skill's inferred-URL connection reported no available browser backend. Per the Browser recovery contract, no standalone Playwright or unrelated browser surface was substituted. A fresh post-fix `/practice` 390 x 844 spot check remains pending browser reconnection; the earlier defect-state capture is explicitly excluded above.
+- Browser recovery history: this subagent's initial post-fix Browser skill connection reported no available backend, so no standalone Playwright or unrelated browser surface was substituted. Root subsequently completed the fresh `/practice` 390 px live verification recorded above.
 - Residual evidence limit: the in-app browser's synthetic Tab command did not advance focus in this subagent thread. Browser-rendered responsive focus order and the passing native-navigation regression tests verify the intended destinations, but a final physical-key spot check may still be useful before coursework submission.
 
 ## Final acceptance checklist
@@ -93,4 +93,4 @@
 - [x] Keyboard focus order, Korean language boundaries, contrast contracts, and reduced motion have passing automated coverage.
 - [x] Test, typecheck, lint, production build, and Sites worker checks exit 0.
 
-final result: automated fix passed; live Practice 390 px recheck pending browser reconnection
+final result: passed

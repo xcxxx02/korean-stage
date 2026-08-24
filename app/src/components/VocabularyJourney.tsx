@@ -1,5 +1,11 @@
-import { CaretLeft, CaretRight, GraduationCap } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { CaretDown, CaretLeft, CaretRight, GraduationCap } from '@phosphor-icons/react'
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { course } from '../content/course'
 import type { VocabularyItem } from '../content/types'
 import { LearningShell } from './LearningShell'
@@ -18,6 +24,15 @@ function grammarTip(item: VocabularyItem) {
 
 export function VocabularyJourney({ items }: VocabularyJourneyProps) {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [chooserOpen, setChooserOpen] = useState(false)
+  const [chooserFocusIndex, setChooserFocusIndex] = useState(0)
+  const chooserTriggerRef = useRef<HTMLButtonElement>(null)
+  const chooserOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const chooserListboxId = useId()
+
+  useEffect(() => {
+    if (chooserOpen) chooserOptionRefs.current[chooserFocusIndex]?.focus()
+  }, [chooserFocusIndex, chooserOpen])
 
   if (items.length === 0) {
     return (
@@ -34,23 +49,100 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
   const memberName = member?.name ?? 'Course member'
   const tip = grammarTip(item)
 
+  const closeChooser = (restoreFocus = true) => {
+    setChooserOpen(false)
+    if (restoreFocus) chooserTriggerRef.current?.focus()
+  }
+
+  const selectChooserWord = (index: number) => {
+    setActiveIndex(index)
+    closeChooser()
+  }
+
+  const moveChooserFocus = (event: ReactKeyboardEvent, nextIndex: number) => {
+    event.preventDefault()
+    setChooserFocusIndex(Math.max(0, Math.min(items.length - 1, nextIndex)))
+  }
+
   const rail = (
     <>
-      <label className="learn-word-chooser">
-        <span>Choose vocabulary word</span>
-        <select
-          aria-label="Choose vocabulary word"
-          onChange={(event) => {
-            const nextIndex = items.findIndex((word) => word.id === event.target.value)
-            if (nextIndex >= 0) setActiveIndex(nextIndex)
+      <div className="learn-word-chooser">
+        <button
+          aria-controls={chooserListboxId}
+          aria-expanded={chooserOpen}
+          aria-haspopup="listbox"
+          className="learn-word-chooser__trigger"
+          onClick={() => {
+            setChooserFocusIndex(safeActiveIndex)
+            setChooserOpen((open) => !open)
           }}
-          value={item.id}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown' || event.key === 'Home') {
+              moveChooserFocus(event, event.key === 'Home' ? 0 : safeActiveIndex)
+              setChooserOpen(true)
+            } else if (event.key === 'ArrowUp' || event.key === 'End') {
+              moveChooserFocus(event, event.key === 'End' ? items.length - 1 : safeActiveIndex)
+              setChooserOpen(true)
+            } else if (event.key === 'Escape' && chooserOpen) {
+              event.preventDefault()
+              closeChooser()
+            }
+          }}
+          ref={chooserTriggerRef}
+          type="button"
         >
-          {items.map((word, index) => (
-            <option key={word.id} lang="ko" value={word.id}>{index + 1}. {word.korean} — {word.english}</option>
-          ))}
-        </select>
-      </label>
+          <span className="learn-word-chooser__label">Choose vocabulary word</span>
+          <span className="learn-word-chooser__value">
+            <span aria-hidden="true">{safeActiveIndex + 1}.</span>
+            <span data-korean-content lang="ko">{item.korean}</span>
+            <span aria-hidden="true">—</span>
+            <span lang="en">{item.english}</span>
+          </span>
+          <CaretDown aria-hidden="true" size={20} weight="bold" />
+        </button>
+        {chooserOpen ? (
+          <div aria-label="Vocabulary words" className="learn-word-listbox" id={chooserListboxId} role="listbox">
+            {items.map((word, index) => {
+              const isActive = index === safeActiveIndex
+              return (
+                <button
+                  aria-selected={isActive}
+                  className="learn-word-option"
+                  key={word.id}
+                  onClick={() => selectChooserWord(index)}
+                  onFocus={() => setChooserFocusIndex(index)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowDown') moveChooserFocus(event, index + 1)
+                    else if (event.key === 'ArrowUp') moveChooserFocus(event, index - 1)
+                    else if (event.key === 'Home') moveChooserFocus(event, 0)
+                    else if (event.key === 'End') moveChooserFocus(event, items.length - 1)
+                    else if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      selectChooserWord(index)
+                    } else if (event.key === 'Escape') {
+                      event.preventDefault()
+                      closeChooser()
+                    } else if (event.key === 'Tab') {
+                      closeChooser(false)
+                    }
+                  }}
+                  ref={(node) => { chooserOptionRefs.current[index] = node }}
+                  role="option"
+                  tabIndex={index === chooserFocusIndex ? 0 : -1}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="learn-word-option__number">{index + 1}</span>
+                  <span className="learn-word-option__copy">
+                    <span data-korean-content lang="ko">{word.korean}</span>
+                    <span lang="en">{word.english}</span>
+                  </span>
+                  {isActive ? <span className="learn-word-option__current">Now learning</span> : null}
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
+      </div>
       <ol aria-label="Vocabulary words" className="vocabulary-word-list">
         {items.map((word, index) => {
           const isActive = index === safeActiveIndex
@@ -58,7 +150,6 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
             <li key={word.id}>
               <button
                 aria-current={isActive ? 'true' : undefined}
-                aria-label={`${index + 1}. ${word.korean}, ${word.english}`}
                 className="vocabulary-word-button"
                 onClick={() => setActiveIndex(index)}
                 type="button"

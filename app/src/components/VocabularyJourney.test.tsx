@@ -16,16 +16,11 @@ describe('VocabularyJourney', () => {
     const rail = screen.getByRole('list', { name: 'Vocabulary words' })
     const buttons = within(rail).getAllByRole('button')
     expect(buttons).toHaveLength(8)
-    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
-      '1. 학생, Student',
-      '2. 선생님, Teacher',
-      '3. 회사원, Office worker',
-      '4. 기자, Reporter',
-      '5. 의사, Doctor',
-      '6. 가수, Singer',
-      '7. 군인, Soldier',
-      '8. 요리사, Chef',
-    ])
+    expect(buttons.every((button) => !button.hasAttribute('aria-label'))).toBe(true)
+    expect(buttons[0]).toHaveAccessibleName(/학생.*Student.*Now learning/)
+    expect(buttons[7]).toHaveAccessibleName(/요리사.*Chef/)
+    expect(within(buttons[0]).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(buttons[0]).getByText('Student')).toHaveAttribute('lang', 'en')
     expect(buttons[0]).toHaveAttribute('aria-current', 'true')
     expect(within(buttons[0]).getByText('Now learning')).toBeVisible()
   })
@@ -34,13 +29,33 @@ describe('VocabularyJourney', () => {
     const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)
 
-    await user.click(screen.getByRole('button', { name: '8. 요리사, Chef' }))
+    await user.click(screen.getByRole('button', { name: /요리사.*Chef/ }))
 
     const details = screen.getByRole('complementary', { name: 'Vocabulary learning details' })
     expect(screen.getByRole('heading', { name: '요리사' })).toHaveAttribute('lang', 'ko')
     expect(within(details).getByText('Chef')).toBeVisible()
     expect(within(details).getByText('yorisa')).toBeVisible()
-    expect(screen.getByRole('button', { name: '8. 요리사, Chef' })).toHaveAttribute('aria-current', 'true')
+    expect(screen.getByRole('button', { name: /요리사.*Chef.*Now learning/ })).toHaveAttribute('aria-current', 'true')
+  })
+
+  it('supports keyboard selection in the compact bilingual listbox', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
+
+    const chooser = screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ })
+    expect(chooser).toHaveAttribute('aria-haspopup', 'listbox')
+    await user.click(chooser)
+    const student = screen.getByRole('option', { name: /학생.*Student/ })
+    expect(student).toHaveFocus()
+
+    await user.keyboard('{End}')
+    const chef = screen.getByRole('option', { name: /요리사.*Chef/ })
+    expect(chef).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    expect(screen.queryByRole('listbox', { name: 'Vocabulary words' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '요리사' })).toHaveAttribute('lang', 'ko')
+    expect(screen.getByRole('button', { name: /Choose vocabulary word.*요리사.*Chef/ })).toHaveFocus()
   })
 
   it('uses the assigned member video and never renders a speaker or audio selector', async () => {
@@ -48,7 +63,7 @@ describe('VocabularyJourney', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
     expect(screen.getByText('Presented by Member 1')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: '5. 의사, Doctor' }))
+    await user.click(screen.getByRole('button', { name: /의사.*Doctor/ }))
     expect(screen.getByText('Presented by Member 2')).toBeVisible()
     expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: /speaker/i })).not.toBeInTheDocument()
@@ -65,7 +80,7 @@ describe('VocabularyJourney', () => {
     expect(screen.getByRole('button', { name: 'Previous word' })).toBeEnabled()
     expect(localStorage.length).toBe(0)
 
-    await user.click(screen.getByRole('button', { name: '8. 요리사, Chef' }))
+    await user.click(screen.getByRole('button', { name: /요리사.*Chef/ }))
     expect(screen.getByRole('button', { name: 'Next word' })).toBeDisabled()
     expect(screen.queryByRole('button', { name: /finish vocabulary|vocabulary complete/i })).not.toBeInTheDocument()
     expect(localStorage.length).toBe(0)

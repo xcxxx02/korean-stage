@@ -120,6 +120,29 @@ describe('default-route accessibility', () => {
       expect(node).toHaveAttribute('lang', 'ko')
     }
   })
+
+  it('does not scope English copy as Korean or flatten bilingual control names into aria-labels', async () => {
+    const user = userEvent.setup()
+    const { container } = renderRoute('/learn/lesson-3')
+    await user.click(screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ }))
+
+    const wronglyScopedEnglish = [...container.querySelectorAll('[lang="ko"]')]
+      .map((node) => node.textContent?.trim() ?? '')
+      .filter((text) => /[A-Za-z]/.test(text))
+    const mixedLanguageAriaLabels = [...container.querySelectorAll('[aria-label]')]
+      .map((node) => node.getAttribute('aria-label') ?? '')
+      .filter((label) => /[가-힯]/.test(label) && /[A-Za-z]/.test(label))
+
+    expect(wronglyScopedEnglish).toEqual([])
+    expect(mixedLanguageAriaLabels).toEqual([])
+
+    const results = await axe.run(container, {
+      rules: {
+        'color-contrast': { enabled: false },
+      },
+    })
+    expect(results.violations).toEqual([])
+  })
 })
 
 describe('keyboard-complete primary flows', () => {
@@ -143,7 +166,7 @@ describe('keyboard-complete primary flows', () => {
     expect(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })).toBeVisible()
     await user.keyboard('[Escape]')
 
-    const chef = screen.getByRole('button', { name: '8. 요리사, Chef' })
+    const chef = screen.getByRole('button', { name: /요리사.*Chef/ })
     await tabTo(user, chef)
     await user.keyboard('[Enter]')
     expect(screen.getByRole('heading', { name: '요리사' })).toHaveAttribute('lang', 'ko')

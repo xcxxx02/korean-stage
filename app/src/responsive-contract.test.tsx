@@ -1,6 +1,7 @@
 /// <reference types="node" />
 
 import { cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -20,16 +21,9 @@ describe('responsive beginner contracts', () => {
 
     const rail = screen.getByRole('list', { name: 'Vocabulary words' })
     const buttons = within(rail).getAllByRole('button')
-    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
-      '1. 학생, Student',
-      '2. 선생님, Teacher',
-      '3. 회사원, Office worker',
-      '4. 기자, Reporter',
-      '5. 의사, Doctor',
-      '6. 가수, Singer',
-      '7. 군인, Soldier',
-      '8. 요리사, Chef',
-    ])
+    expect(buttons.every((button) => !button.hasAttribute('aria-label'))).toBe(true)
+    expect(buttons[0]).toHaveAccessibleName(/학생.*Student.*Now learning/)
+    expect(buttons[7]).toHaveAccessibleName(/요리사.*Chef/)
     expect(buttons[0]).toHaveAttribute('aria-current', 'true')
     expect(within(buttons[0]).getByText('Now learning')).toBeVisible()
 
@@ -55,12 +49,24 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/:where\(\.site-brand, \.desktop-navigation a, \.mobile-navigation a\)\s*\{[^}]*min-height:\s*2\.75rem;/s)
   })
 
-  it('uses a bilingual mobile vocabulary chooser without horizontal scrolling', () => {
+  it('uses a compact bilingual mobile listbox chooser without horizontal scrolling', async () => {
+    const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)
 
-    const chooser = screen.getByRole('combobox', { name: 'Choose vocabulary word' })
-    expect(within(chooser).getByRole('option', { name: '1. 학생 — Student' })).toBeVisible()
-    expect(within(chooser).getByRole('option', { name: '8. 요리사 — Chef' })).toBeVisible()
+    const chooser = screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ })
+    expect(chooser).toHaveAttribute('aria-haspopup', 'listbox')
+    expect(chooser).toHaveAttribute('aria-expanded', 'false')
+    expect(within(chooser).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(chooser).getByText('Student')).toHaveAttribute('lang', 'en')
+    await user.click(chooser)
+
+    const listbox = screen.getByRole('listbox', { name: 'Vocabulary words' })
+    const firstOption = within(listbox).getByRole('option', { name: /학생.*Student/ })
+    const lastOption = within(listbox).getByRole('option', { name: /요리사.*Chef/ })
+    expect(within(firstOption).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(firstOption).getByText('Student')).toHaveAttribute('lang', 'en')
+    expect(within(lastOption).getByText('요리사')).toHaveAttribute('lang', 'ko')
+    expect(within(lastOption).getByText('Chef')).toHaveAttribute('lang', 'en')
     expect(styles).toMatch(/\.learn-word-chooser\s*\{[^}]*display:\s*grid;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-word-chooser\s*\{[^}]*display:\s*none;/)
   })

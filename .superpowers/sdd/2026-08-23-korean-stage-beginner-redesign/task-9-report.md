@@ -60,3 +60,34 @@ Route checked: `/learn/lesson-3`.
 
 - Real member recordings remain missing in the development course data. The UI intentionally shows the honest existing coming-soon state; this is coursework content readiness, not a Task 9 UI defect.
 - The pre-existing untracked `docs/audit/` directory was not modified, staged, or committed.
+
+## Review Follow-up — Bilingual Vocabulary Control (2026-08-24)
+
+The review correctly identified that the native mobile `select` scoped each whole bilingual option as Korean, including its English text, and that the desktop rail's mixed-language `aria-label` flattened the segmented visible label. This follow-up supersedes the earlier report's native-chooser implementation note.
+
+### Resolution
+
+- Replaced the native mobile select with a compact disclosure button and listbox. The button exposes `aria-haspopup="listbox"`, `aria-expanded`, and `aria-controls`; the listbox uses roving focus, Arrow/Home/End navigation, Enter/Space selection, Escape close with trigger-focus restoration, and Tab close.
+- Kept every Korean word in its own visible `<span lang="ko">` and every English gloss in its own visible `<span lang="en">` in both the closed chooser and every listbox option.
+- Removed the mixed bilingual `aria-label` from desktop vocabulary buttons so their accessible names come from the correctly segmented visible descendants.
+- Kept the chooser width constrained to its mobile column and the popup list vertically scrollable with horizontal overflow hidden.
+
+### TDD Evidence
+
+Before production edits, the new tests failed on the native options' Korean-scoped English, the desktop mixed-language labels, and the missing segmented listbox. A first implementation also failed axe's button-name rule when a button was forced to `role="combobox"`; using the disclosure-button/listbox contract restored content-derived bilingual naming.
+
+The final regression coverage rejects any `lang="ko"` subtree containing Latin copy, rejects any `aria-label` containing both Hangul and Latin text, verifies Korean and English language spans in the chooser and options, verifies desktop controls have no overriding label, and exercises listbox keyboard selection and focus restoration.
+
+### Follow-up Verification
+
+- Focused language/accessibility/responsive/visual suite: 4 files, 46 tests passed.
+- Full Vitest suite: 21 files, 170 tests passed.
+- TypeScript: `npm run typecheck` passed.
+- ESLint: `npm run lint` passed.
+- `git diff --check`: passed with only existing Windows line-ending notices.
+- A fresh live-browser rerun could not be performed because no browser backend was available. The original Task 9 desktop/tablet/mobile live QA above remains valid for the unchanged layout; the changed chooser behavior and overflow contract are covered by the focused tests.
+
+### Follow-up Concerns
+
+- None in the bilingual control implementation.
+- The pre-existing untracked `docs/audit/` directory remains untouched.

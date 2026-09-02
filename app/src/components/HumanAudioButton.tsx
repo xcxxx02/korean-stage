@@ -13,7 +13,7 @@ export function HumanAudioButton({ source, memberName, label = `Listen to ${memb
   const [playbackErrorKey, setPlaybackErrorKey] = useState<string | null>(null)
   const sourceKey = `${source.kind}:${source.src ?? 'missing'}:${memberName}:${label}`
   const hasPlaybackError = playbackErrorKey === sourceKey
-  const isHumanRecording = source.kind === 'human-recording' && source.src !== null
+  const isHumanRecording = source.kind === 'human-recording' && Boolean(source.src?.trim())
   const canPlay = isHumanRecording && !hasPlaybackError
   const status = hasPlaybackError
     ? <span>Audio playback unavailable. Continue with the written example.</span>

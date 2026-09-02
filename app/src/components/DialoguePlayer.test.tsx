@@ -1,13 +1,9 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { course } from '../content/course'
 import { validCourse } from '../test/fixtures'
 import { DialoguePage } from '../pages/DialoguePage'
-import { HomePage } from '../pages/HomePage'
-import { UnitPage } from '../pages/UnitPage'
-import { readProgress } from '../progress/progressStore'
 import { DialoguePlayer } from './DialoguePlayer'
 
 afterEach(() => {
@@ -17,220 +13,107 @@ afterEach(() => {
 
 beforeEach(() => localStorage.clear())
 
-const recordingChecklist = [
-  "Show every speaker's face",
-  "Use each member's real voice",
-  'Act naturally',
-  'Record 1-3 minutes',
-  'Maintain clear pronunciation and uninterrupted flow',
-  'Avoid background noise',
-  'Never use AI voice',
-] as const
-
 describe('DialoguePlayer', () => {
-  it('puts the full human role-play before an eight-line bilingual transcript with real member labels', () => {
-    const dialogue = validCourse.dialogues[0]
-    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
+  it('shows the scenario, English role labels, one primary video area, and a bilingual transcript', () => {
+    const dialogue = course.dialogues[0]
+    render(<DialoguePlayer dialogue={dialogue} members={course.members} />)
 
-    const fullPlayback = screen.getByRole('button', { name: 'Play full role-play video' })
-    expect(fullPlayback).toBeEnabled()
+    expect(screen.getByRole('heading', { name: dialogue.title })).toBeVisible()
+    expect(screen.getByText(dialogue.scenario)).toBeVisible()
+    expect(screen.getByText('Member 1 and Member 2').parentElement).toHaveTextContent('Roles: Member 1 and Member 2')
+    expect(screen.getAllByRole('figure')).toHaveLength(1)
+
     const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
-    expect(fullPlayback.compareDocumentPosition(transcript) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-
     const lines = within(transcript).getAllByRole('listitem')
     expect(lines).toHaveLength(8)
-    expect(transcript.querySelectorAll('[lang="ko"]')).toHaveLength(8)
-    expect(transcript.querySelectorAll('[lang="en"]')).toHaveLength(8)
-    expect(lines[0]).toHaveTextContent('Amina Rahman')
-    expect(lines[1]).toHaveTextContent('Daniel Lee')
-    expect(within(transcript).getByRole('button', { name: 'Listen to line 1 by Amina Rahman' })).toBeEnabled()
+    expect(lines[0]).toHaveTextContent('Line 1 · Member 1')
+    expect(within(lines[0]).getByText('안녕하세요.')).toHaveAttribute('lang', 'ko')
+    expect(within(lines[0]).getByText('Hello.')).toHaveAttribute('lang', 'en')
   })
 
-  it('marks a selected line current without hiding any English translation', async () => {
-    const user = userEvent.setup()
-    render(<DialoguePlayer dialogue={validCourse.dialogues[0]} members={validCourse.members} />)
-
-    const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
-    const lines = within(transcript).getAllByRole('listitem')
-    const firstSelector = within(lines[0]).getByRole('button', { name: 'Select line 1 by Amina Rahman' })
-    expect(firstSelector).toHaveAttribute('aria-current', 'true')
-    expect(within(firstSelector).getByText('Current line')).toBeVisible()
-
-    await user.click(within(lines[4]).getByRole('button', { name: 'Select line 5 by Amina Rahman' }))
-
-    const fifthSelector = within(lines[4]).getByRole('button', { name: 'Select line 5 by Amina Rahman' })
-    expect(firstSelector).not.toHaveAttribute('aria-current')
-    expect(within(firstSelector).queryByText('Current line')).not.toBeInTheDocument()
-    expect(fifthSelector).toHaveAttribute('aria-current', 'true')
-    expect(within(fifthSelector).getByText('Current line')).toBeVisible()
-    expect(transcript.querySelectorAll('[lang="en"]')).toHaveLength(8)
-    expect(within(lines[4]).getByText('English line 5')).toBeVisible()
-  })
-
-  it('keeps missing role-play media honest and displays all seven recording rules', () => {
+  it('renders every Korean dialogue occurrence once and inside a Korean language boundary', () => {
     render(<DialoguePlayer dialogue={course.dialogues[0]} members={course.members} />)
 
-    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
-    expect(screen.getByRole('heading', { name: 'Full role-play video coming soon' })).toBeVisible()
-    expect(screen.getByText('This role-play still needs a real recording from Member 1 and Member 2.')).toBeVisible()
-    expect(screen.queryByRole('list', { name: 'Recording checklist' })).not.toBeInTheDocument()
-    expect(document.querySelector('video')).not.toBeInTheDocument()
-    expect(document.querySelector('audio')).not.toBeInTheDocument()
-    for (const rule of recordingChecklist) expect(screen.getByText(rule)).toBeVisible()
-    expect(screen.getAllByText('Audio coming soon')).toHaveLength(8)
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    const koreanTextNodes: Text[] = []
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (/[가-힣]/.test(node.textContent ?? '')) koreanTextNodes.push(node as Text)
+    }
+
+    expect(koreanTextNodes).toHaveLength(8)
+    for (const node of koreanTextNodes) {
+      expect(node.parentElement?.closest('[lang="ko"]')).not.toBeNull()
+    }
   })
 
-  it('renders supplied human role-play video and line audio as the only playable media', () => {
+  it('does not show line selection, line audio, or contributor recording instructions', () => {
+    render(<DialoguePlayer dialogue={course.dialogues[0]} members={course.members} />)
+
+    expect(screen.queryByRole('button', { name: /Select line/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Listen to line/i })).not.toBeInTheDocument()
+    expect(screen.queryByText('Current line')).not.toBeInTheDocument()
+    expect(screen.queryByText('Role-play recording checklist')).not.toBeInTheDocument()
+    expect(screen.queryByText('Study second')).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+  })
+
+  it('keeps missing dialogue media honest and non-playable', () => {
+    render(<DialoguePlayer dialogue={course.dialogues[0]} members={course.members} />)
+
+    expect(screen.getByRole('heading', { name: 'Dialogue video coming soon' })).toBeVisible()
+    expect(screen.getByText('This dialogue still needs a real recording from Member 1 and Member 2.')).toBeVisible()
+    expect(screen.queryByRole('button', { name: /play/i })).not.toBeInTheDocument()
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+  })
+
+  it('renders one supplied human role-play video without line-level media', () => {
     const dialogue = validCourse.dialogues[0]
     render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
 
-    const video = screen.getByLabelText('Dialogue 1 full role-play video')
+    const video = screen.getByLabelText('Dialogue 1 role-play video')
     expect(video).toHaveAttribute('controls')
     expect(video.querySelector('source')).toHaveAttribute('src', '/media/dialogues/dialogue-1.mp4')
-    expect(document.querySelectorAll('audio')).toHaveLength(8)
-    expect(document.querySelector('audio')).toHaveAttribute('src', '/media/dialogues/dialogue-1-line-1.mp3')
-  })
-
-  it('prohibits AI role-play video and line audio instead of rendering media elements', () => {
-    const dialogue = {
-      ...validCourse.dialogues[0],
-      video: { src: '/media/dialogues/ai.mp4', kind: 'ai-generated' as const, durationSeconds: 90 },
-      lines: validCourse.dialogues[0].lines.map((line) => ({
-        ...line,
-        audio: { src: `/media/dialogues/${line.id}-ai.mp3`, kind: 'ai-generated' as const },
-      })),
-    }
-
-    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
-
-    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
-    expect(screen.getByRole('heading', { name: 'AI-generated video is prohibited' })).toBeVisible()
-    expect(screen.getAllByText('AI-generated audio is prohibited')).toHaveLength(8)
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
-    expect(document.querySelector('video')).not.toBeInTheDocument()
+    expect(document.querySelectorAll('video')).toHaveLength(1)
     expect(document.querySelector('audio')).not.toBeInTheDocument()
-  })
-
-  it('rejects inconsistent development role-play sources instead of rendering them', () => {
-    const dialogue = {
-      ...validCourse.dialogues[0],
-      video: { src: '/media/dialogues/not-approved.mp4', kind: 'development-missing' as const, durationSeconds: 90 },
-      lines: validCourse.dialogues[0].lines.map((line) => ({
-        ...line,
-        audio: { src: `/media/dialogues/${line.id}-not-approved.mp3`, kind: 'development-missing' as const },
-      })),
-    }
-
-    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
-
-    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
-    expect(screen.getByRole('heading', { name: 'Member video unavailable' })).toBeVisible()
-    expect(screen.getAllByText('Audio unavailable: invalid media source')).toHaveLength(8)
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
-    expect(document.querySelector('video')).not.toBeInTheDocument()
-    expect(document.querySelector('audio')).not.toBeInTheDocument()
-  })
-
-  it('uses beginner role-play copy when the full video element reports an error', () => {
-    render(<DialoguePlayer dialogue={validCourse.dialogues[0]} members={validCourse.members} />)
-
-    fireEvent.error(screen.getByLabelText('Dialogue 1 full role-play video'))
-
-    expect(screen.getByRole('heading', { name: 'Role-play video unavailable' })).toBeVisible()
-    expect(screen.getByText('Keep practising with the bilingual transcript below.')).toBeVisible()
-    expect(screen.queryByText('Use the transcript below and continue to the next word.')).not.toBeInTheDocument()
-  })
-
-  it('turns rejected primary playback into the same honest role-play error state', async () => {
-    const user = userEvent.setup()
-    vi.spyOn(HTMLMediaElement.prototype, 'play').mockRejectedValueOnce(new Error('Playback blocked'))
-    render(<DialoguePlayer dialogue={validCourse.dialogues[0]} members={validCourse.members} />)
-
-    await user.click(screen.getByRole('button', { name: 'Play full role-play video' }))
-
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'Role-play video unavailable' })).toBeVisible())
-    expect(screen.getByText('Keep practising with the bilingual transcript below.')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Play full role-play video' })).toBeDisabled()
   })
 })
 
-describe('dialogue entry points', () => {
-  it('keeps the selected dialogue index at full opacity for readable contrast', () => {
-    render(<DialoguePage />)
-
-    const selected = within(screen.getByRole('group', { name: 'Choose a dialogue' })).getAllByRole('button')[0]
-    const indexLabel = within(selected).getByText('Dialogue 1')
-    expect(indexLabel).not.toHaveClass('opacity-80')
-  })
-
-  it('offers exactly the two approved dialogues and switches between their complete transcripts', async () => {
+describe('DialoguePage', () => {
+  it('offers exactly two coursework dialogues and renders only the selected dialogue', async () => {
     const user = userEvent.setup()
     render(<DialoguePage />)
 
     const chooser = screen.getByRole('group', { name: 'Choose a dialogue' })
-    expect(within(chooser).getAllByRole('button')).toHaveLength(2)
     const firstDialogue = within(chooser).getByRole('button', { name: 'Hello, I am Mina' })
     const secondDialogue = within(chooser).getByRole('button', { name: 'Who are you?' })
+    expect(within(chooser).getAllByRole('button')).toHaveLength(2)
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'true')
-    expect(within(firstDialogue).getByText('Selected dialogue')).toBeVisible()
-    expect(within(secondDialogue).queryByText('Selected dialogue')).not.toBeInTheDocument()
-    expect(screen.getByText('안녕하세요.')).toBeVisible()
+    expect(screen.getByText('Meeting someone for the first time')).toBeVisible()
+    expect(screen.queryByText('Talking about jobs')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('figure')).toHaveLength(1)
 
     await user.click(secondDialogue)
 
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'false')
-    expect(within(firstDialogue).queryByText('Selected dialogue')).not.toBeInTheDocument()
     expect(secondDialogue).toHaveAttribute('aria-pressed', 'true')
-    expect(within(secondDialogue).getByText('Selected dialogue')).toBeVisible()
-    const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
-    expect(within(transcript).getAllByRole('listitem')).toHaveLength(8)
-    expect(within(transcript).getByText('다니엘은 학생이에요?')).toBeVisible()
-    expect(within(transcript).getByText('Daniel, are you a student?')).toBeVisible()
+    expect(screen.queryByText('Meeting someone for the first time')).not.toBeInTheDocument()
+    expect(screen.getByText('Talking about jobs')).toBeVisible()
+    expect(screen.getByText('다니엘은 학생이에요?')).toHaveAttribute('lang', 'ko')
+    expect(screen.getByText('Daniel, are you a student?')).toHaveAttribute('lang', 'en')
+    expect(screen.getAllByRole('figure')).toHaveLength(1)
   })
 
-  it('connects the dialogue overview and Unit 7 to the same study flow', () => {
-    const overview = render(<DialoguePage />)
-    expect(screen.getByRole('heading', { name: 'Dialogue & role play' })).toBeVisible()
-    expect(screen.getByRole('list', { name: 'Bilingual dialogue transcript' })).toBeVisible()
-    overview.unmount()
-
-    render(
-      <MemoryRouter initialEntries={['/learn/unit-7']}>
-        <Routes><Route path="learn/:unitId" element={<UnitPage />} /></Routes>
-      </MemoryRouter>,
-    )
-    expect(screen.getByRole('heading', { name: 'Unit 7 · Dialogue & role play' })).toBeVisible()
-    expect(screen.getByRole('list', { name: 'Bilingual dialogue transcript' })).toBeVisible()
-  })
-
-  it('completes Unit 7 only after both dialogues are reviewed and confirmed', async () => {
+  it('does not write learner progress or show completion controls', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const user = userEvent.setup()
-    const overview = render(<DialoguePage />)
-    expect(screen.queryByRole('button', { name: 'Mark Unit 7 complete' })).not.toBeInTheDocument()
-    overview.unmount()
-
-    const unit = render(
-      <MemoryRouter initialEntries={['/learn/unit-7']}>
-        <Routes><Route path="learn/:unitId" element={<UnitPage />} /></Routes>
-      </MemoryRouter>,
-    )
-    const complete = screen.getByRole('button', { name: 'Mark Unit 7 complete' })
-    expect(complete).toBeDisabled()
-    expect(readProgress(localStorage).completedUnitIds).not.toContain('unit-7')
+    render(<DialoguePage />)
 
     await user.click(screen.getByRole('button', { name: 'Who are you?' }))
-    expect(complete).toBeEnabled()
-    complete.focus()
-    await user.keyboard('{Enter}')
 
-    await waitFor(() => expect(readProgress(localStorage).completedUnitIds).toContain('unit-7'))
-    expect(screen.getByRole('status')).toHaveTextContent('Unit 7 complete')
-    expect(complete).toBeDisabled()
-
-    unit.unmount()
-    render(<MemoryRouter><HomePage /></MemoryRouter>)
-    expect(screen.getByText('1 of 7 units complete')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Continue learning' })).toHaveAttribute('href', '/learn/unit-7')
+    expect(setItem).not.toHaveBeenCalled()
+    expect(localStorage.length).toBe(0)
+    expect(screen.queryByRole('button', { name: /Mark Unit 7 complete/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/Unit 7 complete/i)).not.toBeInTheDocument()
   })
 })

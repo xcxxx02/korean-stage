@@ -1,26 +1,24 @@
 import type { ReactNode } from 'react'
 import type { RouteObject } from 'react-router-dom'
+import { Navigate } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
-import { GrammarPage } from './pages/GrammarPage'
-import { HomePage } from './pages/HomePage'
 import { LearnPage } from './pages/LearnPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PracticePage } from './pages/PracticePage'
 import { TeamPage } from './pages/TeamPage'
-import { UnitPage } from './pages/UnitPage'
-import { VocabularyPage } from './pages/VocabularyPage'
 
 const routeElements: Record<AppRouteId, ReactNode> = {
-  home: <HomePage />,
-  learn: <LearnPage />,
-  unit: <UnitPage />,
-  vocabulary: <VocabularyPage />,
-  grammar: <GrammarPage />,
+  home: <Navigate replace to="/learn/lesson-1" />,
+  learn: <Navigate replace to="/learn/lesson-1" />,
+  lesson: <LearnPage />,
   practice: <PracticePage />,
+  practiceLesson: <PracticePage />,
   dialogue: <DialoguePage />,
   team: <TeamPage />,
+  vocabularyLegacy: <Navigate replace to="/learn/lesson-2" />,
+  grammarLegacy: <Navigate replace to="/learn/lesson-4" />,
   'not-found': <NotFoundPage />,
 }
 

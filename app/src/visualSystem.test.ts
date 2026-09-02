@@ -83,6 +83,12 @@ describe('Korean Stage visual-system contract', () => {
     expect(styles).toMatch(/\.mobile-navigation a:focus-visible\s*\{[\s\S]*?outline-offset:\s*-3px;/)
   })
 
+  it('keeps strong focus treatment and removes nonessential motion when requested', () => {
+    expect(styles).toMatch(/:where\(a, button, select, input\):focus-visible\s*\{[^}]*outline:\s*3px solid var\(--stage-focus\);[^}]*outline-offset:\s*3px;/s)
+    expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition-duration:\s*0\.01ms !important;/)
+    expect(styles).toMatch(/@media \(prefers-reduced-motion: reduce\)\s*\{[\s\S]*?scroll-behavior:\s*auto !important;/)
+  })
+
   it('allows elevation only on the compact navigation menu', () => {
     const rules = cssRuleBodies(styles)
     const menuRules = rules.filter(({ selector }) => selector === '.mobile-navigation')
@@ -185,11 +191,9 @@ describe('Korean Stage visual-system contract', () => {
 
   it('reserves full rounding for true status and progress indicators', () => {
     const allowedStatusPills: Record<string, RegExp> = {
-      'components/CourseMap.tsx': /\{index \+ 1\}|Complete/,
       'components/DialoguePlayer.tsx': /Current line/,
       'components/ExerciseEngine.tsx': /Score:/,
       'components/LearningShell.tsx': /\{progress\}/,
-      'components/ProgressSummary.tsx': /completedCount/,
       'components/SubmissionReadiness.tsx': /Passed|Human review required/,
       'components/TeamGrid.tsx': /Replace before submission|assignedVocabulary\.length/,
       'components/VocabularyJourney.tsx': /\{index \+ 1\}|Now learning/,

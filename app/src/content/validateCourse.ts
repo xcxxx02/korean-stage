@@ -9,7 +9,7 @@ const issue = (
   identifiers: Pick<CourseIssue, 'memberId' | 'introductionModelId' | 'vocabularyId' | 'grammarId' | 'dialogueId'> = {},
 ): CourseIssue => ({ code, severity, message, ...identifiers })
 
-const hasHumanMedia = (media: MediaSource) => media.kind === 'human-recording' && Boolean(media.src)
+const hasHumanMedia = (media: MediaSource) => media.kind === 'human-recording' && Boolean(media.src?.trim())
 
 export const needsMemberIdentityReplacement = (member: Member) =>
   member.isDevelopmentIdentity || !member.name.trim() || !member.studentId.trim()
@@ -35,7 +35,11 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
       issues.push(issue('member-details', requiredSeverity, 'Each member needs a real name and student ID.', { memberId: member.id }))
     }
 
-    const recordingCount = course.vocabulary.filter((item) => item.ownerId === member.id).length
+    const recordingCount = course.vocabulary.filter((item) =>
+      item.assessmentStatus === 'assessed'
+      && item.recordingRequirement === 'member-recording-required'
+      && item.ownerId === member.id,
+    ).length
     if (recordingCount < 3 || recordingCount > 5) {
       issues.push(issue('member-vocabulary-count', 'error', 'Each member must own 3-5 recorded vocabulary items.', { memberId: member.id }))
     }
@@ -74,7 +78,16 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
       issues.push(issue('vocabulary-bilingual-fields', 'error', 'Vocabulary needs Korean, English, romanization, and bilingual examples.', { vocabularyId: vocabulary.id }))
     }
 
-    if (vocabulary.ownerId !== null && (!hasHumanMedia(vocabulary.video) || !hasHumanMedia(vocabulary.audio))) {
+    const requiresMemberRecording = vocabulary.assessmentStatus === 'assessed'
+      && vocabulary.recordingRequirement === 'member-recording-required'
+
+    if (requiresMemberRecording && (vocabulary.ownerId === null || !courseMemberIds.has(vocabulary.ownerId))) {
+      issues.push(issue('vocabulary-owner', 'error', 'Assessed recorded vocabulary needs an existing member owner.', { vocabularyId: vocabulary.id }))
+    } else if (!requiresMemberRecording && vocabulary.ownerId !== null) {
+      issues.push(issue('vocabulary-owner', 'error', 'Supporting unrecorded vocabulary must not claim a member owner.', { vocabularyId: vocabulary.id }))
+    }
+
+    if (requiresMemberRecording && (!hasHumanMedia(vocabulary.video) || !hasHumanMedia(vocabulary.audio))) {
       issues.push(issue('vocabulary-media', requiredSeverity, 'Recorded vocabulary needs human video and audio.', { vocabularyId: vocabulary.id }))
     }
   }

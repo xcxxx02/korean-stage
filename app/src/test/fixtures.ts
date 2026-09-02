@@ -11,8 +11,8 @@ export const validCourse: Course = {
   name: 'Korean Stage',
   purpose: 'A beginner-friendly Korean course adapted from Lec 1.',
   members: [
-    { id: 'member-1', name: 'Amina Rahman', studentId: 'A12345', isDevelopmentIdentity: false },
-    { id: 'member-2', name: 'Daniel Lee', studentId: 'B67890', isDevelopmentIdentity: false },
+    { id: 'member-1', name: 'Amina Rahman', studentId: 'A12345', isDevelopmentIdentity: false, role: 'Vocabulary presenter', contribution: 'Presents vocabulary and performs dialogue lines.' },
+    { id: 'member-2', name: 'Daniel Lee', studentId: 'B67890', isDevelopmentIdentity: false, role: 'Dialogue performer', contribution: 'Presents vocabulary and performs dialogue lines.' },
   ],
   introductionModels: [
     {
@@ -46,6 +46,8 @@ export const validCourse: Course = {
       koreanExample: `저는 한국어 ${index + 1}이에요.`,
       englishExample: `I am word ${index + 1}.`,
       ownerId: 'member-1',
+      assessmentStatus: 'assessed' as const,
+      recordingRequirement: 'member-recording-required' as const,
       video: humanMedia(`/media/vocabulary/${id}.mp4`),
       audio: humanMedia(`/media/vocabulary/${id}.mp3`),
     })),
@@ -58,6 +60,8 @@ export const validCourse: Course = {
       koreanExample: `저는 한국어 ${index + 5}이에요.`,
       englishExample: `I am word ${index + 5}.`,
       ownerId: 'member-2',
+      assessmentStatus: 'assessed' as const,
+      recordingRequirement: 'member-recording-required' as const,
       video: humanMedia(`/media/vocabulary/${id}.mp4`),
       audio: humanMedia(`/media/vocabulary/${id}.mp3`),
     })),
@@ -75,6 +79,7 @@ export const validCourse: Course = {
         return {
           id: `${id}-exercise-${number}`,
           grammarId: id,
+          answerLanguage: 'ko',
           type: 'matching',
           prompt: 'Match each sentence.',
           koreanContext: '문장을 연결하세요.',
@@ -89,6 +94,7 @@ export const validCourse: Course = {
       return {
         id: `${id}-exercise-${number}`,
         grammarId: id,
+        answerLanguage: 'ko',
         type: grammarIndex === 0 ? 'sentence-completion' : grammarIndex === 1 ? 'particle' : 'multiple-choice',
         prompt: 'Choose the correct answer.',
         koreanContext: '문장을 완성하세요.',
@@ -101,6 +107,7 @@ export const validCourse: Course = {
   dialogues: ['dialogue-1', 'dialogue-2'].map((id) => ({
     id,
     title: `Dialogue ${id.slice(-1)}`,
+    scenario: 'Practising a beginner Korean conversation.',
     speakerIds: ['member-1', 'member-2'],
     lines: Array.from({ length: 8 }, (_, index) => ({
       id: `${id}-line-${index + 1}`,

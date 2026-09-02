@@ -5,7 +5,10 @@ import type { MediaSource } from '../content/types'
 type MemberVideoProps = {
   source: MediaSource
   memberName: string
-  transcript: string
+  transcript?: {
+    korean: string
+    english: string
+  }
   mediaLabel?: string
   missingDescription?: string
   missingHeading?: string
@@ -13,6 +16,8 @@ type MemberVideoProps = {
   playbackErrorHeading?: string
   primaryControlLabel?: string
   showRecordingChecklist?: boolean
+  mode?: 'default' | 'learner'
+  className?: string
 }
 
 const recordingChecks = [
@@ -33,10 +38,14 @@ export function MemberVideo({
   playbackErrorHeading = 'Video playback unavailable',
   primaryControlLabel,
   showRecordingChecklist = true,
+  mode = 'default',
+  className = '',
 }: MemberVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [hasPlaybackError, setHasPlaybackError] = useState(false)
-  const canPlay = source.kind === 'human-recording' && source.src !== null
+  const [playbackErrorKey, setPlaybackErrorKey] = useState<string | null>(null)
+  const sourceKey = `${source.kind}:${source.src ?? 'missing'}:${memberName}:${mediaLabel}`
+  const hasPlaybackError = playbackErrorKey === sourceKey
+  const canPlay = source.kind === 'human-recording' && Boolean(source.src?.trim())
   const isComingSoon = source.kind === 'development-missing' && source.src === null
 
   let mediaPanel
@@ -49,7 +58,15 @@ export function MemberVideo({
       </div>
     )
   } else if (isComingSoon) {
-    mediaPanel = (
+    mediaPanel = mode === 'learner' ? (
+      <div className="member-video-missing" role="alert">
+        <Warning aria-hidden="true" size={32} weight="fill" />
+        <div>
+          <h2>{missingHeading}</h2>
+          <p>{missingDescription}</p>
+        </div>
+      </div>
+    ) : (
       <div className="coming-soon-state">
         <div className="coming-soon-artwork-frame">
           <img
@@ -97,7 +114,8 @@ export function MemberVideo({
         aria-label={mediaLabel}
         className="aspect-video w-full rounded-xl bg-stage-charcoal object-cover"
         controls
-        onError={() => setHasPlaybackError(true)}
+        key={sourceKey}
+        onError={() => setPlaybackErrorKey(sourceKey)}
         ref={videoRef}
       >
         <source src={source.src ?? undefined} />
@@ -110,14 +128,14 @@ export function MemberVideo({
   }
 
   return (
-    <figure aria-label={`${mediaLabel} transcript`} className="m-0 grid gap-4">
+    <figure aria-label={transcript ? `${mediaLabel} transcript` : undefined} className={`member-video m-0 grid gap-4 ${className}`}>
       {primaryControlLabel ? (
         <button
           className="inline-flex min-h-12 items-center justify-center rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white hover:bg-stage-cobalt-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:bg-stage-disabled disabled:text-stage-muted"
           disabled={!canPlay || hasPlaybackError}
           onClick={() => {
             const playback = videoRef.current?.play()
-            if (playback) void playback.catch(() => setHasPlaybackError(true))
+            if (playback) void playback.catch(() => setPlaybackErrorKey(sourceKey))
           }}
           type="button"
         >
@@ -125,10 +143,13 @@ export function MemberVideo({
         </button>
       ) : null}
       {mediaPanel}
-      <figcaption className="border-l border-stage-jade pl-4 text-sm leading-6 text-stage-muted">
-        <span className="block font-semibold text-stage-charcoal">Transcript</span>
-        {transcript}
-      </figcaption>
+      {transcript ? (
+        <figcaption className="border-l border-stage-jade pl-4 text-sm leading-6 text-stage-muted">
+          <span className="block font-semibold text-stage-charcoal">Transcript</span>
+          <span className="block" data-korean-content lang="ko">{transcript.korean}</span>
+          <span className="block" lang="en">{transcript.english}</span>
+        </figcaption>
+      ) : null}
     </figure>
   )
 }

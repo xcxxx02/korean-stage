@@ -3,22 +3,22 @@ import userEvent from '@testing-library/user-event'
 import axe from 'axe-core'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { FlashcardDeck } from './components/FlashcardDeck'
-import { HumanAudioButton } from './components/HumanAudioButton'
-import { course } from './content/course'
 import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
+import { ExerciseEngine } from './components/ExerciseEngine'
+import { course } from './content/course'
 import { createAppRouteObjects } from './routeObjects'
 
 const expectedPrimaryHeadings: Record<AppRouteId, string> = {
-  home: 'Korean Stage',
+  home: 'Hello & Self-introduction',
   learn: 'Hello & Self-introduction',
-  unit: 'Unit 2 · Countries & Nationalities',
-  vocabulary: 'Vocabulary review',
-  grammar: 'Grammar',
-  practice: 'Final practice',
+  lesson: 'Hello & Self-introduction',
+  practice: 'Practice by lesson',
+  practiceLesson: 'Practice by lesson',
   dialogue: 'Dialogue & role play',
-  team: 'Team & submission readiness',
+  team: 'Meet the team',
+  vocabularyLegacy: 'Countries & Nationalities',
+  grammarLegacy: '이에요 / 예요 - to be',
   'not-found': 'Page not found',
 }
 
@@ -27,16 +27,16 @@ const routeEntries: readonly RouteManifestEntry[] = appRouteManifest
 const primaryRoutes = routeEntries.flatMap((route): Array<readonly [string, string, string]> => {
   const routeId = route.id as AppRouteId
   if (route.index === true) return [['Home', '/', expectedPrimaryHeadings[routeId]]]
-  if (route.primaryNavigationLabel) return [[route.primaryNavigationLabel, `/${route.path}`, expectedPrimaryHeadings[routeId]]]
+  if (route.primaryNavigationLabel) return [[route.primaryNavigationLabel, route.primaryNavigationTo ?? `/${route.path}`, expectedPrimaryHeadings[routeId]]]
   return []
 })
 
 const routes = [
   ...primaryRoutes,
-  ['Unit 2', '/learn/unit-2', 'Unit 2 · Countries & Nationalities'],
-  ['Unit 3', '/learn/unit-3', 'Unit 3 · Jobs & Occupations'],
-  ['Unit 4', '/learn/unit-4', '이에요 / 예요 - to be'],
-  ['Unit 7', '/learn/unit-7', 'Unit 7 · Dialogue & role play'],
+  ['Lesson 2', '/learn/lesson-2', 'Countries & Nationalities'],
+  ['Lesson 3', '/learn/lesson-3', 'Jobs & Occupations'],
+  ['Lesson 4', '/learn/lesson-4', '이에요 / 예요 - to be'],
+  ['Lesson 7', '/learn/lesson-7', 'Dialogue & Role Play'],
   ['Fallback', '/missing', 'Page not found'],
 ] as const
 
@@ -69,6 +69,24 @@ beforeEach(() => localStorage.clear())
 afterEach(cleanup)
 
 describe('default-route accessibility', () => {
+  const assertLanguageBoundaries = (container: HTMLElement) => {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+    const untaggedKorean: string[] = []
+
+    while (walker.nextNode()) {
+      const textNode = walker.currentNode
+      const text = textNode.textContent?.trim() ?? ''
+      const parent = textNode.parentElement
+      if (/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text) && !parent?.closest('[lang="ko"]')) untaggedKorean.push(text)
+    }
+
+    const wronglyScopedEnglish = [...container.querySelectorAll('[lang="ko"]')]
+      .map((node) => node.textContent?.trim() ?? '')
+      .filter((text) => /[A-Za-z]/.test(text))
+    expect(untaggedKorean).toEqual([])
+    expect(wronglyScopedEnglish).toEqual([])
+  }
+
   it.each(routes)('%s has its expected page heading, a single named content landmark, and no automated axe violations', async (_name, path, expectedHeading) => {
     const { container } = renderRoute(path)
 
@@ -98,28 +116,97 @@ describe('default-route accessibility', () => {
     expect(screen.queryByRole('heading', { level: 1, name: expectedPrimaryHeadings['not-found'] })).not.toBeInTheDocument()
   })
 
-  it('labels transcript media without announcing static unavailable audio guidance', () => {
-    renderRoute('/learn/unit-3')
+  it('does not add a separate audio control to the member-video vocabulary flow', () => {
+    renderRoute('/learn/lesson-3')
 
-    expect(screen.getByRole('figure', { name: 'Member 1 vocabulary video transcript' })).toBeInTheDocument()
-    expect(screen.getByText('Audio coming soon')).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('marks every rendered Korean text run in Learn with the Korean language', () => {
+    const { container } = renderRoute('/learn/lesson-3')
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+    const untaggedKorean: string[] = []
+
+    while (walker.nextNode()) {
+      const textNode = walker.currentNode
+      const text = textNode.textContent?.trim() ?? ''
+      const parent = textNode.parentElement
+      if (/[가-힯]/.test(text) && !parent?.closest('[lang="ko"]')) untaggedKorean.push(text)
+    }
+
+    expect(untaggedKorean).toEqual([])
+    for (const node of container.querySelectorAll('[data-korean-content]')) {
+      expect(node).toHaveAttribute('lang', 'ko')
+    }
+  })
+
+  it.each(Array.from({ length: 7 }, (_, index) => `lesson-${index + 1}`))(
+    'keeps every Hangul run and English run correctly scoped throughout Learn %s',
+    async (lessonSlug) => {
+      const user = userEvent.setup()
+      const { container } = renderRoute(`/learn/${lessonSlug}`)
+      await user.click(screen.getByRole('button', { name: 'All lessons' }))
+
+      assertLanguageBoundaries(container)
+      cleanup()
+    },
+  )
+
+  it('uses segmented language-labelled matching controls instead of flattened mixed aria-labels', () => {
+    const matching = course.grammar[0].exercises.find((exercise) => exercise.type === 'matching')!
+    const { container } = render(<ExerciseEngine exercises={[matching]} />)
+
+    assertLanguageBoundaries(container)
+    for (const select of screen.getAllByRole('combobox') as HTMLSelectElement[]) {
+      expect(select).not.toHaveAttribute('aria-label')
+      expect(select).toHaveAttribute('aria-labelledby')
+      for (const option of [...select.options]) {
+        expect(option).toHaveAttribute('lang', 'en')
+      }
+    }
+
+    expect(screen.getByRole('combobox', { name: /Match.*학생.*to its English meaning/ })).toBeInTheDocument()
+  })
+
+  it('does not scope English copy as Korean or flatten bilingual control names into aria-labels', async () => {
+    const user = userEvent.setup()
+    const { container } = renderRoute('/learn/lesson-3')
+    await user.click(screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ }))
+
+    const wronglyScopedEnglish = [...container.querySelectorAll('[lang="ko"]')]
+      .map((node) => node.textContent?.trim() ?? '')
+      .filter((text) => /[A-Za-z]/.test(text))
+    const mixedLanguageAriaLabels = [...container.querySelectorAll('[aria-label]')]
+      .map((node) => node.getAttribute('aria-label') ?? '')
+      .filter((label) => /[가-힯]/.test(label) && /[A-Za-z]/.test(label))
+
+    expect(wronglyScopedEnglish).toEqual([])
+    expect(mixedLanguageAriaLabels).toEqual([])
+
+    const results = await axe.run(container, {
+      rules: {
+        'color-contrast': { enabled: false },
+      },
+    })
+    expect(results.violations).toEqual([])
   })
 })
 
 describe('keyboard-complete primary flows', () => {
   it('keeps the skip link as the first keyboard stop on initial load', async () => {
     const user = userEvent.setup()
-    renderRoute('/')
+    renderRoute('/learn/lesson-1')
 
     expect(document.body).toHaveFocus()
     await user.tab()
     expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveFocus()
   })
 
-  it('opens the menu, advances a word, and focuses an available audio control without pointer clicks', async () => {
+  it('opens the menu and freely selects a later vocabulary word without pointer clicks', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/unit-3')
+    renderRoute('/learn/lesson-3')
 
     const menu = screen.getByRole('button', { name: 'Menu' })
     await tabTo(user, menu)
@@ -128,37 +215,16 @@ describe('keyboard-complete primary flows', () => {
     expect(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })).toBeVisible()
     await user.keyboard('[Escape]')
 
-    const nextWord = screen.getByRole('button', { name: 'Next word' })
-    await tabTo(user, nextWord)
+    const chef = screen.getByRole('button', { name: /요리사.*Chef/ })
+    await tabTo(user, chef)
     await user.keyboard('[Enter]')
-    expect(screen.getByText('Word 2 of 8')).toBeVisible()
-
-    cleanup()
-    render(<HumanAudioButton memberName="Member 1" source={{ kind: 'human-recording', src: '/member-1.mp3' }} />)
-    await user.tab()
-    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toHaveFocus()
+    expect(screen.getByRole('heading', { name: '요리사' })).toHaveAttribute('lang', 'ko')
+    expect(localStorage.length).toBe(0)
   })
 
-  it('submits one grammar answer, flips a flashcard, and selects a dialogue with the keyboard', async () => {
+  it('selects a dialogue with the keyboard', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/unit-4')
 
-    const correctAnswer = screen.getByRole('radio', { name: '민수예요' })
-    await tabTo(user, correctAnswer)
-    await user.keyboard('[Space]')
-    await user.tab()
-    await user.keyboard('[Enter]')
-    expect(screen.getByRole('status')).toHaveTextContent('Correct')
-
-    cleanup()
-    render(<FlashcardDeck items={[course.vocabulary[0]]} />)
-    const flashcard = screen.getByRole('button', { name: 'Show meaning' })
-    await user.tab()
-    expect(flashcard).toHaveFocus()
-    await user.keyboard('[Space]')
-    expect(screen.getByRole('button', { name: 'Show Korean' })).toHaveTextContent(course.vocabulary[0].english)
-
-    cleanup()
     render(<DialoguePage />)
     const dialogueChoices = screen.getByRole('group', { name: 'Choose a dialogue' })
     const secondDialogue = within(dialogueChoices).getAllByRole('button')[1]

@@ -15,6 +15,7 @@ export type CourseIssueCode =
   | 'introduction-model-content'
   | 'introduction-model-media'
   | 'vocabulary-bilingual-fields'
+  | 'vocabulary-owner'
   | 'vocabulary-media'
   | 'grammar-count'
   | 'exercise-count'
@@ -47,7 +48,17 @@ export type Member = {
   name: string
   studentId: string
   isDevelopmentIdentity: boolean
+  role: string
+  contribution: string
 }
+
+export type CourseLesson = {
+  id: `unit-${1 | 2 | 3 | 4 | 5 | 6 | 7}`
+  slug: `lesson-${1 | 2 | 3 | 4 | 5 | 6 | 7}`
+  title: string
+}
+
+export type LessonSlug = CourseLesson['slug']
 
 export type VocabularyItem = {
   id: string
@@ -59,6 +70,8 @@ export type VocabularyItem = {
   koreanExample: string
   englishExample: string
   ownerId: string | null
+  assessmentStatus: 'assessed' | 'supporting'
+  recordingRequirement: 'member-recording-required' | 'not-required'
   video: MediaSource
   audio: MediaSource
 }
@@ -77,6 +90,7 @@ export type IntroductionModel = {
 type ExerciseBase = {
   id: string
   grammarId: string
+  answerLanguage: 'en' | 'ko'
   prompt: string
   koreanContext: string
   explanation: string
@@ -125,6 +139,7 @@ export type DialogueLine = {
 export type Dialogue = {
   id: string
   title: string
+  scenario: string
   speakerIds: string[]
   lines: DialogueLine[]
   video: MediaSource

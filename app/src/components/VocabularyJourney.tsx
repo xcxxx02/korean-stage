@@ -1,112 +1,166 @@
-import { CaretLeft, CaretRight, GraduationCap } from '@phosphor-icons/react'
-import { useState } from 'react'
-import { course, courseUnits } from '../content/course'
+import { CaretDown, CaretLeft, CaretRight, GraduationCap } from '@phosphor-icons/react'
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
+import { course } from '../content/course'
 import type { VocabularyItem } from '../content/types'
-import { useCourseProgress } from '../hooks/useCourseProgress'
-import { HumanAudioButton } from './HumanAudioButton'
 import { LearningShell } from './LearningShell'
 import { MemberVideo } from './MemberVideo'
 
 type VocabularyJourneyProps = {
   items: VocabularyItem[]
-  initialItemId?: string
-  progressPath?: string
 }
 
-function grammarTip(item: VocabularyItem): { heading: string; explanation: string } {
+function grammarTip(item: VocabularyItem) {
   const noun = item.unitId === 'unit-2' ? '사람' : item.korean
-  if (item.koreanExample.endsWith('이에요.')) {
-    return {
-      heading: '이에요 / 예요 — to be',
-      explanation: `${noun} ends in a consonant, so use 이에요.`,
-    }
-  }
-
-  return {
-    heading: '이에요 / 예요 — to be',
-    explanation: `${noun} ends in a vowel, so use 예요.`,
-  }
+  const ending = item.koreanExample.endsWith('이에요.') ? 'consonant' : 'vowel'
+  const copula = ending === 'consonant' ? '이에요' : '예요'
+  return { noun, ending, copula }
 }
 
-export function VocabularyJourney({ items, initialItemId, progressPath }: VocabularyJourneyProps) {
-  const { progress, markUnitComplete, markVocabularyComplete } = useCourseProgress()
-  const firstUnfinishedIndex = items.findIndex((item) => !progress.completedVocabularyIds.includes(item.id))
-  const unlockedIndex = firstUnfinishedIndex === -1 ? Math.max(0, items.length - 1) : firstUnfinishedIndex
-  const requestedIndex = Math.max(0, items.findIndex((item) => item.id === initialItemId))
-  const initialIndex = Math.min(requestedIndex, unlockedIndex)
-  const [activeIndex, setActiveIndex] = useState(initialIndex)
-  const [isFinished, setIsFinished] = useState(false)
+export function VocabularyJourney({ items }: VocabularyJourneyProps) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [chooserOpen, setChooserOpen] = useState(false)
+  const [chooserFocusIndex, setChooserFocusIndex] = useState(0)
+  const chooserTriggerRef = useRef<HTMLButtonElement>(null)
+  const chooserOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const chooserListboxId = useId()
+
+  useEffect(() => {
+    if (chooserOpen) chooserOptionRefs.current[chooserFocusIndex]?.focus()
+  }, [chooserFocusIndex, chooserOpen])
 
   if (items.length === 0) {
     return (
-      <section className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-3xl font-bold text-stage-charcoal">Vocabulary unavailable</h1>
-        <p className="mt-3 text-stage-muted">There are no words in this unit yet. Return to the course map and choose another unit.</p>
+      <section className="mt-8 rounded-xl border border-stage-border bg-stage-white p-6 sm:p-8">
+        <h2 className="m-0 text-2xl font-bold text-stage-charcoal">Vocabulary unavailable</h2>
+        <p className="mt-3 text-stage-muted">There are no words in this lesson yet. Choose another lesson from All lessons.</p>
       </section>
     )
   }
 
-  const item = items[Math.min(activeIndex, items.length - 1)]
+  const safeActiveIndex = Math.min(activeIndex, items.length - 1)
+  const item = items[safeActiveIndex]
   const member = course.members.find((candidate) => candidate.id === item.ownerId)
-  const memberName = member?.name ?? 'Course member'
+  const memberName = member?.name
+  const requiresMemberRecording = item.assessmentStatus === 'assessed'
+    && item.recordingRequirement === 'member-recording-required'
   const tip = grammarTip(item)
-  const unitNumber = item.unitId === 'unit-2' ? 2 : 3
-  const unitTitle = courseUnits.find((unit) => unit.id === item.unitId)?.title ?? 'Vocabulary'
 
-  const showNext = () => {
-    markVocabularyComplete(item.id, progressPath)
-    if (activeIndex === items.length - 1) {
-      markUnitComplete(item.unitId)
-      setIsFinished(true)
-    } else {
-      setActiveIndex((current) => current + 1)
-    }
+  const closeChooser = () => {
+    setChooserOpen(false)
+    chooserTriggerRef.current?.focus()
+  }
+
+  const selectChooserWord = (index: number) => {
+    setActiveIndex(index)
+    closeChooser()
+  }
+
+  const moveChooserFocus = (event: ReactKeyboardEvent, nextIndex: number) => {
+    event.preventDefault()
+    setChooserFocusIndex(Math.max(0, Math.min(items.length - 1, nextIndex)))
   }
 
   const rail = (
     <>
-      <fieldset className="rounded-xl border border-stage-border p-4 lg:hidden">
-        <legend className="px-1 font-bold text-stage-charcoal">Compact vocabulary progress</legend>
-        <label className="mb-2 block text-sm font-semibold text-stage-muted" htmlFor="compact-vocabulary-selector">Choose vocabulary word</label>
-        <select
-          aria-label="Choose vocabulary word"
-          className="min-h-12 w-full rounded-xl border border-stage-border-strong bg-stage-white px-3 text-stage-charcoal focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus"
-          id="compact-vocabulary-selector"
-          onChange={(event) => {
-            const nextIndex = items.findIndex((word) => word.id === event.target.value)
-            if (nextIndex >= 0 && nextIndex <= unlockedIndex) {
-              setIsFinished(false)
-              setActiveIndex(nextIndex)
+      <div className="learn-word-chooser">
+        <button
+          aria-controls={chooserListboxId}
+          aria-expanded={chooserOpen}
+          aria-haspopup="listbox"
+          className="learn-word-chooser__trigger"
+          onClick={() => {
+            setChooserFocusIndex(safeActiveIndex)
+            setChooserOpen((open) => !open)
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'ArrowDown' || event.key === 'Home') {
+              moveChooserFocus(event, event.key === 'Home' ? 0 : safeActiveIndex)
+              setChooserOpen(true)
+            } else if (event.key === 'ArrowUp' || event.key === 'End') {
+              moveChooserFocus(event, event.key === 'End' ? items.length - 1 : safeActiveIndex)
+              setChooserOpen(true)
+            } else if (event.key === 'Escape' && chooserOpen) {
+              event.preventDefault()
+              closeChooser()
             }
           }}
-          value={item.id}
+          ref={chooserTriggerRef}
+          type="button"
         >
-          {items.map((word, index) => (
-            <option disabled={index > unlockedIndex} key={word.id} value={word.id}>{index + 1}. {word.korean} — {word.english}</option>
-          ))}
-        </select>
-        <p aria-current="step" className="mb-0 mt-3 text-sm font-semibold text-stage-cobalt">
-          {activeIndex + 1} of {items.length} · {item.korean} · {item.english}
-        </p>
-      </fieldset>
-      <ol aria-label="Vocabulary progress" className="m-0 hidden list-none gap-1 p-0 lg:grid">
+          <span className="learn-word-chooser__label">Choose vocabulary word</span>
+          <span className="learn-word-chooser__value">
+            <span aria-hidden="true">{safeActiveIndex + 1}.</span>
+            <span data-korean-content lang="ko">{item.korean}</span>
+            <span aria-hidden="true">—</span>
+            <span lang="en">{item.english}</span>
+          </span>
+          <CaretDown aria-hidden="true" size={20} weight="bold" />
+        </button>
+        {chooserOpen ? (
+          <div aria-label="Vocabulary words" className="learn-word-listbox" id={chooserListboxId} role="listbox">
+            {items.map((word, index) => {
+              const isActive = index === safeActiveIndex
+              return (
+                <button
+                  aria-selected={isActive}
+                  className="learn-word-option"
+                  key={word.id}
+                  onClick={() => selectChooserWord(index)}
+                  onFocus={() => setChooserFocusIndex(index)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'ArrowDown') moveChooserFocus(event, index + 1)
+                    else if (event.key === 'ArrowUp') moveChooserFocus(event, index - 1)
+                    else if (event.key === 'Home') moveChooserFocus(event, 0)
+                    else if (event.key === 'End') moveChooserFocus(event, items.length - 1)
+                    else if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      selectChooserWord(index)
+                    } else if (event.key === 'Escape') {
+                      event.preventDefault()
+                      closeChooser()
+                    }
+                  }}
+                  ref={(node) => { chooserOptionRefs.current[index] = node }}
+                  role="option"
+                  tabIndex={index === chooserFocusIndex ? 0 : -1}
+                  type="button"
+                >
+                  <span aria-hidden="true" className="learn-word-option__number">{index + 1}</span>
+                  <span className="learn-word-option__copy">
+                    <span data-korean-content lang="ko">{word.korean}</span>
+                    <span lang="en">{word.english}</span>
+                  </span>
+                  {isActive ? <span className="learn-word-option__current">Now learning</span> : null}
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
+      </div>
+      <ol aria-label="Vocabulary words" className="vocabulary-word-list">
         {items.map((word, index) => {
-          const isActive = index === activeIndex
+          const isActive = index === safeActiveIndex
           return (
-            <li
-              aria-current={isActive ? 'step' : undefined}
-              aria-label={`${index + 1}. ${word.korean}, ${word.english}`}
-              className={`relative grid grid-cols-[2.5rem_1fr] gap-3 border-l py-2 pl-2 ${isActive ? 'border-stage-cobalt' : 'border-transparent'}`}
-              key={word.id}
-            >
-              <span className={`grid size-9 place-items-center rounded-full border text-sm font-bold ${isActive ? 'border-stage-cobalt bg-stage-cobalt text-stage-white' : 'border-stage-border bg-stage-white text-stage-muted'}`}>
-                {index + 1}
-              </span>
-              <span>
-                <span className={`block text-lg font-bold ${isActive ? 'text-stage-cobalt' : 'text-stage-charcoal'}`}>{word.korean}</span>
-                <span className="block text-sm text-stage-muted">{word.english}</span>
-                {isActive ? <span className="mt-1 inline-block rounded-full bg-stage-cobalt px-2 py-0.5 text-xs font-semibold text-stage-white">Now learning</span> : null}
-              </span>
+            <li key={word.id}>
+              <button
+                aria-current={isActive ? 'true' : undefined}
+                className="vocabulary-word-button"
+                onClick={() => setActiveIndex(index)}
+                type="button"
+              >
+                <span aria-hidden="true" className="vocabulary-word-number">{index + 1}</span>
+                <span className="vocabulary-word-copy">
+                  <span data-korean-content lang="ko">{word.korean}</span>
+                  <span lang="en">{word.english}</span>
+                  {isActive ? <span className="vocabulary-word-current">Now learning</span> : null}
+                </span>
+              </button>
             </li>
           )
         })}
@@ -114,90 +168,107 @@ export function VocabularyJourney({ items, initialItemId, progressPath }: Vocabu
     </>
   )
 
-  const media = (
-    <div>
-      <MemberVideo
-        key={`${item.id}:${item.video.kind}:${item.video.src ?? 'missing'}`}
-        memberName={memberName}
-        source={item.video}
-        transcript={`${item.koreanExample} ${item.englishExample}`}
-      />
-      <p className="mt-4 text-center text-sm font-medium text-stage-muted">Presented by {memberName}</p>
-    </div>
-  )
+  const media = requiresMemberRecording && memberName ? (
+      <div className="stage-media-stack">
+        <MemberVideo
+          className="member-video--stage"
+          memberName={memberName}
+          mode="learner"
+          source={item.video}
+          transcript={{ korean: item.koreanExample, english: item.englishExample }}
+        />
+        <p className="stage-media-presenter">Presented by {memberName}</p>
+      </div>
+    ) : (
+      <section className="supporting-vocabulary-media" aria-labelledby={`${item.id}-supporting-heading`}>
+        <GraduationCap aria-hidden="true" size={42} weight="fill" />
+        <div>
+          <h2 id={`${item.id}-supporting-heading`}>Supporting vocabulary</h2>
+          <p>These country words support the lesson and Practice. They are not assessed member recordings.</p>
+        </div>
+      </section>
+    )
 
   const details = (
-    <div className="grid gap-5">
+    <div className="vocabulary-details">
       <div>
-        <p className="m-0 text-5xl font-black tracking-tight text-stage-cobalt">{item.korean}</p>
-        <p className="mt-2 text-2xl font-bold text-stage-charcoal">{item.english}</p>
+        <h2 className="vocabulary-details__word" data-korean-content lang="ko">{item.korean}</h2>
+        <p className="vocabulary-details__meaning" lang="en">{item.english}</p>
       </div>
-      <dl className="m-0 grid gap-2 border-y border-stage-jade py-4 text-stage-charcoal">
-        <div className="flex flex-wrap gap-2">
-          <dt className="font-semibold text-stage-jade-strong">Romanization:</dt>
-          <dd className="m-0">{item.romanization}</dd>
+
+      <dl className="vocabulary-pronunciation">
+        <div>
+          <dt>Romanization</dt>
+          <dd>{item.romanization}</dd>
         </div>
-        {item.pronunciationHint ? (
-          <div className="flex flex-wrap gap-2">
-            <dt className="font-semibold text-stage-jade-strong">Pronunciation:</dt>
-            <dd className="m-0">{item.pronunciationHint}</dd>
-          </div>
-        ) : null}
+        <div>
+          <dt>Say it like</dt>
+          <dd>{item.pronunciationHint ?? `Try: ${item.romanization}`}</dd>
+        </div>
       </dl>
-      <HumanAudioButton
-        key={`${item.id}:${item.audio.kind}:${item.audio.src ?? 'missing'}`}
-        memberName={memberName}
-        source={item.audio}
-      />
-      <div className="border-y border-stage-jade py-4">
-        <p className="m-0 text-xl font-bold text-stage-charcoal">{item.koreanExample}</p>
-        <p className="mt-2 text-stage-muted">{item.englishExample}</p>
-      </div>
-      <div className="rounded-xl border border-stage-jade p-4">
-        <div className="flex gap-3">
-          <GraduationCap aria-hidden="true" className="shrink-0 text-stage-jade-strong" size={28} weight="fill" />
-          <div>
-            <h2 className="m-0 text-base font-bold text-stage-jade-strong">{tip.heading}</h2>
-            <p className="mt-2 text-sm leading-6 text-stage-muted">{tip.explanation}</p>
-          </div>
+
+      <section aria-labelledby={`${item.id}-example-heading`} className="vocabulary-example">
+        <h3 id={`${item.id}-example-heading`}>Example</h3>
+        <p data-korean-content lang="ko">{item.koreanExample}</p>
+        <p lang="en">{item.englishExample}</p>
+      </section>
+
+      <section aria-labelledby={`${item.id}-grammar-heading`} className="vocabulary-grammar-tip">
+        <GraduationCap aria-hidden="true" size={26} weight="fill" />
+        <div>
+          <h3 id={`${item.id}-grammar-heading`}>Grammar tip</h3>
+          <p>
+            <span data-korean-content lang="ko">{tip.noun}</span>
+            {' '}ends in a {tip.ending}, so use{' '}
+            <span data-korean-content lang="ko">{tip.copula}</span>.
+          </p>
         </div>
-      </div>
+      </section>
     </div>
   )
 
   const controls = (
-    <nav aria-label="Word navigation" className="grid grid-cols-2 gap-4">
+    <nav aria-label="Word navigation" className="word-navigation">
       <button
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-stage-cobalt px-5 py-3 font-semibold text-stage-cobalt hover:bg-stage-cobalt-soft focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:border-stage-border disabled:text-stage-faint"
-        disabled={activeIndex === 0}
-        onClick={() => {
-          setIsFinished(false)
-          setActiveIndex((current) => Math.max(0, current - 1))
-        }}
+        className="word-navigation__previous"
+        disabled={safeActiveIndex === 0}
+        onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
         type="button"
       >
         <CaretLeft aria-hidden="true" weight="bold" />
         Previous word
       </button>
       <button
-        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-stage-vermilion px-5 py-3 font-semibold text-stage-white hover:bg-stage-vermilion-strong focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-stage-focus disabled:cursor-not-allowed disabled:bg-stage-disabled"
-        disabled={isFinished}
-        onClick={showNext}
+        className="word-navigation__next"
+        disabled={safeActiveIndex === items.length - 1}
+        onClick={() => setActiveIndex((current) => Math.min(items.length - 1, current + 1))}
         type="button"
       >
-        {isFinished ? 'Vocabulary complete' : activeIndex === items.length - 1 ? 'Finish vocabulary' : 'Next word'}
-        {isFinished ? null : <CaretRight aria-hidden="true" weight="bold" />}
+        Next word
+        <CaretRight aria-hidden="true" weight="bold" />
       </button>
     </nav>
+  )
+
+  const progressMarkers = (
+    <ol aria-label="Word position" className="word-position-markers">
+      {items.map((word, index) => (
+        <li aria-current={index === safeActiveIndex ? 'true' : undefined} key={word.id}>
+          <span aria-hidden="true">{index + 1}</span>
+        </li>
+      ))}
+    </ol>
   )
 
   return (
     <LearningShell
       controls={controls}
       details={details}
-      heading={`Unit ${unitNumber} · ${unitTitle}`}
+      heading="Choose a word"
       media={media}
-      progress={`Word ${activeIndex + 1} of ${items.length}`}
+      progress={`Word ${safeActiveIndex + 1} of ${items.length}`}
+      progressLabel="Vocabulary path"
+      progressMarkers={progressMarkers}
       rail={rail}
     />
   )

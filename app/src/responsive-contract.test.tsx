@@ -1,40 +1,31 @@
 /// <reference types="node" />
 
 import { cleanup, render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { MemoryRouter } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { DialoguePage } from './pages/DialoguePage'
-import { FlashcardDeck } from './components/FlashcardDeck'
 import { HumanAudioButton } from './components/HumanAudioButton'
 import { VocabularyJourney } from './components/VocabularyJourney'
 import { course } from './content/course'
-import { GrammarPage } from './pages/GrammarPage'
 
 const styles = readFileSync(resolve(process.cwd(), 'src/styles.css'), 'utf8')
 const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
 
-beforeEach(() => localStorage.clear())
 afterEach(cleanup)
 
 describe('responsive beginner contracts', () => {
-  it('keeps every compact vocabulary option bilingual and identifies the current step without color alone', () => {
+  it('keeps every responsive vocabulary control bilingual and identifies the current word without color alone', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    const compact = screen.getByRole('group', { name: 'Compact vocabulary progress' })
-    const selector = within(compact).getByRole('combobox', { name: 'Choose vocabulary word' })
-    expect(within(selector).getAllByRole('option').map((option) => option.textContent)).toEqual([
-      '1. 학생 — Student',
-      '2. 선생님 — Teacher',
-      '3. 회사원 — Office worker',
-      '4. 기자 — Reporter',
-      '5. 의사 — Doctor',
-      '6. 가수 — Singer',
-      '7. 군인 — Soldier',
-      '8. 요리사 — Chef',
-    ])
-    expect(within(compact).getByText('1 of 8 · 학생 · Student')).toHaveAttribute('aria-current', 'step')
+    const rail = screen.getByRole('list', { name: 'Vocabulary words' })
+    const buttons = within(rail).getAllByRole('button')
+    expect(buttons.every((button) => !button.hasAttribute('aria-label'))).toBe(true)
+    expect(buttons[0]).toHaveAccessibleName(/학생.*Student.*Now learning/)
+    expect(buttons[7]).toHaveAccessibleName(/요리사.*Chef/)
+    expect(buttons[0]).toHaveAttribute('aria-current', 'true')
+    expect(within(buttons[0]).getByText('Now learning')).toBeVisible()
 
     cleanup()
     render(<DialoguePage />)
@@ -45,11 +36,7 @@ describe('responsive beginner contracts', () => {
 
   it('gives English next-step instructions in empty and unavailable media states', () => {
     render(<VocabularyJourney items={[]} />)
-    expect(screen.getByText(/There are no words/i)).toHaveTextContent(/return to the course map/i)
-
-    cleanup()
-    render(<FlashcardDeck items={[]} />)
-    expect(screen.getByText(/No vocabulary cards/i)).toHaveTextContent(/return to the course map/i)
+    expect(screen.getByText(/There are no words/i)).toHaveTextContent(/choose another lesson from all lessons/i)
 
     cleanup()
     render(<HumanAudioButton memberName="Member 1" source={{ kind: 'development-missing', src: null }} />)
@@ -62,13 +49,51 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/:where\(\.site-brand, \.desktop-navigation a, \.mobile-navigation a\)\s*\{[^}]*min-height:\s*2\.75rem;/s)
   })
 
-  it('removes nonessential flashcard and grammar-card transforms and transitions for reduced motion', () => {
-    const reducedMotion = styles.match(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*)\}\s*$/)?.[1] ?? ''
-    expect(reducedMotion).toMatch(/\.flashcard-motion\s*\{[^}]*transition:\s*none !important;/s)
-    expect(reducedMotion).toMatch(/\.flashcard-motion\s*\{[^}]*transform:\s*none !important;/s)
-    expect(reducedMotion).toMatch(/\.grammar-card\s*\{[^}]*transition:\s*none !important;[^}]*transform:\s*none !important;/s)
+  it('uses a compact bilingual mobile listbox chooser without horizontal scrolling', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney items={occupationItems} />)
 
-    render(<MemoryRouter><GrammarPage /></MemoryRouter>)
-    for (const link of screen.getAllByRole('link')) expect(link).toHaveClass('grammar-card')
+    const chooser = screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ })
+    expect(chooser).toHaveAttribute('aria-haspopup', 'listbox')
+    expect(chooser).toHaveAttribute('aria-expanded', 'false')
+    expect(within(chooser).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(chooser).getByText('Student')).toHaveAttribute('lang', 'en')
+    await user.click(chooser)
+
+    const listbox = screen.getByRole('listbox', { name: 'Vocabulary words' })
+    const firstOption = within(listbox).getByRole('option', { name: /학생.*Student/ })
+    const lastOption = within(listbox).getByRole('option', { name: /요리사.*Chef/ })
+    expect(within(firstOption).getByText('학생')).toHaveAttribute('lang', 'ko')
+    expect(within(firstOption).getByText('Student')).toHaveAttribute('lang', 'en')
+    expect(within(lastOption).getByText('요리사')).toHaveAttribute('lang', 'ko')
+    expect(within(lastOption).getByText('Chef')).toHaveAttribute('lang', 'en')
+    expect(styles).toMatch(/\.learn-word-chooser\s*\{[^}]*display:\s*grid;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-word-chooser\s*\{[^}]*display:\s*none;/)
   })
+
+  it('stacks Learn by default and uses the approved three-column anatomy at 70rem', () => {
+    render(<VocabularyJourney items={occupationItems} />)
+
+    expect(screen.getByRole('region', { name: 'Choose a word' })).toHaveClass('learn-layout')
+    expect(screen.getByRole('complementary', { name: 'Ordered vocabulary words' })).toHaveClass('learn-word-rail')
+    expect(screen.getByRole('region', { name: 'Member vocabulary video' })).toHaveClass('learn-media')
+    const details = screen.getByRole('complementary', { name: 'Vocabulary learning details' })
+    expect(details).toHaveClass('learn-details')
+    expect(within(details).getByRole('navigation', { name: 'Word navigation' })).toBeVisible()
+
+    expect(styles).toMatch(/\.learn-layout\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*gap:\s*1\.25rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout\s*\{[^}]*grid-template-columns:\s*12rem minmax\(24rem, 1fr\) minmax\(18rem, 21rem\);/)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-media video,[\s\S]*?height:\s*clamp\(14rem, 28vh, 19rem\);/)
+  })
+
+  it('keeps Korean runs in mixed Practice copy from breaking between syllables', () => {
+    expect(styles).toMatch(/\.language-aware-text__ko\s*\{[^}]*display:\s*inline-block;[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;[^}]*white-space:\s*nowrap;/s)
+  })
+
+  it('turns the lesson selector into a fixed bottom drawer on mobile and a popover on wider screens', () => {
+    expect(styles).toMatch(/\.lesson-selector__backdrop\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;/s)
+    expect(styles).toMatch(/\.lesson-selector__drawer\s*\{[^}]*position:\s*fixed;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;/s)
+    expect(styles).toMatch(/@media \(min-width: 40rem\)[\s\S]*?\.lesson-selector__drawer\s*\{[^}]*position:\s*absolute;/s)
+  })
+
 })

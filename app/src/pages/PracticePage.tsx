@@ -1,194 +1,124 @@
-import { useLayoutEffect, useRef, useState, type FormEvent } from 'react'
-import { FlashcardDeck } from '../components/FlashcardDeck'
-import { ExerciseAnswerControl } from '../components/ExerciseAnswerControl'
-import { course } from '../content/course'
-import {
-  formatCorrectExerciseAnswer,
-  formatExerciseAnswer,
-  isExerciseAnswerComplete,
-  isExerciseAnswerCorrect,
-} from '../content/exerciseAnswers'
-import type { Exercise, ExerciseAnswer } from '../content/types'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { ExerciseEngine } from '../components/ExerciseEngine'
+import { LanguageAwareText } from '../components/LanguageAwareText'
+import { practiceGroups, type PracticeGroup } from '../content/practiceCatalog'
+import type { Exercise } from '../content/types'
 
-const exercises = course.grammar.flatMap((grammarPoint) => grammarPoint.exercises)
-
-type AnswerResult = {
-  exercise: Exercise
-  answer: ExerciseAnswer
-  isCorrect: boolean
+type PracticeSelection = {
+  id: string
+  title: string
+  exercises: Exercise[]
 }
 
-type ChallengePhase = 'questions' | 'complete' | 'review'
+const lessonNumber = (group: PracticeGroup) => Number(group.lessonSlug.split('-')[1])
+
+const lessonSelection = (group: PracticeGroup): PracticeSelection => ({
+  id: group.lessonSlug,
+  title: `Lesson ${lessonNumber(group)} · ${group.title} quiz`,
+  exercises: group.exercises,
+})
+
+const mixedSelection: PracticeSelection = {
+  id: 'mixed-lec-1',
+  title: 'Mixed Lec 1 quiz',
+  exercises: practiceGroups.flatMap((group) => group.exercises),
+}
 
 export function PracticePage() {
-  const [mode, setMode] = useState<'flashcards' | 'challenge'>('flashcards')
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState<ExerciseAnswer | undefined>()
-  const [results, setResults] = useState<AnswerResult[]>([])
-  const [phase, setPhase] = useState<ChallengePhase>('questions')
-  const questionLegendRef = useRef<HTMLLegendElement>(null)
-  const feedbackRef = useRef<HTMLDivElement>(null)
-  const completionHeadingRef = useRef<HTMLHeadingElement>(null)
-  const shouldFocusQuestion = useRef(false)
-  const currentExercise = exercises[questionIndex]
-  const currentResult = results[questionIndex]
+  const [searchParams] = useSearchParams()
+  const { lessonSlug } = useParams()
+  const location = useLocation()
+  const routeGroup = practiceGroups.find((group) => group.lessonSlug === lessonSlug)
+  const queryGroup = practiceGroups.find(
+    (group) => group.lessonSlug === searchParams.get('lesson'),
+  )
+  const [mixedQuizActive, setMixedQuizActive] = useState(false)
+  const activeQuiz = routeGroup ? lessonSelection(routeGroup) : mixedQuizActive ? mixedSelection : null
+  const quizCardRefs = useRef<Record<string, HTMLElement | null>>({})
 
   useLayoutEffect(() => {
-    if (phase === 'complete') {
-      completionHeadingRef.current?.focus()
-    } else if (currentResult) {
-      feedbackRef.current?.focus()
-    } else if (shouldFocusQuestion.current) {
-      questionLegendRef.current?.focus()
-      shouldFocusQuestion.current = false
-    }
-  }, [currentResult, phase, questionIndex])
+    if (activeQuiz) return
+    const focusLesson = (location.state as { focusLesson?: string } | null)?.focusLesson
+    if (focusLesson) quizCardRefs.current[focusLesson]?.focus()
+  }, [activeQuiz, location.state])
 
-  const checkAnswer = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!isExerciseAnswerComplete(currentExercise, selectedAnswer) || currentResult || selectedAnswer === undefined) return
-
-    const result = {
-      exercise: currentExercise,
-      answer: selectedAnswer,
-      isCorrect: isExerciseAnswerCorrect(currentExercise, selectedAnswer),
-    }
-    const nextResults = [...results, result]
-    setResults(nextResults)
-  }
-
-  const nextQuestion = () => {
-    shouldFocusQuestion.current = true
-    setQuestionIndex((current) => current + 1)
-    setSelectedAnswer(undefined)
-  }
-
-  const tryAgain = () => {
-    shouldFocusQuestion.current = true
-    setQuestionIndex(0)
-    setSelectedAnswer(undefined)
-    setResults([])
-    setPhase('questions')
-  }
-
-  const correctCount = results.filter((result) => result.isCorrect).length
-  const incorrectResults = results.filter((result) => !result.isCorrect)
+  if (!lessonSlug && queryGroup) return <Navigate replace to={`/practice/${queryGroup.lessonSlug}`} />
+  if (lessonSlug && !routeGroup) return <Navigate replace to="/practice" />
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-5 sm:p-8">
+    <div className="mx-auto max-w-5xl space-y-8 p-5 sm:p-8">
       <header>
-        <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lec 1 review</p>
-        <h1 className="mt-1 text-4xl font-black text-stage-charcoal">Final practice</h1>
-        <p className="mt-3 max-w-2xl text-stage-muted">Review countries and jobs, then complete all nine grammar questions.</p>
+        <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lec 1 practice</p>
+        <h1 className="mt-1 text-4xl font-black text-stage-charcoal">Practice by lesson</h1>
+        <p className="mt-3 max-w-2xl text-stage-muted">
+          Choose a lesson you have learned. Each quiz gives immediate English feedback and lets you try again.
+        </p>
       </header>
 
-      <nav aria-label="Practice activities" className="grid gap-3 sm:grid-cols-2">
-        <button
-          aria-pressed={mode === 'flashcards'}
-          className="rounded-xl border border-stage-cobalt px-5 py-3 font-bold text-stage-cobalt aria-pressed:bg-stage-cobalt aria-pressed:text-stage-white"
-          onClick={() => setMode('flashcards')}
-          type="button"
-        >
-          Vocabulary Flashcards
-        </button>
-        <button
-          aria-pressed={mode === 'challenge'}
-          className="rounded-xl border border-stage-cobalt px-5 py-3 font-bold text-stage-cobalt aria-pressed:bg-stage-cobalt aria-pressed:text-stage-white"
-          onClick={() => setMode('challenge')}
-          type="button"
-        >
-          Grammar Challenge
-        </button>
-      </nav>
-
-      {mode === 'flashcards' ? <FlashcardDeck items={course.vocabulary} /> : null}
-
-      {mode === 'challenge' ? (
-        <section aria-labelledby="challenge-heading" className="space-y-5">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Final check</p>
-            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="challenge-heading">Grammar Challenge</h2>
-          </div>
-
-          {phase === 'questions' ? (
-            <form className="rounded-xl border border-stage-border bg-stage-white p-5" onSubmit={checkAnswer}>
-              <fieldset>
-                <legend className="practice-focus-target w-full text-lg font-bold text-stage-charcoal" ref={questionLegendRef} tabIndex={-1}>
-                  <span className="block text-sm font-semibold text-stage-faint">Question {questionIndex + 1} of {exercises.length}</span>
-                  <span className="mt-2 block">{currentExercise.prompt}</span>
-                  <span className="mt-3 block rounded-xl bg-stage-soft p-4 text-xl text-stage-cobalt" lang="ko">{currentExercise.koreanContext}</span>
-                </legend>
-
-                <ExerciseAnswerControl
-                  answer={selectedAnswer}
-                  disabled={Boolean(currentResult)}
-                  exercise={currentExercise}
-                  onChange={setSelectedAnswer}
-                />
-
-                {currentResult ? (
-                  <div
-                    aria-live="polite"
-                    className={`practice-focus-target mt-5 rounded-xl p-4 ${currentResult.isCorrect ? 'bg-stage-jade-soft text-stage-jade-strong' : 'bg-stage-yellow-soft text-stage-yellow-strong'}`}
-                    ref={feedbackRef}
-                    role="status"
-                    tabIndex={-1}
-                  >
-                    <p className="font-bold">
-                      {currentResult.isCorrect ? <><span lang="ko">맞았어요!</span> Correct!</> : <><span lang="ko">아직 아니에요.</span> Not quite.</>}
-                    </p>
-                    {!currentResult.isCorrect ? <p className="mt-1">{currentExercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={currentExercise.type === 'matching' ? undefined : 'ko'}>{formatCorrectExerciseAnswer(currentExercise)}</span></p> : null}
-                    <p className="mt-1">{currentExercise.explanation}</p>
-                  </div>
-                ) : null}
-
-                <div className="mt-5">
-                  {currentResult ? (
-                    <button
-                      className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white"
-                      onClick={questionIndex === exercises.length - 1 ? () => setPhase('complete') : nextQuestion}
-                      type="button"
-                    >
-                      {questionIndex === exercises.length - 1 ? 'See results' : 'Next question'}
-                    </button>
-                  ) : (
-                    <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!isExerciseAnswerComplete(currentExercise, selectedAnswer)} type="submit">Check answer</button>
-                  )}
-                </div>
-              </fieldset>
-            </form>
-          ) : null}
-
-          {phase === 'complete' ? (
-            <div className="rounded-xl border border-stage-border bg-stage-white p-6">
-              <h3 className="practice-focus-target text-2xl font-bold text-stage-charcoal" ref={completionHeadingRef} tabIndex={-1}>Challenge complete</h3>
-              <p aria-live="polite" className="mt-3 text-xl font-bold text-stage-cobalt">Score: {correctCount} / {exercises.length}</p>
-              <p className="mt-2 text-stage-muted"><span lang="ko">잘했어요!</span> Nice work completing every grammar question.</p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                {incorrectResults.length > 0 ? (
-                  <button className="rounded-xl border border-stage-cobalt px-5 py-3 font-bold text-stage-cobalt" onClick={() => setPhase('review')} type="button">Review incorrect answers</button>
-                ) : null}
-                <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white" onClick={tryAgain} type="button">Try again</button>
-              </div>
-            </div>
-          ) : null}
-
-          {phase === 'review' ? (
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-stage-charcoal">Review incorrect answers</h3>
-              {incorrectResults.map((result) => (
-                <article className="rounded-xl border border-stage-yellow bg-stage-yellow-soft p-5" key={result.exercise.id}>
-                  <p className="text-xl font-bold text-stage-charcoal" lang="ko">{result.exercise.koreanContext}</p>
-                  <p className="mt-3">Your answer: <span lang={result.exercise.type === 'matching' ? undefined : 'ko'}>{formatExerciseAnswer(result.exercise, result.answer)}</span></p>
-                  <p className="mt-1">{result.exercise.type === 'matching' ? 'Correct matches' : 'Correct answer'}: <span lang={result.exercise.type === 'matching' ? undefined : 'ko'}>{formatCorrectExerciseAnswer(result.exercise)}</span></p>
-                  <p className="mt-2 text-stage-muted">{result.exercise.explanation}</p>
-                </article>
-              ))}
-              <button className="rounded-xl bg-stage-cobalt px-5 py-3 font-bold text-stage-white" onClick={tryAgain} type="button">Try again</button>
-            </div>
-          ) : null}
+      {activeQuiz ? (
+        <section aria-label="Active lesson quiz" className="space-y-6">
+          {routeGroup ? <Link
+            className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt no-underline hover:bg-stage-cobalt-soft"
+            state={{ focusLesson: activeQuiz.id }}
+            to="/practice"
+          >
+            All lesson quizzes
+          </Link> : <button
+            className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt hover:bg-stage-cobalt-soft"
+            onClick={() => setMixedQuizActive(false)}
+            type="button"
+          >All lesson quizzes</button>}
+          <ExerciseEngine
+            exercises={activeQuiz.exercises}
+            key={activeQuiz.id}
+            mode="quiz"
+            title={activeQuiz.title}
+          />
         </section>
-      ) : null}
+      ) : (
+        <>
+          <section aria-labelledby="lesson-quiz-heading" className="space-y-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Choose what to practise</p>
+              <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="lesson-quiz-heading">Lesson quizzes</h2>
+            </div>
+            <ul aria-label="Lesson quizzes" className="grid list-none gap-4 p-0 sm:grid-cols-2">
+              {practiceGroups.map((group) => {
+                const number = lessonNumber(group)
+                return (
+                  <li key={group.lessonSlug}>
+                    <Link
+                      className="flex h-full w-full flex-col items-start rounded-xl border border-stage-border bg-stage-white p-5 text-left no-underline transition hover:-translate-y-1 hover:border-stage-cobalt focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-stage-focus motion-reduce:transition-none"
+                      ref={(element) => { quizCardRefs.current[group.lessonSlug] = element }}
+                      to={`/practice/${group.lessonSlug}`}
+                    >
+                      <span className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lesson {number}</span>
+                      <strong className="mt-2 text-xl text-stage-charcoal"><LanguageAwareText text={group.title} /></strong>
+                      <span className="mt-4 text-sm font-semibold text-stage-muted">{group.exercises.length} questions</span>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+
+          <section aria-labelledby="mixed-quiz-heading" className="border-t border-stage-border pt-6">
+            <p className="text-sm font-bold uppercase tracking-wide text-stage-vermilion">Optional final check</p>
+            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="mixed-quiz-heading">Mix all five lessons</h2>
+            <p className="mt-2 max-w-2xl text-stage-muted">Use this only when you want countries, jobs, and all three grammar points in one quiz.</p>
+            <button
+              aria-label={`${mixedSelection.title} · ${mixedSelection.exercises.length} questions`}
+              className="mt-4 rounded-xl bg-stage-vermilion px-5 py-3 font-bold text-stage-white hover:bg-stage-vermilion-strong"
+              onClick={() => setMixedQuizActive(true)}
+              ref={(element) => { quizCardRefs.current[mixedSelection.id] = element }}
+              type="button"
+            >
+              Mixed Lec 1 quiz · {mixedSelection.exercises.length} questions
+            </button>
+          </section>
+        </>
+      )}
     </div>
   )
 }

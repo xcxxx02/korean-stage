@@ -1,5 +1,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
+import { course } from '../content/course'
 import { validCourse } from '../test/fixtures'
 import { appRouteManifest } from '../navigation'
 import { TeamPage } from '../pages/TeamPage'
@@ -18,6 +20,8 @@ function courseWithAiOnlyProhibition() {
         ...validCourse.vocabulary[0],
         id: 'unowned-ai-reference',
         ownerId: null,
+        assessmentStatus: 'supporting' as const,
+        recordingRequirement: 'not-required' as const,
         audio: { src: '/media/reference/ai.mp3', kind: 'ai-generated' as const },
       },
     ],
@@ -25,8 +29,34 @@ function courseWithAiOnlyProhibition() {
 }
 
 describe('SubmissionReadiness', () => {
+  it('keeps the Team page learner-facing unless the development readiness query is enabled', () => {
+    const { unmount } = render(
+      <MemoryRouter initialEntries={['/team']}>
+        <TeamPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Meet the team' })).toBeVisible()
+    for (const member of course.members) {
+      const memberCard = screen.getByRole('article', { name: `${member.name} contribution` })
+      expect(within(memberCard).getByText(member.role)).toBeVisible()
+      expect(within(memberCard).getByText(member.contribution)).toBeVisible()
+    }
+    expect(screen.queryByText('Submission readiness')).not.toBeInTheDocument()
+    expect(screen.queryByText('Replace before submission')).not.toBeInTheDocument()
+
+    unmount()
+    render(
+      <MemoryRouter initialEntries={['/team?readiness=1']}>
+        <TeamPage />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('Submission readiness')).toBeVisible()
+  })
+
   it('keeps the real development course not ready while distinguishing complete structure from missing submission content', () => {
-    render(<TeamPage />)
+    render(<SubmissionReadiness course={course} />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(
       'AI-generated voices receive 0 marks and must never be added.',
@@ -255,6 +285,7 @@ describe('SubmissionReadiness', () => {
           ? {
               id: exercise.id,
               grammarId: exercise.grammarId,
+              answerLanguage: 'ko' as const,
               type: 'multiple-choice' as const,
               prompt: exercise.prompt,
               koreanContext: exercise.koreanContext,
@@ -286,6 +317,19 @@ describe('SubmissionReadiness', () => {
     expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Primary navigation')
     expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
       'Restore the Team primary navigation route at /team.',
+    )
+  })
+
+  it('does not pass navigation when Learn loses its direct Lesson 1 destination', () => {
+    const routes = appRouteManifest.map((route) => route.id === 'learn'
+      ? { id: 'learn', path: 'learn', primaryNavigationLabel: 'Learn' }
+      : route)
+
+    render(<SubmissionReadiness course={validCourse} {...{ routes }} />)
+
+    expect(screen.getByRole('region', { name: 'Passed' })).not.toHaveTextContent('Primary navigation')
+    expect(screen.getByRole('region', { name: 'Needs content' })).toHaveTextContent(
+      'Restore the Learn primary navigation route at /learn/lesson-1.',
     )
   })
 })

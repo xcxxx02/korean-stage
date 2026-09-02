@@ -1,17 +1,9 @@
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { cleanup, render, screen, within } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
 import { course } from '../content/course'
-import { readProgress, writeProgress } from '../progress/progressStore'
-import { GrammarPage } from '../pages/GrammarPage'
-import { UnitPage } from '../pages/UnitPage'
 import { GrammarLesson } from './GrammarLesson'
 
-beforeEach(() => localStorage.clear())
 afterEach(cleanup)
-
-const ieyoYeyo = course.grammar.find((grammarPoint) => grammarPoint.id === 'ieyo-yeyo')!
 
 const grammarLessonCases = [
   {
@@ -57,127 +49,5 @@ describe('GrammarLesson', () => {
 
     const exercises = screen.getAllByRole('group', { name: /of 3/i })
     expect(exercises).toHaveLength(3)
-  })
-})
-
-describe('grammar routes', () => {
-  it('links all three bilingual grammar units and shows completion state', () => {
-    writeProgress({
-      completedUnitIds: ['unit-5'],
-      completedVocabularyIds: [],
-      exerciseResults: {
-        'eun-neun-1': true,
-        'eun-neun-2': true,
-        'eun-neun-3': true,
-      },
-      lastPath: '/grammar',
-    }, localStorage)
-
-    render(<MemoryRouter><GrammarPage /></MemoryRouter>)
-
-    expect(screen.getByRole('heading', { name: 'Grammar' })).toBeVisible()
-    const units = screen.getByRole('list', { name: 'Grammar units' })
-    expect(within(units).getAllByRole('listitem')).toHaveLength(3)
-    expect(within(units).getByRole('link', { name: /이에요 \/ 예요.*to be/i })).toHaveAttribute('href', '/learn/unit-4')
-    const completedUnit = within(units).getByRole('link', { name: /은 \/ 는.*topic marker/i })
-    expect(completedUnit).toHaveAttribute('href', '/learn/unit-5')
-    expect(within(completedUnit).getByText('Complete')).toBeVisible()
-    expect(within(completedUnit).queryByText('Not complete')).not.toBeInTheDocument()
-    expect(within(units).getByRole('link', { name: /이 \/ 가 아니에요.*is not/i })).toHaveAttribute('href', '/learn/unit-6')
-  })
-
-  it('records a grammar unit complete only after all three exercises are correct', async () => {
-    const user = userEvent.setup()
-    render(
-      <MemoryRouter initialEntries={['/learn/unit-4']}>
-        <Routes><Route path="learn/:unitId" element={<UnitPage />} /></Routes>
-      </MemoryRouter>,
-    )
-
-    const exercises = screen.getAllByRole('group', { name: /of 3/i })
-    for (let index = 0; index < exercises.length; index += 1) {
-      const exercise = ieyoYeyo.exercises[index]
-      if (exercise.type === 'matching') {
-        for (const pair of exercise.pairs) {
-          await user.selectOptions(within(exercises[index]).getByRole('combobox', { name: `Match ${pair.korean} to its English meaning` }), pair.english)
-        }
-      } else {
-        await user.click(within(exercises[index]).getByRole('radio', { name: exercise.answer }))
-      }
-      await user.click(within(exercises[index]).getByRole('button', { name: `Check answer ${index + 1}` }))
-      await waitFor(() => expect(readProgress(localStorage).exerciseResults[ieyoYeyo.exercises[index].id]).toBe(true))
-      if (index < 2) expect(readProgress(localStorage).completedUnitIds).not.toContain('unit-4')
-    }
-
-    await waitFor(() => expect(readProgress(localStorage).completedUnitIds).toContain('unit-4'))
-    expect(screen.getByText('Score: 3 of 3 correct')).toBeVisible()
-    expect(screen.getByText('Unit complete')).toBeVisible()
-  })
-
-  it('hydrates two saved correct answers and completes after the third', async () => {
-    const user = userEvent.setup()
-    writeProgress({
-      completedUnitIds: [],
-      completedVocabularyIds: [],
-      exerciseResults: {
-        'ieyo-yeyo-1': true,
-        'ieyo-yeyo-2': true,
-      },
-      lastPath: '/learn/unit-4',
-    }, localStorage)
-
-    render(
-      <MemoryRouter initialEntries={['/learn/unit-4']}>
-        <Routes><Route path="learn/:unitId" element={<UnitPage />} /></Routes>
-      </MemoryRouter>,
-    )
-
-    expect(screen.getByText('Score: 2 of 3 correct')).toBeVisible()
-    const exercises = screen.getAllByRole('group', { name: /of 3/i })
-    expect(within(exercises[0]).getByRole('button', { name: 'Answer 1 correct' })).toBeDisabled()
-    expect(within(exercises[1]).getByRole('button', { name: 'Answer 2 correct' })).toBeDisabled()
-    expect(screen.queryByText('Unit complete')).not.toBeInTheDocument()
-
-    await user.selectOptions(within(exercises[2]).getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' }), 'I am a student.')
-    await user.selectOptions(within(exercises[2]).getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' }), 'Jenny is a singer.')
-    await user.click(within(exercises[2]).getByRole('button', { name: 'Check answer 3' }))
-
-    await waitFor(() => expect(readProgress(localStorage)).toMatchObject({
-      completedUnitIds: ['unit-4'],
-      exerciseResults: {
-        'ieyo-yeyo-1': true,
-        'ieyo-yeyo-2': true,
-        'ieyo-yeyo-3': true,
-      },
-    }))
-    expect(screen.getByText('Score: 3 of 3 correct')).toBeVisible()
-    expect(screen.getByText('Unit complete')).toBeVisible()
-  })
-
-  it('shows a completed saved unit as three of three with every exercise locked', () => {
-    writeProgress({
-      completedUnitIds: ['unit-4'],
-      completedVocabularyIds: [],
-      exerciseResults: {
-        'ieyo-yeyo-1': true,
-        'ieyo-yeyo-2': true,
-        'ieyo-yeyo-3': true,
-      },
-      lastPath: '/learn/unit-4',
-    }, localStorage)
-
-    render(
-      <MemoryRouter initialEntries={['/learn/unit-4']}>
-        <Routes><Route path="learn/:unitId" element={<UnitPage />} /></Routes>
-      </MemoryRouter>,
-    )
-
-    expect(screen.getByText('Score: 3 of 3 correct')).toBeVisible()
-    expect(screen.getByText('Unit complete')).toBeVisible()
-    for (const radio of screen.getAllByRole('radio')) expect(radio).toBeDisabled()
-    for (const select of screen.getAllByRole('combobox')) expect(select).toBeDisabled()
-    expect(screen.getByRole('combobox', { name: 'Match 저는 학생이에요. to its English meaning' })).toHaveValue('I am a student.')
-    expect(screen.getByRole('combobox', { name: 'Match 제니는 가수예요. to its English meaning' })).toHaveValue('Jenny is a singer.')
-    expect(screen.getAllByRole('button', { name: /Answer \d correct/ })).toHaveLength(3)
   })
 })

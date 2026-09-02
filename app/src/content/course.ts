@@ -10,9 +10,6 @@ export const courseLessons = [
   { id: 'unit-7', slug: 'lesson-7', title: 'Dialogue & Role Play' },
 ] as const satisfies readonly CourseLesson[]
 
-// Temporary compatibility alias until the old pages are removed in Task 8.
-export const courseUnits = courseLessons
-
 export const getLessonBySlug = (slug: string) =>
   courseLessons.find((lesson) => lesson.slug === slug)
 
@@ -42,6 +39,8 @@ const vocabulary = (
   koreanExample,
   englishExample,
   ownerId,
+  assessmentStatus: unitId === 'unit-3' ? 'assessed' : 'supporting',
+  recordingRequirement: unitId === 'unit-3' ? 'member-recording-required' : 'not-required',
   video: developmentMedia(),
   audio: developmentMedia(),
 })

@@ -55,6 +55,21 @@ describe('AppShell', () => {
     expect(screen.getByRole('link', { name: 'Learn' })).toHaveAttribute('aria-current', 'page')
   })
 
+  it('marks stable Practice lesson routes as active', () => {
+    renderShell('/practice/lesson-4')
+
+    expect(screen.getByRole('link', { name: 'Practice' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it.each([
+    ['/dialogue', 'Dialogue'],
+    ['/team', 'Team'],
+  ])('marks %s as the active primary destination', (path, label) => {
+    renderShell(path)
+
+    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page')
+  })
+
   it('opens and closes the accessible mobile menu', async () => {
     const user = userEvent.setup()
     renderShell()
@@ -73,6 +88,22 @@ describe('AppShell', () => {
     await user.keyboard('{Escape}')
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
     expect(mobilePanel).toHaveAttribute('hidden')
+  })
+
+  it('returns focus to the mobile menu trigger when Escape is pressed from a navigation link', async () => {
+    const user = userEvent.setup()
+    renderShell()
+
+    const menuButton = screen.getByRole('button', { name: 'Menu' })
+    await user.click(menuButton)
+    const practiceLink = within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })
+    practiceLink.focus()
+
+    await user.keyboard('{Escape}')
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false')
+    expect(document.getElementById('primary-navigation-list')).toHaveAttribute('hidden')
+    expect(menuButton).toHaveFocus()
   })
 
   it('closes the mobile menu and focuses the destination heading after navigation', async () => {

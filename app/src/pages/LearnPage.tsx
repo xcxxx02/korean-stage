@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { GrammarGuide } from '../components/GrammarGuide'
 import { IntroductionLesson } from '../components/IntroductionLesson'
 import { LessonSelector } from '../components/LessonSelector'
+import { LanguageAwareText } from '../components/LanguageAwareText'
 import { VocabularyJourney } from '../components/VocabularyJourney'
 import { course, courseLessons, getLessonBySlug } from '../content/course'
 
@@ -53,7 +54,7 @@ export function LearnPage() {
           <p className="m-0 text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">
             Lesson {lessonNumber} of {courseLessons.length}
           </p>
-          <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl">{lesson.title}</h1>
+          <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl"><LanguageAwareText text={lesson.title} /></h1>
         </div>
         <LessonSelector activeSlug={lesson.slug} />
       </header>

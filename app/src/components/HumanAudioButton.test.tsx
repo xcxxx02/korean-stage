@@ -42,6 +42,14 @@ describe('HumanAudioButton', () => {
     expect(document.querySelector('audio')).not.toBeInTheDocument()
   })
 
+  it.each(['', '   ', '\n\t'])('rejects an empty human recording source (%j)', (src) => {
+    render(<HumanAudioButton memberName="Member 1" source={{ src, kind: 'human-recording' }} />)
+
+    expect(screen.getByRole('button', { name: 'Listen to Member 1' })).toBeDisabled()
+    expect(screen.getByText('Audio unavailable: invalid media source')).toBeVisible()
+    expect(document.querySelector('audio')).not.toBeInTheDocument()
+  })
+
   it('reports a supplied human audio playback error in plain English', () => {
     render(<HumanAudioButton
       memberName="Member 1"

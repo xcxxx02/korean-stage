@@ -1,6 +1,6 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { PracticePage } from './PracticePage'
 
@@ -10,7 +10,10 @@ afterEach(cleanup)
 function renderPractice(entry = '/practice') {
   return render(
     <MemoryRouter initialEntries={[entry]}>
-      <PracticePage />
+      <Routes>
+        <Route path="practice" element={<PracticePage />} />
+        <Route path="practice/:lessonSlug" element={<PracticePage />} />
+      </Routes>
     </MemoryRouter>,
   )
 }
@@ -20,11 +23,11 @@ describe('PracticePage', () => {
     renderPractice()
 
     expect(screen.getByRole('heading', { name: 'Practice by lesson' })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Lesson 2.*Countries & Nationalities.*8 questions/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations.*8 questions/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Lesson 4.*이에요 \/ 예요 - to be.*3 questions/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Lesson 5.*은 \/ 는 - topic marker.*3 questions/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Lesson 6.*이 \/ 가 아니에요 - to not be.*3 questions/ })).toBeVisible()
+    expect(screen.getByRole('link', { name: /Lesson 2.*Countries & Nationalities.*8 questions/ })).toBeVisible()
+    expect(screen.getByRole('link', { name: /Lesson 3.*Jobs & Occupations.*8 questions/ })).toBeVisible()
+    expect(screen.getByRole('link', { name: /Lesson 4.*이에요 \/ 예요 - to be.*3 questions/ })).toBeVisible()
+    expect(screen.getByRole('link', { name: /Lesson 5.*은 \/ 는 - topic marker.*3 questions/ })).toBeVisible()
+    expect(screen.getByRole('link', { name: /Lesson 6.*이 \/ 가 아니에요 - to not be.*3 questions/ })).toBeVisible()
     expect(screen.getByRole('button', { name: /Mixed Lec 1 quiz.*25 questions/ })).toBeVisible()
     expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   })
@@ -36,7 +39,7 @@ describe('PracticePage', () => {
     const user = userEvent.setup()
     renderPractice()
 
-    await user.click(screen.getByRole('button', { name: new RegExp(lessonTitle) }))
+    await user.click(screen.getByRole('link', { name: new RegExp(lessonTitle) }))
     expect(screen.getByText('Question 1 of 8')).toBeVisible()
     expect(screen.getByText(wrongChoice)).toHaveAttribute('lang', 'en')
 
@@ -55,7 +58,7 @@ describe('PracticePage', () => {
     const user = userEvent.setup()
     renderPractice()
 
-    await user.click(screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ }))
+    await user.click(screen.getByRole('link', { name: /Lesson 3.*Jobs & Occupations/ }))
     const question = screen.getByRole('group', { name: /Question 1 of 8/ })
     const prompt = [...question.querySelectorAll('legend > span')].find(
       (element) => element.textContent === 'Choose the English meaning of 학생.',
@@ -92,17 +95,17 @@ describe('PracticePage', () => {
   it('moves keyboard focus into a selected quiz and returns it to the originating lesson card', async () => {
     const user = userEvent.setup()
     renderPractice()
-    const lessonCard = screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ })
+    const lessonCard = screen.getByRole('link', { name: /Lesson 3.*Jobs & Occupations/ })
 
     lessonCard.focus()
     await user.keyboard('[Enter]')
 
     await waitFor(() => expect(screen.getByText('Question 1 of 8').closest('legend')).toHaveFocus())
-    const backButton = screen.getByRole('button', { name: 'All lesson quizzes' })
+    const backButton = screen.getByRole('link', { name: 'All lesson quizzes' })
     backButton.focus()
     await user.keyboard('[Enter]')
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /Lesson 3.*Jobs & Occupations/ })).toHaveFocus())
+    await waitFor(() => expect(screen.getByRole('link', { name: /Lesson 3.*Jobs & Occupations/ })).toHaveFocus())
   })
 
   it('opens the requested grammar lesson from the Learn guide query', () => {
@@ -111,6 +114,28 @@ describe('PracticePage', () => {
     expect(screen.getByRole('heading', { name: 'Lesson 5 · 은 / 는 - topic marker quiz' })).toBeVisible()
     expect(screen.getByText('Question 1 of 3')).toBeVisible()
     expect(screen.getByText('Choose the correct topic-marked sentence.')).toBeVisible()
+  })
+
+  it('opens a lesson quiz from its stable route', () => {
+    renderPractice('/practice/lesson-4')
+
+    expect(screen.getByRole('heading', { name: 'Lesson 4 · 이에요 / 예요 - to be quiz' })).toBeVisible()
+    expect(screen.getByText('Question 1 of 3')).toBeVisible()
+  })
+
+  it('navigates lesson cards to stable routes and returns to the Practice index', async () => {
+    const user = userEvent.setup()
+    renderPractice()
+
+    const lessonCard = screen.getByRole('link', { name: /Lesson 4.*이에요 \/ 예요 - to be.*3 questions/ })
+    expect(lessonCard).toHaveAttribute('href', '/practice/lesson-4')
+    await user.click(lessonCard)
+    expect(screen.getByText('Question 1 of 3')).toBeVisible()
+
+    const allQuizzes = screen.getByRole('link', { name: 'All lesson quizzes' })
+    expect(allQuizzes).toHaveAttribute('href', '/practice')
+    await user.click(allQuizzes)
+    expect(screen.getByRole('heading', { name: 'Lesson quizzes' })).toBeVisible()
   })
 
   it('falls back to the lesson index for an unsupported lesson query', () => {

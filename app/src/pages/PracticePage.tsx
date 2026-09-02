@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { ExerciseEngine } from '../components/ExerciseEngine'
 import { LanguageAwareText } from '../components/LanguageAwareText'
 import { practiceGroups, type PracticeGroup } from '../content/practiceCatalog'
@@ -27,25 +27,24 @@ const mixedSelection: PracticeSelection = {
 
 export function PracticePage() {
   const [searchParams] = useSearchParams()
-  const requestedGroup = practiceGroups.find(
+  const { lessonSlug } = useParams()
+  const location = useLocation()
+  const routeGroup = practiceGroups.find((group) => group.lessonSlug === lessonSlug)
+  const queryGroup = practiceGroups.find(
     (group) => group.lessonSlug === searchParams.get('lesson'),
   )
-  const [activeQuiz, setActiveQuiz] = useState<PracticeSelection | null>(
-    requestedGroup ? lessonSelection(requestedGroup) : null,
-  )
-  const quizCardRefs = useRef<Record<string, HTMLButtonElement | null>>({})
-  const pendingReturnFocus = useRef<string | null>(null)
+  const [mixedQuizActive, setMixedQuizActive] = useState(false)
+  const activeQuiz = routeGroup ? lessonSelection(routeGroup) : mixedQuizActive ? mixedSelection : null
+  const quizCardRefs = useRef<Record<string, HTMLElement | null>>({})
 
   useLayoutEffect(() => {
-    if (activeQuiz || !pendingReturnFocus.current) return
-    quizCardRefs.current[pendingReturnFocus.current]?.focus()
-    pendingReturnFocus.current = null
-  }, [activeQuiz])
+    if (activeQuiz) return
+    const focusLesson = (location.state as { focusLesson?: string } | null)?.focusLesson
+    if (focusLesson) quizCardRefs.current[focusLesson]?.focus()
+  }, [activeQuiz, location.state])
 
-  const closeQuiz = () => {
-    pendingReturnFocus.current = activeQuiz?.id ?? null
-    setActiveQuiz(null)
-  }
+  if (!lessonSlug && queryGroup) return <Navigate replace to={`/practice/${queryGroup.lessonSlug}`} />
+  if (lessonSlug && !routeGroup) return <Navigate replace to="/practice" />
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-5 sm:p-8">
@@ -59,13 +58,17 @@ export function PracticePage() {
 
       {activeQuiz ? (
         <section aria-label="Active lesson quiz" className="space-y-6">
-          <button
-            className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt hover:bg-stage-cobalt-soft"
-            onClick={closeQuiz}
-            type="button"
+          {routeGroup ? <Link
+            className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt no-underline hover:bg-stage-cobalt-soft"
+            state={{ focusLesson: activeQuiz.id }}
+            to="/practice"
           >
             All lesson quizzes
-          </button>
+          </Link> : <button
+            className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt hover:bg-stage-cobalt-soft"
+            onClick={() => setMixedQuizActive(false)}
+            type="button"
+          >All lesson quizzes</button>}
           <ExerciseEngine
             exercises={activeQuiz.exercises}
             key={activeQuiz.id}
@@ -85,16 +88,15 @@ export function PracticePage() {
                 const number = lessonNumber(group)
                 return (
                   <li key={group.lessonSlug}>
-                    <button
-                      className="flex h-full w-full flex-col items-start rounded-xl border border-stage-border bg-stage-white p-5 text-left transition hover:-translate-y-1 hover:border-stage-cobalt focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-stage-focus motion-reduce:transition-none"
-                      onClick={() => setActiveQuiz(lessonSelection(group))}
+                    <Link
+                      className="flex h-full w-full flex-col items-start rounded-xl border border-stage-border bg-stage-white p-5 text-left no-underline transition hover:-translate-y-1 hover:border-stage-cobalt focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-stage-focus motion-reduce:transition-none"
                       ref={(element) => { quizCardRefs.current[group.lessonSlug] = element }}
-                      type="button"
+                      to={`/practice/${group.lessonSlug}`}
                     >
                       <span className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lesson {number}</span>
                       <strong className="mt-2 text-xl text-stage-charcoal"><LanguageAwareText text={group.title} /></strong>
                       <span className="mt-4 text-sm font-semibold text-stage-muted">{group.exercises.length} questions</span>
-                    </button>
+                    </Link>
                   </li>
                 )
               })}
@@ -108,7 +110,7 @@ export function PracticePage() {
             <button
               aria-label={`${mixedSelection.title} · ${mixedSelection.exercises.length} questions`}
               className="mt-4 rounded-xl bg-stage-vermilion px-5 py-3 font-bold text-stage-white hover:bg-stage-vermilion-strong"
-              onClick={() => setActiveQuiz(mixedSelection)}
+              onClick={() => setMixedQuizActive(true)}
               ref={(element) => { quizCardRefs.current[mixedSelection.id] = element }}
               type="button"
             >

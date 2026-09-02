@@ -15,6 +15,7 @@ export type CourseIssueCode =
   | 'introduction-model-content'
   | 'introduction-model-media'
   | 'vocabulary-bilingual-fields'
+  | 'vocabulary-owner'
   | 'vocabulary-media'
   | 'grammar-count'
   | 'exercise-count'
@@ -69,6 +70,8 @@ export type VocabularyItem = {
   koreanExample: string
   englishExample: string
   ownerId: string | null
+  assessmentStatus: 'assessed' | 'supporting'
+  recordingRequirement: 'member-recording-required' | 'not-required'
   video: MediaSource
   audio: MediaSource
 }

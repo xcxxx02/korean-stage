@@ -18,7 +18,7 @@ const passedChecks: PassedCheck[] = [
   { label: 'Course purpose', issueCodes: ['course-purpose'] },
   { label: 'Unit 1 introduction models', issueCodes: ['introduction-model-structure', 'introduction-model-content', 'introduction-model-media'] },
   { label: 'Member vocabulary counts', issueCodes: ['member-vocabulary-count'] },
-  { label: 'Bilingual vocabulary content', issueCodes: ['vocabulary-bilingual-fields'] },
+  { label: 'Bilingual vocabulary content', issueCodes: ['vocabulary-bilingual-fields', 'vocabulary-owner'] },
   { label: 'Grammar point count', issueCodes: ['grammar-count'] },
   { label: 'Exercises per grammar point', issueCodes: ['exercise-count', 'exercise-mode-coverage', 'exercise-matching'] },
   { label: 'Dialogue count', issueCodes: ['dialogue-count'] },
@@ -37,7 +37,7 @@ const qualitativeChecks = [
   'Uninterrupted verbal flow',
 ]
 
-const needsHumanMedia = (media: { kind: string, src: string | null }) => media.kind !== 'human-recording' || !media.src
+const needsHumanMedia = (media: { kind: string, src: string | null }) => media.kind !== 'human-recording' || !media.src?.trim()
 
 function joinWithAnd(names: string[]) {
   if (names.length > 2) return `${names.slice(0, -1).join(', ')}, and ${names.at(-1)}`
@@ -95,6 +95,7 @@ function issueAction(course: Course, issue: CourseIssue) {
     }
     case 'introduction-model-media': return `${introductionModel?.korean ?? 'Unknown Unit 1 model'} / ${introductionModel?.english ?? 'Unknown meaning'} — ${memberName}: add human-recorded audio.`
     case 'vocabulary-bilingual-fields': return `${vocabularyName} — complete the Korean, English, romanization, and bilingual examples.`
+    case 'vocabulary-owner': return `${vocabularyName} — assign an existing member only when the word is assessed and requires recording.`
     case 'vocabulary-media': {
       const missingMedia = vocabulary
         ? [

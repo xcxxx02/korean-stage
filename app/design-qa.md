@@ -54,7 +54,7 @@
 
 ## Automated verification evidence
 
-- `npm test`: passed, 21 files and 174 tests, 0 failures. The Practice regression selects Lesson 3, asserts that the vocabulary prompt and incorrect explanation expose Hangul only inside `lang="ko"` descendants and English inside `lang="en"` descendants, and walks both DOM subtrees to reject any untagged Hangul text node. The responsive source contract requires each Korean run to be an inline-block with `word-break: keep-all`, `overflow-wrap: normal`, and `white-space: nowrap`.
+- `npm test`: passed, 21 files and 200 tests, 0 failures. The Practice regression selects Lesson 3, asserts that the vocabulary prompt and incorrect explanation expose Hangul only inside `lang="ko"` descendants and English inside `lang="en"` descendants, and walks both DOM subtrees to reject any untagged Hangul text node. Matching controls now expose English-labelled options and segmented accessible names; Learn grammar headings, lesson titles, and selectors preserve the same boundaries. The responsive source contract requires each Korean run to be an inline-block with `word-break: keep-all`, `overflow-wrap: normal`, and `white-space: nowrap`.
 - `npm run typecheck`: passed.
 - `npm run lint`: passed.
 - `npm run build`: passed; Vite transformed 4608 modules and emitted the production client and Sites package.

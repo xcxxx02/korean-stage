@@ -90,4 +90,10 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/\.language-aware-text__ko\s*\{[^}]*display:\s*inline-block;[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;[^}]*white-space:\s*nowrap;/s)
   })
 
+  it('turns the lesson selector into a fixed bottom drawer on mobile and a popover on wider screens', () => {
+    expect(styles).toMatch(/\.lesson-selector__backdrop\s*\{[^}]*position:\s*fixed;[^}]*inset:\s*0;/s)
+    expect(styles).toMatch(/\.lesson-selector__drawer\s*\{[^}]*position:\s*fixed;[^}]*right:\s*0;[^}]*bottom:\s*0;[^}]*left:\s*0;/s)
+    expect(styles).toMatch(/@media \(min-width: 40rem\)[\s\S]*?\.lesson-selector__drawer\s*\{[^}]*position:\s*absolute;/s)
+  })
+
 })

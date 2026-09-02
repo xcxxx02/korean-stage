@@ -19,6 +19,39 @@ describe('validateCourse', () => {
     )
   })
 
+  it('does not count supporting unrecorded vocabulary as member-owned coursework recordings', () => {
+    const supportingItem = {
+      ...validCourse.vocabulary[0],
+      id: 'supporting-country',
+      unitId: 'unit-2' as const,
+      ownerId: null,
+      assessmentStatus: 'supporting' as const,
+      recordingRequirement: 'not-required' as const,
+      video: { src: null, kind: 'development-missing' as const },
+      audio: { src: null, kind: 'development-missing' as const },
+    }
+    const courseWithSupport = { ...validCourse, vocabulary: [...validCourse.vocabulary, supportingItem] }
+
+    expect(validateCourse(courseWithSupport)).toEqual([])
+  })
+
+  it('requires assessed recorded vocabulary to have a real owner and playable human media', () => {
+    const invalidAssessed = {
+      ...validCourse,
+      vocabulary: validCourse.vocabulary.map((item, index) => index === 0 ? {
+        ...item,
+        ownerId: null,
+        video: { src: '   ', kind: 'human-recording' as const },
+        audio: { src: '\n', kind: 'human-recording' as const },
+      } : item),
+    }
+
+    expect(validateCourse(invalidAssessed)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'vocabulary-owner', vocabularyId: 'word-1' }),
+      expect.objectContaining({ code: 'vocabulary-media', vocabularyId: 'word-1' }),
+    ]))
+  })
+
   it('reports a dialogue with fewer than six lines', () => {
     expect(validateCourse(courseWithFiveLineDialogue)).toContainEqual(
       expect.objectContaining({ code: 'dialogue-line-count', dialogueId: 'dialogue-1' }),
@@ -145,7 +178,7 @@ describe('validateCourse', () => {
     )
   })
 
-  it('requires bilingual fields and human media only for recorded vocabulary', () => {
+  it('requires bilingual fields, owners, and human media for assessed recorded vocabulary', () => {
     const invalidCourse = {
       ...validCourse,
       vocabulary: [
@@ -172,9 +205,10 @@ describe('validateCourse', () => {
       expect.objectContaining({ code: 'vocabulary-bilingual-fields', vocabularyId: 'word-1' }),
       expect.objectContaining({ code: 'vocabulary-media', vocabularyId: 'word-1', severity: 'error' }),
     ]))
-    expect(validateCourse(invalidCourse)).not.toContainEqual(
+    expect(validateCourse(invalidCourse)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'vocabulary-owner', vocabularyId: 'word-2' }),
       expect.objectContaining({ code: 'vocabulary-media', vocabularyId: 'word-2' }),
-    )
+    ]))
     expect(validateCourse(invalidCourse, 'development')).toContainEqual(
       expect.objectContaining({ code: 'vocabulary-media', vocabularyId: 'word-1', severity: 'warning' }),
     )

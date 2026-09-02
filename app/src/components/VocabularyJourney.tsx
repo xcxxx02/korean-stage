@@ -46,7 +46,9 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
   const safeActiveIndex = Math.min(activeIndex, items.length - 1)
   const item = items[safeActiveIndex]
   const member = course.members.find((candidate) => candidate.id === item.ownerId)
-  const memberName = member?.name ?? 'Course member'
+  const memberName = member?.name
+  const requiresMemberRecording = item.assessmentStatus === 'assessed'
+    && item.recordingRequirement === 'member-recording-required'
   const tip = grammarTip(item)
 
   const closeChooser = () => {
@@ -166,18 +168,26 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
     </>
   )
 
-  const media = (
-    <div className="stage-media-stack">
-      <MemberVideo
-        className="member-video--stage"
-        memberName={memberName}
-        mode="learner"
-        source={item.video}
-        transcript={{ korean: item.koreanExample, english: item.englishExample }}
-      />
-      <p className="stage-media-presenter">Presented by {memberName}</p>
-    </div>
-  )
+  const media = requiresMemberRecording && memberName ? (
+      <div className="stage-media-stack">
+        <MemberVideo
+          className="member-video--stage"
+          memberName={memberName}
+          mode="learner"
+          source={item.video}
+          transcript={{ korean: item.koreanExample, english: item.englishExample }}
+        />
+        <p className="stage-media-presenter">Presented by {memberName}</p>
+      </div>
+    ) : (
+      <section className="supporting-vocabulary-media" aria-labelledby={`${item.id}-supporting-heading`}>
+        <GraduationCap aria-hidden="true" size={42} weight="fill" />
+        <div>
+          <h2 id={`${item.id}-supporting-heading`}>Supporting vocabulary</h2>
+          <p>These country words support the lesson and Practice. They are not assessed member recordings.</p>
+        </div>
+      </section>
+    )
 
   const details = (
     <div className="vocabulary-details">

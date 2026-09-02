@@ -45,7 +45,7 @@ export function MemberVideo({
   const [playbackErrorKey, setPlaybackErrorKey] = useState<string | null>(null)
   const sourceKey = `${source.kind}:${source.src ?? 'missing'}:${memberName}:${mediaLabel}`
   const hasPlaybackError = playbackErrorKey === sourceKey
-  const canPlay = source.kind === 'human-recording' && source.src !== null
+  const canPlay = source.kind === 'human-recording' && Boolean(source.src?.trim())
   const isComingSoon = source.kind === 'development-missing' && source.src === null
 
   let mediaPanel

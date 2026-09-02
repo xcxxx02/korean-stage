@@ -15,7 +15,11 @@ export function TeamGrid({ course }: TeamGridProps) {
 
       <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {course.members.map((member) => {
-          const assignedVocabulary = course.vocabulary.filter((item) => item.ownerId === member.id)
+          const assignedVocabulary = course.vocabulary.filter((item) =>
+            item.assessmentStatus === 'assessed'
+            && item.recordingRequirement === 'member-recording-required'
+            && item.ownerId === member.id,
+          )
           const dialogueTitles = course.dialogues
             .filter((dialogue) => dialogue.lines.some((line) => line.speakerId === member.id))
             .map((dialogue) => dialogue.title)
@@ -38,6 +42,7 @@ export function TeamGrid({ course }: TeamGridProps) {
 
               <div className="mt-5 border-t border-stage-border pt-5">
                 <h4 className="text-sm font-black uppercase tracking-wider text-stage-muted">Assigned words</h4>
+              <p className="mt-2 text-sm font-semibold text-stage-charcoal">{assignedVocabulary.length} assigned vocabulary words</p>
               {assignedVocabulary.length > 0 ? (
                 <ul className="mt-4 space-y-2">
                   {assignedVocabulary.map((item) => (

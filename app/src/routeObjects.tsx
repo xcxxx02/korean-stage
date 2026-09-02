@@ -14,6 +14,7 @@ const routeElements: Record<AppRouteId, ReactNode> = {
   learn: <Navigate replace to="/learn/lesson-1" />,
   lesson: <LearnPage />,
   practice: <PracticePage />,
+  practiceLesson: <PracticePage />,
   dialogue: <DialoguePage />,
   team: <TeamPage />,
   vocabularyLegacy: <Navigate replace to="/learn/lesson-2" />,

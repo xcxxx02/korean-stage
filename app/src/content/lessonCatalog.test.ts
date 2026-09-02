@@ -15,4 +15,16 @@ describe('public lesson catalog', () => {
     expect(course.members.every((member) => member.role && member.contribution)).toBe(true)
     expect(course.dialogues.every((dialogue) => dialogue.scenario)).toBe(true)
   })
+
+  it('marks country vocabulary as supporting and occupations as assessed member recordings', () => {
+    const countries = course.vocabulary.filter((item) => item.unitId === 'unit-2')
+    const occupations = course.vocabulary.filter((item) => item.unitId === 'unit-3')
+
+    expect(countries).toHaveLength(8)
+    expect(countries.every((item) => item.assessmentStatus === 'supporting')).toBe(true)
+    expect(countries.every((item) => item.recordingRequirement === 'not-required' && item.ownerId === null)).toBe(true)
+    expect(occupations).toHaveLength(8)
+    expect(occupations.every((item) => item.assessmentStatus === 'assessed')).toBe(true)
+    expect(occupations.every((item) => item.recordingRequirement === 'member-recording-required' && item.ownerId)).toBe(true)
+  })
 })

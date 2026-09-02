@@ -20,6 +20,8 @@ function courseWithAiOnlyProhibition() {
         ...validCourse.vocabulary[0],
         id: 'unowned-ai-reference',
         ownerId: null,
+        assessmentStatus: 'supporting' as const,
+        recordingRequirement: 'not-required' as const,
         audio: { src: '/media/reference/ai.mp3', kind: 'ai-generated' as const },
       },
     ],

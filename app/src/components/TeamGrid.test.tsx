@@ -23,6 +23,8 @@ describe('TeamGrid', () => {
       const memberCard = screen.getByRole('article', { name: `${member.name} contribution` })
       expect(within(memberCard).getByText(member.role)).toBeVisible()
       expect(within(memberCard).getByText(member.contribution)).toBeVisible()
+      expect(within(memberCard).getByText('4 assigned vocabulary words')).toBeVisible()
+      expect(within(memberCard).queryByText(/assigned recordings/i)).not.toBeInTheDocument()
     }
 
     expect(screen.getByText('한국어 1')).toHaveAttribute('lang', 'ko')

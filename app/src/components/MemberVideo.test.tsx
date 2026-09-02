@@ -49,6 +49,13 @@ describe('MemberVideo', () => {
     expect(document.querySelector('video')).not.toBeInTheDocument()
   })
 
+  it.each(['', '   ', '\n\t'])('rejects an empty human video source (%j)', (src) => {
+    render(<MemberVideo memberName="Member 1" source={{ src, kind: 'human-recording' }} />)
+
+    expect(screen.getByRole('heading', { name: 'Member video unavailable' })).toBeVisible()
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+  })
+
   it('uses native video controls, captions, and an adjacent transcript when supplied', () => {
     render(<MemberVideo
       memberName="Member 1"

@@ -5,6 +5,7 @@ import { course } from '../content/course'
 import { VocabularyJourney } from './VocabularyJourney'
 
 const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
+const countryItems = course.vocabulary.filter((item) => item.unitId === 'unit-2')
 
 afterEach(cleanup)
 beforeEach(() => localStorage.clear())
@@ -98,6 +99,17 @@ describe('VocabularyJourney', () => {
     expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: /speaker/i })).not.toBeInTheDocument()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
+  })
+
+  it('presents supporting country vocabulary without inventing a member owner or recording obligation', () => {
+    render(<VocabularyJourney items={countryItems} />)
+
+    expect(screen.getByRole('heading', { name: 'Supporting vocabulary' })).toBeVisible()
+    expect(screen.getByText(/These country words support the lesson and Practice/)).toBeVisible()
+    expect(screen.queryByText(/Course member|Presented by|Member video coming soon/)).not.toBeInTheDocument()
+    expect(document.querySelector('video')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '중국' })).toHaveAttribute('lang', 'ko')
+    expect(screen.getAllByText('China').every((node) => node.getAttribute('lang') === 'en')).toBe(true)
   })
 
   it('keeps sequential navigation available without completing or persisting words', async () => {

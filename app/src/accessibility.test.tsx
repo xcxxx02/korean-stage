@@ -5,6 +5,8 @@ import { MemoryRouter, useRoutes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
+import { ExerciseEngine } from './components/ExerciseEngine'
+import { course } from './content/course'
 import { createAppRouteObjects } from './routeObjects'
 
 const expectedPrimaryHeadings: Record<AppRouteId, string> = {
@@ -12,6 +14,7 @@ const expectedPrimaryHeadings: Record<AppRouteId, string> = {
   learn: 'Hello & Self-introduction',
   lesson: 'Hello & Self-introduction',
   practice: 'Practice by lesson',
+  practiceLesson: 'Practice by lesson',
   dialogue: 'Dialogue & role play',
   team: 'Meet the team',
   vocabularyLegacy: 'Countries & Nationalities',
@@ -66,6 +69,24 @@ beforeEach(() => localStorage.clear())
 afterEach(cleanup)
 
 describe('default-route accessibility', () => {
+  const assertLanguageBoundaries = (container: HTMLElement) => {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+    const untaggedKorean: string[] = []
+
+    while (walker.nextNode()) {
+      const textNode = walker.currentNode
+      const text = textNode.textContent?.trim() ?? ''
+      const parent = textNode.parentElement
+      if (/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text) && !parent?.closest('[lang="ko"]')) untaggedKorean.push(text)
+    }
+
+    const wronglyScopedEnglish = [...container.querySelectorAll('[lang="ko"]')]
+      .map((node) => node.textContent?.trim() ?? '')
+      .filter((text) => /[A-Za-z]/.test(text))
+    expect(untaggedKorean).toEqual([])
+    expect(wronglyScopedEnglish).toEqual([])
+  }
+
   it.each(routes)('%s has its expected page heading, a single named content landmark, and no automated axe violations', async (_name, path, expectedHeading) => {
     const { container } = renderRoute(path)
 
@@ -119,6 +140,34 @@ describe('default-route accessibility', () => {
     for (const node of container.querySelectorAll('[data-korean-content]')) {
       expect(node).toHaveAttribute('lang', 'ko')
     }
+  })
+
+  it.each(Array.from({ length: 7 }, (_, index) => `lesson-${index + 1}`))(
+    'keeps every Hangul run and English run correctly scoped throughout Learn %s',
+    async (lessonSlug) => {
+      const user = userEvent.setup()
+      const { container } = renderRoute(`/learn/${lessonSlug}`)
+      await user.click(screen.getByRole('button', { name: 'All lessons' }))
+
+      assertLanguageBoundaries(container)
+      cleanup()
+    },
+  )
+
+  it('uses segmented language-labelled matching controls instead of flattened mixed aria-labels', () => {
+    const matching = course.grammar[0].exercises.find((exercise) => exercise.type === 'matching')!
+    const { container } = render(<ExerciseEngine exercises={[matching]} />)
+
+    assertLanguageBoundaries(container)
+    for (const select of screen.getAllByRole('combobox') as HTMLSelectElement[]) {
+      expect(select).not.toHaveAttribute('aria-label')
+      expect(select).toHaveAttribute('aria-labelledby')
+      for (const option of [...select.options]) {
+        expect(option).toHaveAttribute('lang', 'en')
+      }
+    }
+
+    expect(screen.getByRole('combobox', { name: /Match.*학생.*to its English meaning/ })).toBeInTheDocument()
   })
 
   it('does not scope English copy as Korean or flatten bilingual control names into aria-labels', async () => {

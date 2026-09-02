@@ -15,6 +15,20 @@ describe('LessonSelector', () => {
     expect(screen.getAllByRole('link', { name: /Lesson [1-7] of 7/ })).toHaveLength(7)
     expect(screen.getByRole('link', { name: /Lesson 4 of 7.*to be/ })).toHaveAttribute('href', '/learn/lesson-4')
     expect(screen.getByRole('link', { name: /Lesson 3 of 7.*Jobs & Occupations/ })).toHaveAttribute('aria-current', 'page')
+    expect(document.querySelector('.lesson-selector__drawer')).toBeInTheDocument()
+    expect(document.querySelector('.lesson-selector__backdrop')).toBeInTheDocument()
+  })
+
+  it('closes the mobile lesson drawer from its backdrop and restores focus', async () => {
+    const user = userEvent.setup()
+    renderApp(['/learn/lesson-4'])
+
+    const trigger = screen.getByRole('button', { name: 'All lessons' })
+    await user.click(trigger)
+    await user.click(screen.getByRole('button', { name: 'Close lesson drawer' }))
+
+    expect(screen.queryByRole('list', { name: 'Choose a lesson' })).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
   })
 
   it('closes the lesson list with Escape', async () => {

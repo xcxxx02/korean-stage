@@ -8,6 +8,9 @@ const navigationItems = getPrimaryNavigationItems()
 
 function currentSection(pathname: string): string | null {
   if (pathname === '/learn' || pathname.startsWith('/learn/')) return 'Learn'
+  if (pathname === '/practice' || pathname.startsWith('/practice/')) return 'Practice'
+  if (pathname === '/dialogue' || pathname.startsWith('/dialogue/')) return 'Dialogue'
+  if (pathname === '/team' || pathname.startsWith('/team/')) return 'Team'
   return null
 }
 
@@ -16,6 +19,7 @@ export function AppShell() {
   const location = useLocation()
   const learningSection = currentSection(location.pathname)
   const mainContentRef = useRef<HTMLElement>(null)
+  const menuTriggerRef = useRef<HTMLButtonElement>(null)
   const initialLocationKeyRef = useRef(location.key)
 
   useEffect(() => {
@@ -29,12 +33,14 @@ export function AppShell() {
 
   useEffect(() => {
     const closeMenuOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsMenuOpen(false)
+      if (event.key !== 'Escape' || !isMenuOpen) return
+      setIsMenuOpen(false)
+      menuTriggerRef.current?.focus()
     }
 
     window.addEventListener('keydown', closeMenuOnEscape)
     return () => window.removeEventListener('keydown', closeMenuOnEscape)
-  }, [])
+  }, [isMenuOpen])
 
   return (
     <div className="app-shell">
@@ -47,7 +53,7 @@ export function AppShell() {
             </span>
             <span>{course.name}</span>
           </Link>
-          <button aria-controls="primary-navigation-list" aria-expanded={isMenuOpen} className="mobile-menu-button" onClick={() => setIsMenuOpen((open) => !open)} type="button">
+          <button aria-controls="primary-navigation-list" aria-expanded={isMenuOpen} className="mobile-menu-button" onClick={() => setIsMenuOpen((open) => !open)} ref={menuTriggerRef} type="button">
             <List aria-hidden="true" size={24} />
             <span>Menu</span>
           </button>

@@ -27,8 +27,10 @@ describe('LearnPage', () => {
     renderApp(['/learn/lesson-4'])
 
     expect(screen.getByRole('heading', { name: '이에요 / 예요 · to be', level: 2 })).toBeVisible()
-    expect(screen.getByText('Consonant-ending noun + 이에요')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Practise this lesson' })).toHaveAttribute('href', '/practice?lesson=lesson-4')
+    expect(screen.getByText('이에요 / 예요')).toHaveAttribute('lang', 'ko')
+    expect(screen.getByText('to be')).toHaveAttribute('lang', 'en')
+    expect(screen.getByText((_, element) => element?.tagName === 'LI' && element.textContent === 'Consonant-ending noun + 이에요')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Practise this lesson' })).toHaveAttribute('href', '/practice/lesson-4')
     expect(screen.queryByText('Complete the sentence for Minsu.')).not.toBeInTheDocument()
   })
 

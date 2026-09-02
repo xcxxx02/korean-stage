@@ -271,6 +271,81 @@ body {
   white-space: nowrap;
 }
 
+.lesson-selector {
+  position: relative;
+}
+
+.lesson-selector__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  min-height: 0;
+  border: 0;
+  background: rgb(23 25 31 / 38%);
+}
+
+.lesson-selector__drawer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  display: grid;
+  max-height: min(75vh, 36rem);
+  gap: 0.25rem;
+  margin: 0;
+  overflow-y: auto;
+  border: 1px solid var(--stage-border);
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: var(--stage-white);
+  padding: 1rem;
+  list-style: none;
+}
+
+.supporting-vocabulary-media {
+  display: flex;
+  min-height: 14rem;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: 1px solid var(--stage-border);
+  border-radius: var(--stage-radius);
+  background: var(--stage-cobalt-soft);
+  color: var(--stage-cobalt);
+  padding: 2rem;
+}
+
+.supporting-vocabulary-media h2 {
+  margin: 0;
+  color: var(--stage-charcoal);
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.supporting-vocabulary-media p {
+  max-width: 32rem;
+  margin: 0.5rem 0 0;
+  color: var(--stage-muted);
+}
+
+@media (min-width: 40rem) {
+  .lesson-selector__backdrop {
+    display: none;
+  }
+
+  .lesson-selector__drawer {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    bottom: auto;
+    left: auto;
+    width: 20rem;
+    max-height: min(70vh, 32rem);
+    border-radius: var(--stage-radius);
+    padding: 0.5rem;
+  }
+}
+
 .korean-stage-background {
   position: absolute;
   bottom: 0;

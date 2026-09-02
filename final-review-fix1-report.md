@@ -11,7 +11,7 @@ The interrupted branch already contained the completed beginner-first redesign a
 
 - Finished exhaustive language boundaries for Learn grammar headings and matching controls. Matching `<select>` options are explicitly English, and accessible names are assembled with `aria-labelledby` rather than flattened mixed-language labels.
 - Confirmed mobile AppShell Escape behavior restores focus to the Menu trigger, and added Dialogue/Team active-route coverage.
-- Ensured lesson-drawer selection restores trigger focus while retaining the fixed mobile drawer/backdrop and wider-screen popover behavior.
+- Ensured lesson-drawer selection closes the drawer and lets destination focus land on the new page heading; Escape closes without navigation and restores trigger focus, while retaining the fixed mobile drawer/backdrop and wider-screen popover behavior.
 - Kept Lesson 2 countries explicitly supporting/unrecorded with no owner or generic member/video attribution; retained assessed/member-owned occupations. Added catalog regression coverage.
 - Changed Team’s count to neutral “assigned vocabulary words” wording so missing recordings are not presented as completed media.
 - Added trim-gate regression coverage for empty/whitespace human media and retained the validator’s trimmed-media check.

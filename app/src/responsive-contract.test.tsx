@@ -89,7 +89,9 @@ describe('responsive beginner contracts', () => {
   it('keeps the desktop vocabulary study view inside one viewport with persistent word controls', () => {
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*height:\s*calc\(100dvh - 5\.75rem\);[^}]*overflow:\s*hidden;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-shell\s*\{[^}]*min-height:\s*0;[^}]*flex:\s*1;[^}]*padding-block:\s*1rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) auto;[^}]*margin-bottom:\s*1rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*position:\s*relative;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*margin-bottom:\s*1rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-progress\s*\{[^}]*position:\s*absolute;[^}]*top:\s*1\.25rem;[^}]*right:\s*0;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-rail,\s*\.stage-learning-details\s*\{[^}]*max-height:\s*min\(34rem, 57vh\);[^}]*overflow-y:\s*auto;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-details > \.word-navigation\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0;/s)
     expect(styles).not.toMatch(/@media \(min-width: 90rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*display:\s*block;/s)

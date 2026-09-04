@@ -1123,6 +1123,7 @@ body {
     height: calc(100dvh - 5.75rem);
     min-height: 0;
     overflow: hidden;
+    position: relative;
     display: flex;
     flex-direction: column;
     padding-block: 1.25rem;
@@ -1156,7 +1157,7 @@ body {
   }
 
   .stage-learning-header {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     margin-bottom: 1rem;
   }
@@ -1166,7 +1167,10 @@ body {
   }
 
   .stage-learning-progress {
-    width: clamp(28rem, 38vw, 34rem);
+    position: absolute;
+    top: 1.25rem;
+    right: 0;
+    width: clamp(18rem, 31vw, 30rem);
   }
 
   .stage-learning-grid {
@@ -1262,7 +1266,7 @@ body {
 
 @media (min-width: 90rem) {
   .stage-learning-progress {
-    width: clamp(30rem, 34vw, 34rem);
+    width: clamp(22rem, 29vw, 30rem);
   }
 }
 

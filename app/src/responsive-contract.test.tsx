@@ -92,8 +92,9 @@ describe('responsive beginner contracts', () => {
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*position:\s*relative;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*margin-bottom:\s*1rem;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-progress\s*\{[^}]*position:\s*absolute;[^}]*top:\s*1\.25rem;[^}]*right:\s*0;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-rail,\s*\.stage-learning-details\s*\{[^}]*max-height:\s*min\(34rem, 57vh\);[^}]*overflow-y:\s*auto;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-details > \.word-navigation\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-rail,\s*\.stage-learning-details\s*\{[^}]*overflow:\s*visible;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*4\.05rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-details\s*\{[^}]*align-content:\s*space-between;/s)
     expect(styles).not.toMatch(/@media \(min-width: 90rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*display:\s*block;/s)
   })
 

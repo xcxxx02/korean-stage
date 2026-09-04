@@ -13,6 +13,7 @@ import { MemberVideo } from './MemberVideo'
 
 type VocabularyJourneyProps = {
   items: VocabularyItem[]
+  itemLabel?: 'Vocabulary word' | 'Useful expression'
 }
 
 function grammarTip(item: VocabularyItem) {
@@ -22,13 +23,14 @@ function grammarTip(item: VocabularyItem) {
   return { noun, ending, copula }
 }
 
-export function VocabularyJourney({ items }: VocabularyJourneyProps) {
+export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: VocabularyJourneyProps) {
   const [activeIndex, setActiveIndex] = useState(0)
   const [chooserOpen, setChooserOpen] = useState(false)
   const [chooserFocusIndex, setChooserFocusIndex] = useState(0)
   const chooserTriggerRef = useRef<HTMLButtonElement>(null)
   const chooserOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
   const chooserListboxId = useId()
+  const lowerLabel = itemLabel === 'Vocabulary word' ? 'word' : itemLabel.toLowerCase()
 
   useEffect(() => {
     if (chooserOpen) chooserOptionRefs.current[chooserFocusIndex]?.focus()
@@ -236,7 +238,7 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
         type="button"
       >
         <CaretLeft aria-hidden="true" weight="bold" />
-        Previous word
+        Previous {lowerLabel}
       </button>
       <button
         className="word-navigation__next"
@@ -244,7 +246,7 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
         onClick={() => setActiveIndex((current) => Math.min(items.length - 1, current + 1))}
         type="button"
       >
-        Next word
+        Next {lowerLabel}
         <CaretRight aria-hidden="true" weight="bold" />
       </button>
     </nav>
@@ -264,7 +266,7 @@ export function VocabularyJourney({ items }: VocabularyJourneyProps) {
     <LearningShell
       controls={controls}
       details={details}
-      heading="Choose a word"
+      heading={`Choose a ${lowerLabel}`}
       media={media}
       progress={`Word ${safeActiveIndex + 1} of ${items.length}`}
       progressLabel="Vocabulary path"

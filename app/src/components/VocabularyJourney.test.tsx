@@ -6,11 +6,21 @@ import { VocabularyJourney } from './VocabularyJourney'
 
 const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
 const countryItems = course.vocabulary.filter((item) => item.unitId === 'unit-2')
+const greetingItems = course.vocabulary.filter((item) => item.unitId === 'unit-1')
 
 afterEach(cleanup)
 beforeEach(() => localStorage.clear())
 
 describe('VocabularyJourney', () => {
+  it('names Unit 1 content as useful expressions while preserving word navigation', async () => {
+    const user = userEvent.setup()
+    render(<VocabularyJourney itemLabel="Useful expression" items={greetingItems} />)
+
+    expect(screen.getByText('Choose a useful expression')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Next useful expression' }))
+    expect(screen.getByRole('heading', { name: '저는 미나예요.' })).toBeVisible()
+  })
+
   it('presents every ordered word as a freely selectable bilingual button', () => {
     render(<VocabularyJourney items={occupationItems} />)
 

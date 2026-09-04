@@ -30,7 +30,12 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const chooserTriggerRef = useRef<HTMLButtonElement>(null)
   const chooserOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
   const chooserListboxId = useId()
-  const lowerLabel = itemLabel === 'Vocabulary word' ? 'word' : itemLabel.toLowerCase()
+  const isVocabularyWord = itemLabel === 'Vocabulary word'
+  const lowerLabel = isVocabularyWord ? 'word' : itemLabel.toLowerCase()
+  const pluralLabel = isVocabularyWord ? 'Vocabulary words' : 'Useful expressions'
+  const lowerPluralLabel = isVocabularyWord ? 'words' : 'useful expressions'
+  const capitalizedLabel = isVocabularyWord ? 'Word' : itemLabel
+  const chooserLabel = isVocabularyWord ? 'Choose vocabulary word' : `Choose a ${lowerLabel}`
 
   useEffect(() => {
     if (chooserOpen) chooserOptionRefs.current[chooserFocusIndex]?.focus()
@@ -40,7 +45,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
     return (
       <section className="mt-8 rounded-xl border border-stage-border bg-stage-white p-6 sm:p-8">
         <h2 className="m-0 text-2xl font-bold text-stage-charcoal">Vocabulary unavailable</h2>
-        <p className="mt-3 text-stage-muted">There are no words in this lesson yet. Choose another lesson from All lessons.</p>
+        <p className="mt-3 text-stage-muted">There are no {lowerPluralLabel} in this lesson yet. Choose another lesson from All lessons.</p>
       </section>
     )
   }
@@ -95,7 +100,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
           ref={chooserTriggerRef}
           type="button"
         >
-          <span className="learn-word-chooser__label">Choose vocabulary word</span>
+          <span className="learn-word-chooser__label">{chooserLabel}</span>
           <span className="learn-word-chooser__value">
             <span aria-hidden="true">{safeActiveIndex + 1}.</span>
             <span data-korean-content lang="ko">{item.korean}</span>
@@ -105,7 +110,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
           <CaretDown aria-hidden="true" size={20} weight="bold" />
         </button>
         {chooserOpen ? (
-          <div aria-label="Vocabulary words" className="learn-word-listbox" id={chooserListboxId} role="listbox">
+          <div aria-label={pluralLabel} className="learn-word-listbox" id={chooserListboxId} role="listbox">
             {items.map((word, index) => {
               const isActive = index === safeActiveIndex
               return (
@@ -145,7 +150,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
           </div>
         ) : null}
       </div>
-      <ol aria-label="Vocabulary words" className="vocabulary-word-list">
+      <ol aria-label={pluralLabel} className="vocabulary-word-list">
         {items.map((word, index) => {
           const isActive = index === safeActiveIndex
           return (
@@ -186,7 +191,10 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
         <GraduationCap aria-hidden="true" size={42} weight="fill" />
         <div>
           <h2 id={`${item.id}-supporting-heading`}>Supporting vocabulary</h2>
-          <p>These country words support the lesson and Practice. They are not assessed member recordings.</p>
+          <p>{isVocabularyWord
+            ? 'These country words support the lesson and Practice. They are not assessed member recordings.'
+            : 'These useful expressions support the lesson and Practice. They are not assessed member recordings.'}
+          </p>
         </div>
       </section>
     )
@@ -230,7 +238,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   )
 
   const controls = (
-    <nav aria-label="Word navigation" className="word-navigation">
+    <nav aria-label={`${capitalizedLabel} navigation`} className="word-navigation">
       <button
         className="word-navigation__previous"
         disabled={safeActiveIndex === 0}
@@ -253,7 +261,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   )
 
   const progressMarkers = (
-    <ol aria-label="Word position" className="word-position-markers">
+    <ol aria-label={`${capitalizedLabel} position`} className="word-position-markers">
       {items.map((word, index) => (
         <li aria-current={index === safeActiveIndex ? 'true' : undefined} key={word.id}>
           <span aria-hidden="true">{index + 1}</span>
@@ -268,10 +276,11 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
       details={details}
       heading={`Choose a ${lowerLabel}`}
       media={media}
-      progress={`Word ${safeActiveIndex + 1} of ${items.length}`}
+      progress={`${capitalizedLabel} ${safeActiveIndex + 1} of ${items.length}`}
       progressLabel="Vocabulary path"
       progressMarkers={progressMarkers}
       rail={rail}
+      railLabel={`Ordered ${pluralLabel.toLowerCase()}`}
     />
   )
 }

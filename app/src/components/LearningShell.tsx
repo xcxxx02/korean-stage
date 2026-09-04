@@ -6,12 +6,13 @@ type LearningShellProps = {
   progressLabel?: string
   progressMarkers?: ReactNode
   rail: ReactNode
+  railLabel?: string
   media: ReactNode
   details: ReactNode
   controls: ReactNode
 }
 
-export function LearningShell({ heading, progress, progressLabel = 'Lesson progress', progressMarkers, rail, media, details, controls }: LearningShellProps) {
+export function LearningShell({ heading, progress, progressLabel = 'Lesson progress', progressMarkers, rail, railLabel = 'Ordered vocabulary words', media, details, controls }: LearningShellProps) {
   return (
     <section className="stage-learning-shell w-full py-8 lg:py-5">
       <div className="stage-learning-header mb-5 grid gap-4">
@@ -25,7 +26,7 @@ export function LearningShell({ heading, progress, progressLabel = 'Lesson progr
         </div>
       </div>
       <div aria-label={heading} className="learn-layout stage-learning-grid" role="region">
-        <aside aria-label="Ordered vocabulary words" className="learn-word-rail stage-learning-rail">{rail}</aside>
+        <aside aria-label={railLabel} className="learn-word-rail stage-learning-rail">{rail}</aside>
         <section aria-label="Member vocabulary video" className="learn-media stage-learning-media">
           {media}
         </section>

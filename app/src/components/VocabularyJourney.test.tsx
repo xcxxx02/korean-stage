@@ -16,7 +16,18 @@ describe('VocabularyJourney', () => {
     const user = userEvent.setup()
     render(<VocabularyJourney itemLabel="Useful expression" items={greetingItems} />)
 
-    expect(screen.getByText('Choose a useful expression')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Choose a useful expression' })).toBeVisible()
+    const chooser = screen.getByRole('button', { name: /Choose a useful expression.*안녕하세요\?.*Hello\./ })
+    expect(chooser).toHaveTextContent('Choose a useful expression')
+    expect(screen.getByRole('complementary', { name: 'Ordered useful expressions' })).toBeVisible()
+    expect(screen.getByRole('list', { name: 'Useful expressions' })).toBeVisible()
+    expect(screen.getByRole('navigation', { name: 'Useful expression navigation' })).toBeVisible()
+    expect(screen.getByRole('list', { name: 'Useful expression position' })).toBeVisible()
+    expect(screen.getByText('Useful expression 1 of 2')).toBeVisible()
+
+    await user.click(chooser)
+    expect(screen.getByRole('listbox', { name: 'Useful expressions' })).toBeVisible()
+
     await user.click(screen.getByRole('button', { name: 'Next useful expression' }))
     expect(screen.getByRole('heading', { name: '저는 미나예요.' })).toBeVisible()
   })

@@ -56,5 +56,15 @@ export function GrammarPage() {
   const lesson = grammarLessons.find((candidate) => candidate.slug === lessonSlug)
   const grammarPoint = lesson && course.grammar.find((item) => item.unitId === lesson.id)
 
-  return grammarPoint ? <GrammarGuide grammarPoint={grammarPoint} /> : <GrammarRecovery />
+  if (!lesson || !grammarPoint) return <GrammarRecovery />
+
+  return (
+    <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:py-12">
+      <header className="max-w-2xl">
+        <p className="m-0 text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">Lec 1 grammar</p>
+        <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl">{lesson.title}</h1>
+      </header>
+      <GrammarGuide grammarPoint={grammarPoint} />
+    </section>
+  )
 }

@@ -29,6 +29,7 @@ describe('GrammarPage', () => {
   it('shows the matching grammar guide for a grammar lesson route', () => {
     renderGrammar('/grammar/lesson-5')
 
+    expect(screen.getByRole('heading', { level: 1, name: '은 / 는 - topic marker' })).toBeVisible()
     expect(screen.getByRole('heading', { name: '은 / 는 · topic marker' })).toBeVisible()
     expect(screen.getByRole('link', { name: 'Practise this lesson' })).toHaveAttribute('href', '/practice/lesson-5')
   })

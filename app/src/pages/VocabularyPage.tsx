@@ -56,7 +56,7 @@ export function VocabularyPage() {
   const itemLabel = unit.itemLabel === 'Useful expressions' ? 'Useful expression' : 'Vocabulary word'
 
   return (
-    <section className="mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:py-12">
+    <section className="vocabulary-study-page mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:py-12">
       <header className="max-w-3xl">
         <p className="m-0 text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">{unit.eyebrow} vocabulary</p>
         <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl">{unit.title}</h1>

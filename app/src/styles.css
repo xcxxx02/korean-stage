@@ -1119,6 +1119,81 @@ body {
 }
 
 @media (min-width: 70rem) {
+  .vocabulary-study-page {
+    height: calc(100dvh - 5.75rem);
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-block: 1.25rem;
+  }
+
+  .vocabulary-study-page > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 2rem;
+    align-items: end;
+  }
+
+  .vocabulary-study-page > header h1 {
+    grid-column: 1;
+    margin-top: 0.25rem;
+    font-size: clamp(2.25rem, 3.6vw, 3.5rem);
+  }
+
+  .vocabulary-study-page > header p:last-child {
+    grid-column: 1;
+    margin-top: 0.35rem;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .stage-learning-shell {
+    min-height: 0;
+    flex: 1;
+    padding-block: 1rem;
+    overflow: hidden;
+  }
+
+  .stage-learning-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .stage-learning-header h2 {
+    font-size: 2rem;
+  }
+
+  .stage-learning-progress {
+    width: clamp(28rem, 38vw, 34rem);
+  }
+
+  .stage-learning-grid {
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .stage-learning-rail,
+  .stage-learning-details {
+    max-height: min(34rem, 57vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .stage-learning-details {
+    padding-right: 0.25rem;
+  }
+
+  .stage-learning-details > .word-navigation {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background: var(--stage-white);
+    padding-top: 0.75rem;
+  }
+
   .vocabulary-unit-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1186,20 +1261,8 @@ body {
 }
 
 @media (min-width: 90rem) {
-  .stage-learning-header {
-    position: relative;
-    display: block;
-    min-height: 4.5rem;
-  }
-
-  .stage-learning-header h2 {
-    max-width: 34rem;
-  }
-
   .stage-learning-progress {
-    position: absolute;
-    top: -0.2rem;
-    right: clamp(2rem, 11vw, 10rem);
+    width: clamp(30rem, 34vw, 34rem);
   }
 }
 

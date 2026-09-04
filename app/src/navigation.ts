@@ -16,7 +16,8 @@ type PathRouteManifestEntry = {
 export type RouteManifestEntry = IndexRouteManifestEntry | PathRouteManifestEntry
 
 const requiredPrimaryDestinations = [
-  { id: 'learn', path: 'learn', primaryNavigationLabel: 'Learn', primaryNavigationTo: '/learn/lesson-1' },
+  { id: 'vocabulary', path: 'vocabulary', primaryNavigationLabel: 'Vocabulary' },
+  { id: 'grammar', path: 'grammar', primaryNavigationLabel: 'Grammar' },
   { id: 'practice', path: 'practice', primaryNavigationLabel: 'Practice' },
   { id: 'dialogue', path: 'dialogue', primaryNavigationLabel: 'Dialogue' },
   { id: 'team', path: 'team', primaryNavigationLabel: 'Team' },
@@ -25,12 +26,20 @@ const requiredPrimaryDestinations = [
 export const appRouteManifest = [
   { id: 'home', index: true },
   requiredPrimaryDestinations[0],
-  { id: 'lesson', path: 'learn/:lessonSlug' },
+  { id: 'vocabularyLesson', path: 'vocabulary/:lessonSlug' },
   requiredPrimaryDestinations[1],
+  { id: 'grammarLesson', path: 'grammar/:lessonSlug' },
+  requiredPrimaryDestinations[2],
   { id: 'practiceLesson', path: 'practice/:lessonSlug' },
-  ...requiredPrimaryDestinations.slice(2),
-  { id: 'vocabularyLegacy', path: 'vocabulary' },
-  { id: 'grammarLegacy', path: 'grammar' },
+  ...requiredPrimaryDestinations.slice(3),
+  { id: 'learnLegacy', path: 'learn' },
+  { id: 'learnLesson1Legacy', path: 'learn/lesson-1' },
+  { id: 'learnLesson2Legacy', path: 'learn/lesson-2' },
+  { id: 'learnLesson3Legacy', path: 'learn/lesson-3' },
+  { id: 'learnLesson4Legacy', path: 'learn/lesson-4' },
+  { id: 'learnLesson5Legacy', path: 'learn/lesson-5' },
+  { id: 'learnLesson6Legacy', path: 'learn/lesson-6' },
+  { id: 'learnLesson7Legacy', path: 'learn/lesson-7' },
   { id: 'not-found', path: '*' },
 ] as const satisfies readonly RouteManifestEntry[]
 

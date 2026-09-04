@@ -10,15 +10,23 @@ import { course } from './content/course'
 import { createAppRouteObjects } from './routeObjects'
 
 const expectedPrimaryHeadings: Record<AppRouteId, string> = {
-  home: 'Hello & Self-introduction',
-  learn: 'Hello & Self-introduction',
-  lesson: 'Hello & Self-introduction',
+  home: 'Choose a vocabulary unit',
+  vocabulary: 'Choose a vocabulary unit',
+  vocabularyLesson: 'Essential greetings',
+  grammar: 'Choose a grammar topic',
+  grammarLesson: '이에요 / 예요 - to be',
   practice: 'Practice by lesson',
   practiceLesson: 'Practice by lesson',
   dialogue: 'Dialogue & role play',
   team: 'Meet the team',
-  vocabularyLegacy: 'Countries & Nationalities',
-  grammarLegacy: '이에요 / 예요 - to be',
+  learnLegacy: 'Choose a vocabulary unit',
+  learnLesson1Legacy: 'Essential greetings',
+  learnLesson2Legacy: 'Countries & Nationalities',
+  learnLesson3Legacy: 'Jobs & Occupations',
+  learnLesson4Legacy: '이에요 / 예요 - to be',
+  learnLesson5Legacy: '은 / 는 - topic marker',
+  learnLesson6Legacy: '이 / 가 아니에요 - to not be',
+  learnLesson7Legacy: 'Dialogue & role play',
   'not-found': 'Page not found',
 }
 
@@ -33,10 +41,9 @@ const primaryRoutes = routeEntries.flatMap((route): Array<readonly [string, stri
 
 const routes = [
   ...primaryRoutes,
-  ['Lesson 2', '/learn/lesson-2', 'Countries & Nationalities'],
-  ['Lesson 3', '/learn/lesson-3', 'Jobs & Occupations'],
-  ['Lesson 4', '/learn/lesson-4', '이에요 / 예요 - to be'],
-  ['Lesson 7', '/learn/lesson-7', 'Dialogue & Role Play'],
+  ['Vocabulary lesson 2', '/vocabulary/lesson-2', 'Countries & Nationalities'],
+  ['Vocabulary lesson 3', '/vocabulary/lesson-3', 'Jobs & Occupations'],
+  ['Grammar lesson 4', '/grammar/lesson-4', '이에요 / 예요 - to be'],
   ['Fallback', '/missing', 'Page not found'],
 ] as const
 
@@ -117,15 +124,15 @@ describe('default-route accessibility', () => {
   })
 
   it('does not add a separate audio control to the member-video vocabulary flow', () => {
-    renderRoute('/learn/lesson-3')
+    renderRoute('/vocabulary/lesson-3')
 
     expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
-  it('marks every rendered Korean text run in Learn with the Korean language', () => {
-    const { container } = renderRoute('/learn/lesson-3')
+  it('marks every rendered Korean text run in Vocabulary with the Korean language', () => {
+    const { container } = renderRoute('/vocabulary/lesson-3')
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
     const untaggedKorean: string[] = []
 
@@ -142,13 +149,18 @@ describe('default-route accessibility', () => {
     }
   })
 
-  it.each(Array.from({ length: 7 }, (_, index) => `lesson-${index + 1}`))(
-    'keeps every Hangul run and English run correctly scoped throughout Learn %s',
-    async (lessonSlug) => {
-      const user = userEvent.setup()
-      const { container } = renderRoute(`/learn/${lessonSlug}`)
-      await user.click(screen.getByRole('button', { name: 'All lessons' }))
-
+  it.each([
+    '/vocabulary/lesson-1',
+    '/vocabulary/lesson-2',
+    '/vocabulary/lesson-3',
+    '/grammar/lesson-4',
+    '/grammar/lesson-5',
+    '/grammar/lesson-6',
+    '/dialogue',
+  ])(
+    'keeps every Hangul run and English run correctly scoped throughout %s',
+    (path) => {
+      const { container } = renderRoute(path)
       assertLanguageBoundaries(container)
       cleanup()
     },
@@ -172,7 +184,7 @@ describe('default-route accessibility', () => {
 
   it('does not scope English copy as Korean or flatten bilingual control names into aria-labels', async () => {
     const user = userEvent.setup()
-    const { container } = renderRoute('/learn/lesson-3')
+    const { container } = renderRoute('/vocabulary/lesson-3')
     await user.click(screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ }))
 
     const wronglyScopedEnglish = [...container.querySelectorAll('[lang="ko"]')]
@@ -197,7 +209,7 @@ describe('default-route accessibility', () => {
 describe('keyboard-complete primary flows', () => {
   it('keeps the skip link as the first keyboard stop on initial load', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/lesson-1')
+    renderRoute('/vocabulary/lesson-1')
 
     expect(document.body).toHaveFocus()
     await user.tab()
@@ -206,7 +218,7 @@ describe('keyboard-complete primary flows', () => {
 
   it('opens the menu and freely selects a later vocabulary word without pointer clicks', async () => {
     const user = userEvent.setup()
-    renderRoute('/learn/lesson-3')
+    renderRoute('/vocabulary/lesson-3')
 
     const menu = screen.getByRole('button', { name: 'Menu' })
     await tabTo(user, menu)

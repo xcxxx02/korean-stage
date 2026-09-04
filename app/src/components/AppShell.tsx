@@ -7,7 +7,8 @@ import { getPrimaryNavigationItems } from '../navigation'
 const navigationItems = getPrimaryNavigationItems()
 
 function currentSection(pathname: string): string | null {
-  if (pathname === '/learn' || pathname.startsWith('/learn/')) return 'Learn'
+  if (pathname === '/vocabulary' || pathname.startsWith('/vocabulary/')) return 'Vocabulary'
+  if (pathname === '/grammar' || pathname.startsWith('/grammar/')) return 'Grammar'
   if (pathname === '/practice' || pathname.startsWith('/practice/')) return 'Practice'
   if (pathname === '/dialogue' || pathname.startsWith('/dialogue/')) return 'Dialogue'
   if (pathname === '/team' || pathname.startsWith('/team/')) return 'Team'

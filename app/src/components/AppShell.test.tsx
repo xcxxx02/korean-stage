@@ -14,8 +14,6 @@ function renderShell(initialEntry = '/') {
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={routePage('Home')} />
-          <Route path="learn" element={routePage('Learn')} />
-          <Route path="learn/:unitId" element={routePage('Learn')} />
           <Route path="vocabulary" element={routePage('Vocabulary')} />
           <Route path="grammar" element={routePage('Grammar')} />
           <Route path="practice" element={routePage('Practice')} />
@@ -37,22 +35,24 @@ describe('AppShell', () => {
     expect(container.querySelector('.korean-stage-background')).toHaveAttribute('src', '/assets/culture/korean-stage-background-v2.png')
   })
 
-  it('renders exactly four primary destinations', () => {
-    renderShell('/learn/lesson-3')
+  it('renders the five approved primary destinations in order', () => {
+    renderShell('/vocabulary')
 
     const navigation = screen.getByRole('navigation', { name: 'Primary navigation' })
     expect(within(navigation).getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Learn', 'Practice', 'Dialogue', 'Team',
+      'Vocabulary', 'Grammar', 'Practice', 'Dialogue', 'Team',
     ])
-    expect(within(navigation).queryByText('Vocabulary')).not.toBeInTheDocument()
-    expect(within(navigation).queryByText('Grammar')).not.toBeInTheDocument()
+    expect(within(navigation).queryByText('Learn')).not.toBeInTheDocument()
     expect(within(navigation).queryByText('Review')).not.toBeInTheDocument()
   })
 
-  it('marks every Learn lesson route as active', () => {
-    renderShell('/learn/lesson-3')
+  it.each([
+    ['/vocabulary/lesson-3', 'Vocabulary'],
+    ['/grammar/lesson-5', 'Grammar'],
+  ])('marks nested learning route %s as %s', (path, label) => {
+    renderShell(path)
 
-    expect(screen.getByRole('link', { name: 'Learn' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: label })).toHaveAttribute('aria-current', 'page')
   })
 
   it('marks stable Practice lesson routes as active', () => {
@@ -78,12 +78,13 @@ describe('AppShell', () => {
     const mobilePanel = document.getElementById('primary-navigation-list')!
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')
     expect(mobilePanel).toHaveAttribute('hidden')
-    expect(within(mobilePanel).queryByRole('link', { name: 'Learn' })).not.toBeInTheDocument()
+    expect(within(mobilePanel).queryByRole('link', { name: 'Vocabulary' })).not.toBeInTheDocument()
 
     await user.click(menuButton)
     expect(menuButton).toHaveAttribute('aria-expanded', 'true')
     expect(mobilePanel).not.toHaveAttribute('hidden')
-    expect(within(mobilePanel).getByRole('link', { name: 'Learn' })).toBeInTheDocument()
+    expect(within(mobilePanel).getByRole('link', { name: 'Vocabulary' })).toBeInTheDocument()
+    expect(within(mobilePanel).queryByRole('link', { name: 'Learn' })).not.toBeInTheDocument()
 
     await user.keyboard('{Escape}')
     expect(menuButton).toHaveAttribute('aria-expanded', 'false')

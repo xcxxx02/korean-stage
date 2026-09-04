@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { GrammarGuide } from '../components/GrammarGuide'
+import { LanguageAwareText } from '../components/LanguageAwareText'
 import { course, courseLessons } from '../content/course'
 
 const grammarLessons = courseLessons.filter((lesson) =>
@@ -62,7 +63,7 @@ export function GrammarPage() {
     <section className="mx-auto max-w-5xl px-5 py-10 sm:px-8 lg:py-12">
       <header className="max-w-2xl">
         <p className="m-0 text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">Lec 1 grammar</p>
-        <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl">{lesson.title}</h1>
+        <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl"><LanguageAwareText text={lesson.title} /></h1>
       </header>
       <GrammarGuide grammarPoint={grammarPoint} />
     </section>

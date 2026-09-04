@@ -62,7 +62,8 @@ export type LessonSlug = CourseLesson['slug']
 
 export type VocabularyItem = {
   id: string
-  unitId: 'unit-2' | 'unit-3'
+  unitId: 'unit-1' | 'unit-2' | 'unit-3'
+  displayKind: 'expression' | 'word'
   korean: string
   english: string
   romanization: string

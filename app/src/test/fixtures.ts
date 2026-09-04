@@ -40,6 +40,7 @@ export const validCourse: Course = {
     ...['word-1', 'word-2', 'word-3', 'word-4'].map((id, index) => ({
       id,
       unitId: 'unit-3' as const,
+      displayKind: 'word' as const,
       korean: `한국어 ${index + 1}`,
       english: `Word ${index + 1}`,
       romanization: `word-${index + 1}`,
@@ -54,6 +55,7 @@ export const validCourse: Course = {
     ...['word-5', 'word-6', 'word-7', 'word-8'].map((id, index) => ({
       id,
       unitId: 'unit-3' as const,
+      displayKind: 'word' as const,
       korean: `한국어 ${index + 5}`,
       english: `Word ${index + 5}`,
       romanization: `word-${index + 5}`,

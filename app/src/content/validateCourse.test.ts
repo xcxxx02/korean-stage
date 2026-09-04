@@ -417,7 +417,7 @@ describe('validateCourse', () => {
       '학생', '선생님', '회사원', '기자', '의사', '가수', '군인', '요리사',
     ])
     expect(course.vocabulary.filter((item) => item.ownerId === null).map((item) => item.korean)).toEqual([
-      '중국', '일본', '미국', '한국', '프랑스', '독일', '호주', '영국',
+      '안녕하세요?', '저는 미나예요.', '중국', '일본', '미국', '한국', '프랑스', '독일', '호주', '영국',
     ])
     expect(course.grammar.map((grammar) => grammar.exercises.map((exercise) => exercise.type === 'matching' ? undefined : exercise.answer))).toEqual([
       ['민수예요', '학생이에요', undefined],

@@ -13,6 +13,12 @@ export const courseLessons = [
 export const getLessonBySlug = (slug: string) =>
   courseLessons.find((lesson) => lesson.slug === slug)
 
+export const vocabularyUnits = [
+  { lessonSlug: 'lesson-1', unitId: 'unit-1', title: 'Essential greetings', eyebrow: 'Unit 1', itemLabel: 'Useful expressions', description: 'Start with friendly greetings and a simple introduction.' },
+  { lessonSlug: 'lesson-2', unitId: 'unit-2', title: 'Countries & Nationalities', eyebrow: 'Unit 2', itemLabel: 'Vocabulary words', description: 'Learn country names used to introduce where someone is from.' },
+  { lessonSlug: 'lesson-3', unitId: 'unit-3', title: 'Jobs & Occupations', eyebrow: 'Unit 3', itemLabel: 'Vocabulary words', description: 'Learn common occupations for introducing yourself and others.' },
+] as const
+
 const developmentMedia = (durationSeconds?: number): MediaSource => ({
   src: null,
   kind: 'development-missing',
@@ -32,6 +38,7 @@ const vocabulary = (
 ): VocabularyItem => ({
   id,
   unitId,
+  displayKind: unitId === 'unit-1' ? 'expression' : 'word',
   korean,
   english,
   romanization,
@@ -114,6 +121,8 @@ export const course: Course = {
     },
   ],
   vocabulary: [
+    vocabulary('greeting', 'unit-1', '안녕하세요?', 'Hello.', 'annyeonghaseyo?', 'an-nyeong-ha-se-yo', '안녕하세요?', 'Hello.', null),
+    vocabulary('self-introduction', 'unit-1', '저는 미나예요.', 'I am Mina.', 'jeoneun minayeyo.', 'juh-nuhn mee-na-ye-yo', '저는 미나예요.', 'I am Mina.', null),
     vocabulary('china', 'unit-2', '중국', 'China', 'jungguk', undefined, '중국 사람이에요.', 'I am Chinese.', null),
     vocabulary('japan', 'unit-2', '일본', 'Japan', 'ilbon', undefined, '일본 사람이에요.', 'I am Japanese.', null),
     vocabulary('usa', 'unit-2', '미국', 'USA', 'miguk', undefined, '미국 사람이에요.', 'I am American.', null),

@@ -87,28 +87,36 @@ describe('responsive beginner contracts', () => {
   })
 
   it('keeps the desktop vocabulary study view inside one viewport with persistent word controls', () => {
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*height:\s*calc\(100dvh - 5\.75rem\);[^}]*overflow:\s*hidden;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-shell\s*\{[^}]*min-height:\s*0;[^}]*flex:\s*1;[^}]*padding-block:\s*1rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*height:\s*calc\(100dvh - 6\.5rem\);[^}]*overflow:\s*hidden;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-shell\s*\{[^}]*min-height:\s*0;[^}]*flex:\s*1;[^}]*padding-block:\s*1\.65rem 0;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*position:\s*relative;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*margin-bottom:\s*1rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-progress\s*\{[^}]*position:\s*absolute;[^}]*top:\s*1\.25rem;[^}]*right:\s*0;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*margin-bottom:\s*1\.1rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-progress\s*\{[^}]*position:\s*absolute;[^}]*top:\s*2\.5rem;[^}]*right:\s*2\.25rem;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-rail,\s*\.stage-learning-details\s*\{[^}]*overflow:\s*visible;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*4\.05rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*clamp\(3\.55rem, 6\.8vh, 4\.55rem\);/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-details\s*\{[^}]*align-content:\s*space-between;/s)
     expect(styles).not.toMatch(/@media \(min-width: 90rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*display:\s*block;/s)
   })
 
-  it('balances breathing room with visible word navigation on shorter laptop screens', () => {
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*padding-block:\s*0\.9rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-member-video\s*\{[^}]*width:\s*11\.75rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*3\.7rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.word-navigation button\s*\{[^}]*min-height:\s*2\.8rem;/s)
+  it('preserves the approved framed three-column composition on shorter laptop screens', () => {
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*border:\s*1px solid var\(--stage-border\);[^}]*border-radius:\s*0 0 0\.75rem 0\.75rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*background:\s*rgb\(255 255 255 \/ 68%\);/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout--details-center\s*\{[^}]*grid-template-columns:\s*17\.25rem minmax\(20rem, 27\.5rem\) minmax\(20rem, 25\.5rem\);[^}]*justify-content:\s*start;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-list\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-copy > span:first-child\s*\{[^}]*font-size:\s*0\.95rem;[^}]*line-height:\s*1\.2;/s)
+    expect(styles).toMatch(/\.word-navigation__next\s*\{[^}]*background:\s*var\(--stage-cobalt\);/s)
+  })
+
+  it('restores the approved spacious proportions on tall desktop screens', () => {
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(min-height: 62\.01rem\)[\s\S]*?\.site-header__inner\s*\{[^}]*min-height:\s*6\.4rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(min-height: 62\.01rem\)[\s\S]*?\.app-shell:has\(\.vocabulary-study-page\) \.app-stage\s*\{[^}]*min-height:\s*0;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(min-height: 62\.01rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*height:\s*calc\(100dvh - 9\.4rem\);/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(min-height: 62\.01rem\)[\s\S]*?\.learn-layout--details-center\s*\{[^}]*gap:\s*clamp\(4\.5rem, 6\.5vw, 6\.25rem\);/s)
   })
 
   it('keeps the current-word marker visually present without giving its rail card an extra row', () => {
     expect(styles).toMatch(/\.vocabulary-word-button\s*\{[^}]*position:\s*relative;/s)
-    expect(styles).toMatch(/\.vocabulary-word-current\s*\{[^}]*position:\s*absolute;/s)
+    expect(styles).toMatch(/\.vocabulary-word-current\s*\{[^}]*position:\s*absolute;[^}]*width:\s*1px;/s)
     expect(styles).not.toMatch(/\.vocabulary-word-button\[aria-current="true"\] \.vocabulary-word-copy > span:first-child\s*\{[^}]*padding-right:/s)
   })
 

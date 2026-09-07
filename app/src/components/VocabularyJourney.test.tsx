@@ -115,7 +115,11 @@ describe('VocabularyJourney', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    expect(screen.getByRole('region', { name: 'Member 1 audio player' })).toHaveTextContent('Audio coming soon')
+    const audioPlayer = screen.getByRole('region', { name: 'Member 1 audio player' })
+    expect(audioPlayer).toHaveTextContent('Audio coming soon')
+    const waveform = within(audioPlayer).getByTestId('audio-waveform')
+    expect(waveform).toBeVisible()
+    expect(waveform.querySelectorAll('svg')).toHaveLength(6)
     expect(screen.queryByRole('button', { name: /play member video/i })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /의사.*Doctor/ }))
     expect(screen.getByRole('region', { name: 'Member 2 audio player' })).toHaveTextContent('Audio coming soon')

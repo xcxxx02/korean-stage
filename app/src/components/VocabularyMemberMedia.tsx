@@ -1,4 +1,4 @@
-import { Pause, Play } from '@phosphor-icons/react'
+import { Pause, Play, Waveform } from '@phosphor-icons/react'
 import { useState, type RefObject } from 'react'
 import type { MediaSource } from '../content/types'
 
@@ -43,7 +43,12 @@ export function VocabularyMemberMedia({ audio, audioRef, memberName, video, vide
         {canPlayAudio ? <audio onEnded={() => setIsPlaying(false)} onPause={() => setIsPlaying(false)} onPlay={() => setIsPlaying(true)} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} ref={audioRef} src={audio.src ?? undefined} /> : null}
         <div className="vocabulary-audio-player__controls">
           <button aria-label={isPlaying ? `Pause ${memberName} audio` : `Play ${memberName} audio`} disabled={!canPlayAudio} onClick={toggleAudio} type="button">{isPlaying ? <Pause aria-hidden="true" weight="fill" /> : <Play aria-hidden="true" weight="fill" />}</button>
-          <div className="vocabulary-audio-player__track"><span style={{ width: `${duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0}%` }} /></div>
+          <div className="vocabulary-audio-player__visual" data-testid="audio-waveform">
+            <div aria-hidden="true" className="vocabulary-audio-player__waveforms">
+              {Array.from({ length: 6 }, (_, index) => <Waveform key={index} weight={index < 3 ? 'duotone' : 'light'} />)}
+            </div>
+            <div className="vocabulary-audio-player__track"><span style={{ width: `${duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0}%` }} /></div>
+          </div>
           <output>{canPlayAudio ? `${formatTime(currentTime)} / ${formatTime(duration)}` : 'Audio coming soon'}</output>
         </div>
       </section>

@@ -614,14 +614,12 @@ body {
 
 .vocabulary-word-current {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  border-radius: 999px;
-  background: var(--stage-cobalt);
-  padding: 0.13rem 0.38rem;
-  color: var(--stage-white);
-  font-size: 0.58rem;
-  font-weight: 800;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .word-position-markers {
@@ -668,31 +666,30 @@ body {
 
 .vocabulary-listen-button {
   display: inline-flex;
-  min-height: 3.75rem;
+  min-height: 3.5rem;
   align-items: center;
-  gap: 0.5rem;
-  border: 1.5px solid var(--stage-cobalt);
-  border-radius: 999px;
-  background: var(--stage-white);
+  gap: 0.65rem;
+  border: 0;
+  background: transparent;
   color: var(--stage-cobalt);
-  padding: 0.45rem 0.7rem;
+  padding: 0;
   font-weight: 800;
   line-height: 1.05;
   text-align: left;
 }
 
 .vocabulary-listen-button svg {
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--stage-cobalt);
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1.5px solid var(--stage-cobalt);
   border-radius: 50%;
-  padding: 0.45rem;
+  padding: 0.75rem;
 }
 
 .vocabulary-listen-button:disabled {
   cursor: not-allowed;
-  border-color: var(--stage-border);
-  color: var(--stage-faint);
+  color: var(--stage-cobalt);
+  opacity: 0.62;
 }
 
 .vocabulary-details__meaning {
@@ -728,7 +725,7 @@ body {
 
 .vocabulary-example {
   border-left: 0.3rem solid var(--stage-yellow);
-  background: var(--stage-yellow-soft);
+  background: transparent;
   padding: 0.8rem 1rem;
 }
 
@@ -800,22 +797,20 @@ body {
 }
 
 .word-navigation__previous {
-  border: 1px solid var(--stage-cobalt);
+  border: 1px solid var(--stage-jade);
   background: var(--stage-white);
-  color: var(--stage-cobalt);
+  color: var(--stage-jade);
 }
 
 .word-navigation__next {
-  border: 1px solid var(--stage-vermilion);
-  background: var(--stage-vermilion);
+  border: 1px solid var(--stage-cobalt);
+  background: var(--stage-cobalt);
   color: var(--stage-white);
 }
 
 .word-navigation button:disabled {
   cursor: not-allowed;
-  border-color: var(--stage-border);
-  background: var(--color-stage-disabled);
-  color: var(--stage-faint);
+  opacity: 0.58;
 }
 
 .vocabulary-member-media {
@@ -826,7 +821,7 @@ body {
 
 .vocabulary-member-video {
   display: grid;
-  width: min(100%, 14rem);
+  width: min(100%, 18rem);
   aspect-ratio: 1;
   place-items: center;
   overflow: hidden;
@@ -846,7 +841,7 @@ body {
 .vocabulary-member-video img { opacity: 0.75; }
 
 .vocabulary-audio-player {
-  width: min(100%, 22rem);
+  width: min(100%, 25.5rem);
   border: 1px solid color-mix(in srgb, var(--stage-cobalt) 22%, var(--stage-border));
   border-radius: var(--stage-radius);
   background: var(--stage-white);
@@ -864,15 +859,15 @@ body {
 
 .vocabulary-audio-player__controls {
   display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr);
+  grid-template-columns: 3rem minmax(0, 1fr);
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.8rem;
 }
 
 .vocabulary-audio-player__controls button {
   display: grid;
-  width: 2.5rem;
-  min-height: 2.5rem;
+  width: 3rem;
+  min-height: 3rem;
   place-items: center;
   border: 1px solid var(--stage-cobalt);
   border-radius: 50%;
@@ -882,7 +877,10 @@ body {
 
 .vocabulary-audio-player__controls button:disabled { cursor: not-allowed; border-color: var(--stage-border); color: var(--stage-faint); }
 
-.vocabulary-audio-player__track { height: 0.35rem; overflow: hidden; border-radius: 999px; background: var(--color-stage-disabled); }
+.vocabulary-audio-player__visual { display: grid; gap: 0.15rem; color: var(--stage-cobalt); }
+.vocabulary-audio-player__waveforms { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); align-items: center; gap: 0; }
+.vocabulary-audio-player__waveforms svg { width: 100%; height: 1.75rem; }
+.vocabulary-audio-player__track { height: 0.3rem; overflow: hidden; border-radius: 999px; background: var(--color-stage-disabled); }
 .vocabulary-audio-player__track span { display: block; height: 100%; border-radius: inherit; background: var(--stage-cobalt); }
 .vocabulary-audio-player__controls output { grid-column: 2; color: var(--stage-muted); font-size: 0.76rem; }
 
@@ -1227,14 +1225,31 @@ body {
 }
 
 @media (min-width: 70rem) {
+  .app-shell:has(.vocabulary-study-page) .obangsaek-band {
+    width: min(calc(100% - 5rem), 90rem);
+    margin-inline: auto;
+    border-radius: 0.5rem 0.5rem 0 0;
+  }
+
+  .app-shell:has(.vocabulary-study-page) .korean-stage-background {
+    left: 50%;
+    width: min(calc(100% - 5rem), 90rem);
+    translate: -50% 0;
+  }
+
   .vocabulary-study-page {
-    height: calc(100dvh - 5.75rem);
+    width: min(calc(100% - 5rem), 90rem);
+    height: calc(100dvh - 6.5rem);
     min-height: 0;
     overflow: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
-    padding-block: 1.25rem;
+    border: 1px solid var(--stage-border);
+    border-top: 0;
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: rgb(255 255 255 / 68%);
+    padding: 2.25rem 2.75rem 1.75rem;
   }
 
   .vocabulary-study-page > header {
@@ -1246,8 +1261,8 @@ body {
 
   .vocabulary-study-page > header h1 {
     grid-column: 1;
-    margin-top: 0.25rem;
-    font-size: clamp(2.25rem, 3.6vw, 3.5rem);
+    margin-top: 0.35rem;
+    font-size: clamp(2.4rem, 3.4vw, 3.35rem);
   }
 
   .vocabulary-study-page > header p:last-child {
@@ -1260,25 +1275,25 @@ body {
   .stage-learning-shell {
     min-height: 0;
     flex: 1;
-    padding-block: 1rem;
+    padding-block: 1.65rem 0;
     overflow: hidden;
   }
 
   .stage-learning-header {
     grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.1rem;
   }
 
   .stage-learning-header h2 {
-    font-size: 2rem;
+    font-size: 1.7rem;
   }
 
   .stage-learning-progress {
     position: absolute;
-    top: 1.25rem;
-    right: 0;
-    width: clamp(18rem, 31vw, 30rem);
+    top: 2.5rem;
+    right: 2.25rem;
+    width: clamp(22rem, 31vw, 26.5rem);
   }
 
   .stage-learning-grid {
@@ -1324,8 +1339,9 @@ body {
   }
 
   .learn-layout--details-center {
-    grid-template-columns: 12rem minmax(20rem, 30rem) minmax(16rem, 22rem);
-    justify-content: center;
+    grid-template-columns: 17.25rem minmax(20rem, 27.5rem) minmax(20rem, 25.5rem);
+    gap: clamp(2.5rem, 4vw, 5.75rem);
+    justify-content: start;
   }
 
   .learn-layout--details-center .learn-details,
@@ -1339,15 +1355,16 @@ body {
 
   .vocabulary-word-list {
     display: grid;
-    gap: 0.25rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
     overflow: visible;
     padding: 0;
   }
 
   .vocabulary-word-button {
     width: 100%;
-    min-height: 4.05rem;
-    padding: 0.4rem 0.5rem;
+    min-height: clamp(3.55rem, 6.8vh, 4.55rem);
+    padding: 0.55rem 0.75rem;
   }
 
   .learn-layout--media-center .learn-media video,
@@ -1378,16 +1395,46 @@ body {
   }
 }
 
-/* A 100% browser zoom can still mean a short laptop viewport. Preserve the
-   learning rhythm first, then use the right-side media as the compact layer. */
+/* At the approved tall-desktop reference size, restore the generous header
+   and column rhythm. Shorter laptop screens keep the compact one-screen fit. */
+@media (min-width: 70rem) and (min-height: 62.01rem) {
+  .site-header__inner {
+    min-height: 6.4rem;
+  }
+
+  .app-shell:has(.vocabulary-study-page) .app-stage {
+    min-height: 0;
+  }
+
+  .vocabulary-study-page {
+    height: calc(100dvh - 9.4rem);
+  }
+
+  .stage-learning-shell {
+    padding-block-start: 2rem;
+  }
+
+  .stage-learning-header {
+    margin-bottom: 1.35rem;
+  }
+
+  .learn-layout--details-center {
+    grid-template-columns: 17.25rem minmax(18rem, 27.5rem) minmax(18rem, 25.5rem);
+    gap: clamp(4.5rem, 6.5vw, 6.25rem);
+  }
+}
+
+/* Keep the reference composition on short laptop viewports. Only vertical
+   measurements tighten; the single word rail and three-column anatomy stay. */
 @media (min-width: 70rem) and (max-height: 62rem) {
   .vocabulary-study-page {
-    padding-block: 0.9rem;
+    height: calc(100dvh - 6.5rem);
+    padding: 1.1rem 2.5rem 0.85rem;
   }
 
   .vocabulary-study-page > header h1 {
     margin-top: 0;
-    font-size: clamp(2.2rem, 3.05vw, 3.05rem);
+    font-size: clamp(2.2rem, 3vw, 2.85rem);
   }
 
   .vocabulary-study-page > header p:last-child {
@@ -1396,49 +1443,55 @@ body {
   }
 
   .stage-learning-shell {
-    padding-block: 0.7rem;
+    padding-block: 0.75rem 0;
   }
 
   .stage-learning-header {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.55rem;
   }
 
   .stage-learning-header h2 {
-    font-size: 1.85rem;
+    font-size: 1.55rem;
   }
 
   .stage-learning-progress {
-    top: 0.9rem;
+    top: 1.1rem;
+    right: 2rem;
     padding-block: 0.5rem 0.58rem;
   }
 
   .learn-layout--details-center {
-    grid-template-columns: 20rem minmax(20rem, 28rem) minmax(15rem, 20rem);
-    gap: 1.25rem;
+    grid-template-columns: 17.25rem minmax(20rem, 27.5rem) minmax(20rem, 25.5rem);
+    gap: clamp(2.25rem, 3.6vw, 4.5rem);
   }
 
   .vocabulary-word-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.3rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.2rem;
   }
 
   .vocabulary-word-button {
-    min-height: 3.7rem;
-    padding-block: 0.42rem;
+    min-height: clamp(2.85rem, 6.25vh, 3.45rem);
+    padding: 0.25rem 0.65rem;
   }
 
-  .vocabulary-word-current {
-    top: 0.42rem;
-    right: 0.42rem;
+  .vocabulary-word-copy > span:first-child {
+    font-size: 0.95rem;
+    line-height: 1.2;
+  }
+
+  .vocabulary-word-copy > span:nth-child(2) {
+    font-size: 0.75rem;
+    line-height: 1.25;
   }
 
   .learn-details,
   .vocabulary-details {
-    gap: 0.75rem;
+    gap: 0.65rem;
   }
 
   .vocabulary-details__word {
-    font-size: 3.5rem;
+    font-size: 3.35rem;
   }
 
   .vocabulary-details__meaning {
@@ -1447,13 +1500,13 @@ body {
   }
 
   .vocabulary-pronunciation {
-    gap: 0.5rem;
-    padding-block: 0.65rem;
+    gap: 0.42rem;
+    padding-block: 0.55rem;
   }
 
   .vocabulary-example,
   .vocabulary-grammar-tip {
-    padding-block: 0.75rem;
+    padding-block: 0.6rem;
   }
 
   .vocabulary-member-media {
@@ -1461,7 +1514,7 @@ body {
   }
 
   .vocabulary-member-video {
-    width: 11.75rem;
+    width: clamp(11.5rem, 27vh, 14rem);
   }
 
   .vocabulary-audio-player {
@@ -1478,8 +1531,8 @@ body {
   }
 
   .word-navigation button {
-    min-height: 2.8rem;
-    padding-block: 0.6rem;
+    min-height: 2.75rem;
+    padding-block: 0.5rem;
   }
 }
 

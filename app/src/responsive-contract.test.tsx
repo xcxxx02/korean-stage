@@ -110,7 +110,13 @@ describe('responsive beginner contracts', () => {
   it('aligns the desktop media stack beneath the progress card and gives word cards more breathing room', () => {
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout--details-center\s*\{[^}]*justify-content:\s*space-between;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-media\s*\{[^}]*justify-self:\s*end;[^}]*margin-top:\s*-1\.5rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*clamp\(3\.1rem, 6\.6vh, 3\.65rem\);/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-list\s*\{[^}]*gap:\s*0\.3rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*3\.375rem;[^}]*align-items:\s*center;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.stage-learning-shell\s*\{[^}]*padding-block:\s*0\.5rem 0;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*margin-bottom:\s*0\.25rem;/s)
+    expect(styles).toMatch(/\.vocabulary-word-button\s*\{[^}]*border:\s*1px solid var\(--stage-border\);/s)
+    expect(styles).not.toMatch(/\.vocabulary-word-button\s*\{[^}]*border-left:\s*0\.3rem solid transparent;/s)
+    expect(styles).not.toMatch(/\.vocabulary-word-button\[aria-current="true"\]\s*\{[^}]*border-left-color:\s*var\(--stage-vermilion\);/s)
   })
 
   it('restores the approved spacious proportions on tall desktop screens', () => {

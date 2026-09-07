@@ -98,6 +98,12 @@ describe('responsive beginner contracts', () => {
     expect(styles).not.toMatch(/@media \(min-width: 90rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*display:\s*block;/s)
   })
 
+  it('uses a denser desktop composition on shorter laptop screens so word navigation stays visible', () => {
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*padding-block:\s*0\.7rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-member-video\s*\{[^}]*width:\s*10\.5rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*3\.5rem;/s)
+  })
+
   it('keeps Korean runs in mixed Practice copy from breaking between syllables', () => {
     expect(styles).toMatch(/\.language-aware-text__ko\s*\{[^}]*display:\s*inline-block;[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;[^}]*white-space:\s*nowrap;/s)
   })

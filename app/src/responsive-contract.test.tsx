@@ -101,10 +101,16 @@ describe('responsive beginner contracts', () => {
   it('preserves the approved framed three-column composition on shorter laptop screens', () => {
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*border:\s*1px solid var\(--stage-border\);[^}]*border-radius:\s*0 0 0\.75rem 0\.75rem;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*background:\s*rgb\(255 255 255 \/ 68%\);/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout--details-center\s*\{[^}]*grid-template-columns:\s*17\.25rem minmax\(20rem, 27\.5rem\) minmax\(20rem, 25\.5rem\);[^}]*justify-content:\s*start;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout--details-center\s*\{[^}]*grid-template-columns:\s*17\.25rem minmax\(20rem, 27\.5rem\) minmax\(20rem, 25\.5rem\);[^}]*justify-content:\s*space-between;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-list\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-copy > span:first-child\s*\{[^}]*font-size:\s*0\.95rem;[^}]*line-height:\s*1\.2;/s)
     expect(styles).toMatch(/\.word-navigation__next\s*\{[^}]*background:\s*var\(--stage-cobalt\);/s)
+  })
+
+  it('aligns the desktop media stack beneath the progress card and gives word cards more breathing room', () => {
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-layout--details-center\s*\{[^}]*justify-content:\s*space-between;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.stage-learning-media\s*\{[^}]*justify-self:\s*end;[^}]*margin-top:\s*-1\.5rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*clamp\(3\.1rem, 6\.6vh, 3\.65rem\);/s)
   })
 
   it('restores the approved spacious proportions on tall desktop screens', () => {

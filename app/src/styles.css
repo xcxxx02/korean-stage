@@ -1341,7 +1341,13 @@ body {
   .learn-layout--details-center {
     grid-template-columns: 17.25rem minmax(20rem, 27.5rem) minmax(20rem, 25.5rem);
     gap: clamp(2.5rem, 4vw, 5.75rem);
-    justify-content: start;
+    justify-content: space-between;
+  }
+
+  .stage-learning-media {
+    width: 100%;
+    justify-self: end;
+    margin-top: -1.5rem;
   }
 
   .learn-layout--details-center .learn-details,
@@ -1471,7 +1477,7 @@ body {
   }
 
   .vocabulary-word-button {
-    min-height: clamp(2.85rem, 6.25vh, 3.45rem);
+    min-height: clamp(3.1rem, 6.6vh, 3.65rem);
     padding: 0.25rem 0.65rem;
   }
 

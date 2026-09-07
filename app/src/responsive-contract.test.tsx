@@ -98,10 +98,18 @@ describe('responsive beginner contracts', () => {
     expect(styles).not.toMatch(/@media \(min-width: 90rem\)[\s\S]*?\.stage-learning-header\s*\{[^}]*display:\s*block;/s)
   })
 
-  it('uses a denser desktop composition on shorter laptop screens so word navigation stays visible', () => {
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*padding-block:\s*0\.7rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-member-video\s*\{[^}]*width:\s*10\.5rem;/s)
-    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*3\.5rem;/s)
+  it('balances breathing room with visible word navigation on shorter laptop screens', () => {
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-study-page\s*\{[^}]*padding-block:\s*0\.9rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-member-video\s*\{[^}]*width:\s*11\.75rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-button\s*\{[^}]*min-height:\s*3\.7rem;/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.vocabulary-word-list\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\);/s)
+    expect(styles).toMatch(/@media \(min-width: 70rem\) and \(max-height: 62rem\)[\s\S]*?\.word-navigation button\s*\{[^}]*min-height:\s*2\.8rem;/s)
+  })
+
+  it('keeps the current-word marker visually present without giving its rail card an extra row', () => {
+    expect(styles).toMatch(/\.vocabulary-word-button\s*\{[^}]*position:\s*relative;/s)
+    expect(styles).toMatch(/\.vocabulary-word-current\s*\{[^}]*position:\s*absolute;/s)
+    expect(styles).not.toMatch(/\.vocabulary-word-button\[aria-current="true"\] \.vocabulary-word-copy > span:first-child\s*\{[^}]*padding-right:/s)
   })
 
   it('keeps Korean runs in mixed Practice copy from breaking between syllables', () => {

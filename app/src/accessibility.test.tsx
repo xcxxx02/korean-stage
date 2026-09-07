@@ -123,12 +123,13 @@ describe('default-route accessibility', () => {
     expect(screen.queryByRole('heading', { level: 1, name: expectedPrimaryHeadings['not-found'] })).not.toBeInTheDocument()
   })
 
-  it('does not add a separate audio control to the member-video vocabulary flow', () => {
+  it('provides a disabled but clearly named audio player while member recordings are missing', () => {
     renderRoute('/vocabulary/lesson-3')
 
-    expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
+    expect(screen.getByRole('region', { name: 'Member 1 audio player' })).toHaveTextContent('Audio coming soon')
     expect(document.querySelector('audio')).not.toBeInTheDocument()
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.getByText('Audio coming soon')).toBeVisible()
   })
 
   it('marks every rendered Korean text run in Vocabulary with the Korean language', () => {

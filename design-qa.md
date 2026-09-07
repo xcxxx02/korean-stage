@@ -1,45 +1,35 @@
-# Restored Vocabulary Visual QA
+# Vocabulary lesson visual QA
 
-Date: 2026-08-23
+## Evidence
 
-Reference: `docs/design/korean-stage-approved-ui.png`
+- Source visual truth: `C:\Users\Nitro\.codex\generated_images\01a00e73-4a35-7c00-8237-c6f4815271b8\exec-9bea930d-8132-44fb-b6be-d57ade256c2f.png`
+- Implementation: `http://127.0.0.1:4174/vocabulary/lesson-3`
+- Viewport: 1440 × 1024 CSS pixels, desktop, light theme, Unit 3 / 학생 selected.
+- Implementation capture: browser-rendered CUA screenshot at the viewport above (not persisted as a local image artifact by the browser bridge).
+- Primary states checked: desktop word rail, selected word detail, disabled Listen & watch state when both human recordings are absent, passive circular video preview, disabled audio player, previous/next controls.
+- Console errors: none observed during the rendered-page check.
 
-Implemented state: `/learn/unit-3`, word 1 of 8, 1440 x 1024
+## Full-view comparison
 
-Combined evidence: `docs/design/vocabulary-side-by-side.png`
+The implementation preserves the reference anatomy: compact title/progress header, left bilingual word rail, centered word explanation with a small outlined Listen & watch control, and a right column that pairs circular member video with a separate audio player. The study workspace is contained within the desktop viewport and has no scrollbars.
 
-Latest compact evidence: `docs/design/implementation-vocab-compact.png`
+## Focused comparison
 
-## Result
+- **Typography:** Noto Sans KR remains consistent with the existing product; word and English hierarchy follow the reference.
+- **Spacing/layout:** The implemented tracks intentionally use the existing 1440px workspace and hold the video/audio column closer to the detail column, avoiding the empty space of the prior layout.
+- **Colors/tokens:** Cobalt, jade, vermilion, white, and the existing Obangsaek band are reused; no unapproved elevation was introduced.
+- **Image quality:** The circular preview uses the existing project “video coming soon” artwork while course recordings are absent. This is an intentional honest placeholder; a real member recording will replace it without changing the layout.
+- **Copy/content:** `Listen & watch`, separate `Member 1 audio`, bilingual word meaning, pronunciation, example, and grammar tip are present. Audio is explicitly marked `Audio coming soon` until a real recording source is supplied.
 
-The restored screen matches the approved visual direction: a white canvas, vivid cobalt/vermilion/jade/yellow accents, palace-gate brand mark, segmented Korean pattern band, subtle palace and Namsan line art, ordered bilingual vocabulary rail, central member-video area, detailed learning panel, word progress, and previous/next controls.
+## Findings
 
-The central panel deliberately shows an honest `Member video coming soon` state instead of copying the mockup's synthetic person. It is ready to accept the required real team-member selfie recording later.
+No actionable P0, P1, or P2 visual mismatches. The visible placeholder in the circular preview is expected because a real member recording has not yet been added.
 
-## Comparison findings
+## Follow-up polish
 
-| Surface | Assessment |
-|---|---|
-| Header and cultural identity | Pass. Palace logo and vivid segmented obangsaek band now match the approved direction. |
-| Background | Pass. Low-contrast palace line art anchors the lower left; Namsan Tower and clouds anchor the lower right. |
-| Vocabulary sequence | Pass. All eight words have Korean and English labels, with an obvious `Now learning` state. |
-| Central media | Pass with intentional content difference. Layout follows the reference while truthfully marking the real recording as missing. |
-| Learning details | Pass. Korean, English, romanization, pronunciation, audio state, example, translation, and grammar tip are present. |
-| Progress and controls | Pass. Eight semantic markers are shown and Next/Previous advances the ordered sequence. |
-| Navigation state | Pass. `/learn/unit-3` correctly highlights Vocabulary. |
+- Replace the circular placeholder with each member's real selfie video and real audio file when recordings are available.
+- Optionally add animated waveform progress once actual audio durations are supplied.
 
-## Responsive and interaction checks
+## Final result
 
-- 1440 x 1024: three-column composition fits without page overflow; lower controls remain visible.
-- 834 x 1194: no horizontal overflow; vocabulary rail becomes a compact bilingual selector.
-- 390 x 844: no horizontal overflow; mobile header, progress, selector, video state, and detail flow remain readable.
-- Primary interaction: Next word changed the active semantic marker from Word 1 to Word 2; Previous word returned to Word 1.
-- Compact desktop fit: the video panel is height-limited, the new conversation-use prompt remains visible, and Next word ends at 759 px in a 1536 x 780 viewport, so it is clickable without scrolling.
-- Progress treatment: the generic long line is replaced by a contained vocabulary-path panel with eight numbered nodes, Korean cloud motifs, and cobalt/jade/vermilion/yellow progression cues.
-- Automated verification: 182 tests passed; TypeScript and ESLint passed; production build passed.
-
-## Open limitation
-
-Real member video and audio are still required by the coursework. The interface does not pretend those submission assets exist.
-
-final result: passed
+passed

@@ -110,15 +110,15 @@ describe('VocabularyJourney', () => {
     expect(chooser).toHaveFocus()
   })
 
-  it('uses the assigned member video and never renders a speaker or audio selector', async () => {
+  it('shows passive member media with a separate audio player and a shared listen control', async () => {
     const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)
 
-    expect(screen.getByText('Presented by Member 1')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
+    expect(screen.getByRole('region', { name: 'Member 1 audio player' })).toHaveTextContent('Audio coming soon')
+    expect(screen.queryByRole('button', { name: /play member video/i })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /의사.*Doctor/ }))
-    expect(screen.getByText('Presented by Member 2')).toBeVisible()
-    expect(screen.queryByRole('button', { name: /Listen to Member/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('group', { name: /speaker/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Member 2 audio player' })).toHaveTextContent('Audio coming soon')
     expect(document.querySelector('audio')).not.toBeInTheDocument()
   })
 
@@ -168,21 +168,20 @@ describe('VocabularyJourney', () => {
     expect(within(grammarTip).getByText('이에요')).toHaveAttribute('lang', 'ko')
   })
 
-  it('keeps Korean and English transcript runs in separate language boundaries', () => {
+  it('keeps the member video preview separate from the bilingual word example', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    const transcript = screen.getByLabelText('Member 1 vocabulary video transcript')
-    expect(within(transcript).getByText('저는 학생이에요.')).toHaveAttribute('lang', 'ko')
-    expect(within(transcript).getByText('I am a student.')).toHaveAttribute('lang', 'en')
+    expect(screen.getByLabelText('Member 1 video preview')).toBeVisible()
+    expect(screen.getByText('저는 학생이에요.')).toHaveAttribute('lang', 'ko')
+    expect(screen.getByText('I am a student.')).toHaveAttribute('lang', 'en')
   })
 
-  it('uses a compact honest alert when the assigned member video is missing', () => {
+  it('uses an honest passive preview and disabled audio controls when recordings are missing', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    const alert = screen.getByRole('alert')
-    expect(within(alert).getByRole('heading', { name: 'Member video coming soon' })).toBeVisible()
-    expect(within(alert).getByText('This word still needs a real recording from Member 1.')).toBeVisible()
-    expect(screen.queryByRole('list', { name: 'Recording checklist' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Member 1 video preview')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Play Member 1 audio' })).toBeDisabled()
     expect(document.querySelector('video')).not.toBeInTheDocument()
   })
 

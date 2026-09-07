@@ -1,4 +1,4 @@
-import { CaretDown, CaretLeft, CaretRight, GraduationCap } from '@phosphor-icons/react'
+import { CaretDown, CaretLeft, CaretRight, GraduationCap, SpeakerHigh } from '@phosphor-icons/react'
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   useEffect,
@@ -9,7 +9,7 @@ import {
 import { course } from '../content/course'
 import type { VocabularyItem } from '../content/types'
 import { LearningShell } from './LearningShell'
-import { MemberVideo } from './MemberVideo'
+import { VocabularyMemberMedia } from './VocabularyMemberMedia'
 
 type VocabularyJourneyProps = {
   items: VocabularyItem[]
@@ -30,6 +30,8 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const chooserTriggerRef = useRef<HTMLButtonElement>(null)
   const chooserOptionRefs = useRef<Array<HTMLButtonElement | null>>([])
   const chooserListboxId = useId()
+  const memberAudioRef = useRef<HTMLAudioElement>(null)
+  const memberVideoRef = useRef<HTMLVideoElement>(null)
   const isVocabularyWord = itemLabel === 'Vocabulary word'
   const lowerLabel = isVocabularyWord ? 'word' : itemLabel.toLowerCase()
   const pluralLabel = isVocabularyWord ? 'Vocabulary words' : 'Useful expressions'
@@ -57,6 +59,18 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const requiresMemberRecording = item.assessmentStatus === 'assessed'
     && item.recordingRequirement === 'member-recording-required'
   const tip = grammarTip(item)
+  const canPlayMemberRecording = item.video.kind === 'human-recording'
+    && Boolean(item.video.src?.trim())
+    && item.audio.kind === 'human-recording'
+    && Boolean(item.audio.src?.trim())
+
+  const playMemberRecording = () => {
+    if (!canPlayMemberRecording) return
+    const audioPlayback = memberAudioRef.current?.play()
+    const videoPlayback = memberVideoRef.current?.play()
+    if (audioPlayback) void audioPlayback
+    if (videoPlayback) void videoPlayback
+  }
 
   const closeChooser = () => {
     setChooserOpen(false)
@@ -176,16 +190,13 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   )
 
   const media = requiresMemberRecording && memberName ? (
-      <div className="stage-media-stack">
-        <MemberVideo
-          className="member-video--stage"
-          memberName={memberName}
-          mode="learner"
-          source={item.video}
-          transcript={{ korean: item.koreanExample, english: item.englishExample }}
-        />
-        <p className="stage-media-presenter">Presented by {memberName}</p>
-      </div>
+      <VocabularyMemberMedia
+        audio={item.audio}
+        audioRef={memberAudioRef}
+        memberName={memberName}
+        video={item.video}
+        videoRef={memberVideoRef}
+      />
     ) : (
       <section className="supporting-vocabulary-media" aria-labelledby={`${item.id}-supporting-heading`}>
         <GraduationCap aria-hidden="true" size={42} weight="fill" />
@@ -202,7 +213,15 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const details = (
     <div className="vocabulary-details">
       <div>
-        <h2 className="vocabulary-details__word" data-korean-content lang="ko">{item.korean}</h2>
+        <div className="vocabulary-details__word-row">
+          <h2 className="vocabulary-details__word" data-korean-content lang="ko">{item.korean}</h2>
+          {requiresMemberRecording ? (
+            <button aria-label="Listen & watch" className="vocabulary-listen-button" disabled={!canPlayMemberRecording} onClick={playMemberRecording} type="button">
+              <SpeakerHigh aria-hidden="true" size={24} weight="fill" />
+              <span>Listen &amp;<br />watch</span>
+            </button>
+          ) : null}
+        </div>
         <p className="vocabulary-details__meaning" lang="en">{item.english}</p>
       </div>
 
@@ -275,6 +294,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
       controls={controls}
       details={details}
       heading={`Choose a ${lowerLabel}`}
+      layout="details-center"
       media={media}
       progress={`${capitalizedLabel} ${safeActiveIndex + 1} of ${items.length}`}
       progressLabel="Vocabulary path"

@@ -132,6 +132,11 @@ describe('responsive beginner contracts', () => {
     expect(styles).not.toMatch(/\.vocabulary-word-button\[aria-current="true"\] \.vocabulary-word-copy > span:first-child\s*\{[^}]*padding-right:/s)
   })
 
+  it('keeps the Listen and watch control compact while preserving a 44px touch target', () => {
+    expect(styles).toMatch(/\.vocabulary-listen-button\s*\{[^}]*min-height:\s*2\.75rem;[^}]*gap:\s*0\.45rem;[^}]*font-size:\s*0\.82rem;/s)
+    expect(styles).toMatch(/\.vocabulary-listen-button svg\s*\{[^}]*width:\s*2\.75rem;[^}]*height:\s*2\.75rem;[^}]*padding:\s*0\.55rem;/s)
+  })
+
   it('keeps Korean runs in mixed Practice copy from breaking between syllables', () => {
     expect(styles).toMatch(/\.language-aware-text__ko\s*\{[^}]*display:\s*inline-block;[^}]*word-break:\s*keep-all;[^}]*overflow-wrap:\s*normal;[^}]*white-space:\s*nowrap;/s)
   })

@@ -57,7 +57,7 @@ function issueAction(course: Course, issue: CourseIssue) {
   const introductionModel = course.introductionModels.find((candidate) => candidate.id === issue.introductionModelId)
   const grammar = course.grammar.find((candidate) => candidate.id === issue.grammarId)
   const dialogue = course.dialogues.find((candidate) => candidate.id === issue.dialogueId)
-  const memberName = member?.name.trim() || member?.studentId.trim() || 'Unknown member'
+  const memberName = member?.fullName?.trim() || member?.name.trim() || member?.studentId.trim() || 'Unknown member'
   const vocabularyName = vocabulary ? `${vocabulary.korean} / ${vocabulary.english}` : 'Unknown vocabulary item'
   const grammarName = grammar ? `${grammar.korean} / ${grammar.englishFunction}` : 'Unknown grammar point'
   const dialogueName = dialogue?.title ?? 'Unknown dialogue'

@@ -411,13 +411,12 @@ describe('validateCourse', () => {
     )
   })
 
-  it('provides the complete Lec 1 development dataset without structural errors', () => {
+  it('provides the Lec 1 dataset while keeping vocabulary ownership visibly unassigned', () => {
     expect(course.sourceLesson).toBe('Lec 1')
-    expect(course.vocabulary.filter((item) => item.ownerId !== null).map((item) => item.korean)).toEqual([
-      '학생', '선생님', '회사원', '기자', '의사', '가수', '군인', '요리사',
-    ])
+    expect(course.vocabulary.filter((item) => item.ownerId !== null)).toEqual([])
     expect(course.vocabulary.filter((item) => item.ownerId === null).map((item) => item.korean)).toEqual([
       '안녕하세요?', '저는 미나예요.', '중국', '일본', '미국', '한국', '프랑스', '독일', '호주', '영국',
+      '학생', '선생님', '회사원', '기자', '의사', '가수', '군인', '요리사',
     ])
     expect(course.grammar.map((grammar) => grammar.exercises.map((exercise) => exercise.type === 'matching' ? undefined : exercise.answer))).toEqual([
       ['민수예요', '학생이에요', undefined],
@@ -432,6 +431,8 @@ describe('validateCourse', () => {
     expect(course.dialogues).toHaveLength(2)
     expect(course.dialogues.every((dialogue) => dialogue.lines.length === 8)).toBe(true)
     expect(course.dialogues.every((dialogue) => dialogue.video.durationSeconds === undefined)).toBe(true)
-    expect(validateCourse(course, 'development').filter((courseIssue) => courseIssue.severity !== 'warning')).toEqual([])
+    const blockingIssues = validateCourse(course, 'development').filter((courseIssue) => courseIssue.severity !== 'warning')
+    expect(blockingIssues.filter((courseIssue) => courseIssue.code === 'member-vocabulary-count')).toHaveLength(4)
+    expect(blockingIssues.filter((courseIssue) => courseIssue.code === 'vocabulary-owner')).toHaveLength(8)
   })
 })

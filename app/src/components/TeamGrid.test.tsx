@@ -23,12 +23,11 @@ describe('TeamGrid', () => {
       const memberCard = screen.getByRole('article', { name: `${member.name} contribution` })
       expect(within(memberCard).getByText(member.role)).toBeVisible()
       expect(within(memberCard).getByText(member.contribution)).toBeVisible()
-      expect(within(memberCard).getByText('4 assigned vocabulary words')).toBeVisible()
+      expect(within(memberCard).queryByText(/assigned vocabulary words/i)).not.toBeInTheDocument()
       expect(within(memberCard).queryByText(/assigned recordings/i)).not.toBeInTheDocument()
     }
 
-    expect(screen.getByText('한국어 1')).toHaveAttribute('lang', 'ko')
-    expect(screen.getByText('Word 1')).toBeVisible()
+    expect(screen.queryByRole('heading', { name: 'Assigned words' })).not.toBeInTheDocument()
     expect(within(screen.getByRole('article', { name: 'Amina Rahman contribution' })).getByText('Dialogue 1 · Dialogue 2')).toBeVisible()
     expect(screen.queryByText(/Replace before submission|count passed|Needs 3–5/i)).not.toBeInTheDocument()
   })
@@ -83,7 +82,7 @@ describe('TeamGrid', () => {
     render(<TeamGrid course={incompleteCourse} />)
 
     const memberCard = screen.getByRole('article', { name: `${memberWithoutAssignments.name} contribution` })
-    expect(within(memberCard).getByText('No assigned words yet.')).toBeVisible()
+    expect(within(memberCard).queryByText('No assigned words yet.')).not.toBeInTheDocument()
     expect(within(memberCard).getByText('No dialogue titles yet.')).toBeVisible()
   })
 })

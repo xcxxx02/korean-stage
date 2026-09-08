@@ -28,7 +28,7 @@ describe('PracticePage', () => {
     expect(screen.getByRole('link', { name: /Lesson 4.*이에요 \/ 예요 - to be.*3 questions/ })).toBeVisible()
     expect(screen.getByRole('link', { name: /Lesson 5.*은 \/ 는 - topic marker.*3 questions/ })).toBeVisible()
     expect(screen.getByRole('link', { name: /Lesson 6.*이 \/ 가 아니에요 - to not be.*3 questions/ })).toBeVisible()
-    expect(screen.getByRole('button', { name: /Mixed Lec 1 quiz.*25 questions/ })).toBeVisible()
+    expect(screen.getByRole('button', { name: /Quiz.*25 questions/ })).toBeVisible()
     expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   })
 
@@ -44,13 +44,13 @@ describe('PracticePage', () => {
     expect(screen.getByText(wrongChoice)).toHaveAttribute('lang', 'en')
 
     await user.click(screen.getByRole('radio', { name: wrongChoice }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
 
     const feedback = screen.getByRole('status')
     expect(feedback).toHaveTextContent('Not quite')
     expect(feedback).toHaveTextContent(`${korean} means ${correctChoice}.`)
     expect(within(feedback).getByText(correctChoice)).toHaveAttribute('lang', 'en')
-    expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
+    expect(screen.getByRole('radio', { name: correctChoice })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Check answer' })).not.toBeInTheDocument()
     expect(localStorage.length).toBe(0)
   })
 
@@ -68,7 +68,6 @@ describe('PracticePage', () => {
     expect(within(prompt as HTMLElement).getByText(/Choose the English meaning of/)).toHaveAttribute('lang', 'en')
 
     await user.click(within(question).getByRole('radio', { name: 'Teacher' }))
-    await user.click(within(question).getByRole('button', { name: 'Check answer' }))
 
     const feedback = within(question).getByRole('status')
     const explanation = [...feedback.querySelectorAll('p')].find(
@@ -149,9 +148,9 @@ describe('PracticePage', () => {
     const user = userEvent.setup()
     renderPractice()
 
-    await user.click(screen.getByRole('button', { name: /Mixed Lec 1 quiz.*25 questions/ }))
+    await user.click(screen.getByRole('button', { name: /Quiz.*25 questions/ }))
 
-    expect(screen.getByRole('heading', { name: 'Mixed Lec 1 quiz' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Quiz' })).toBeVisible()
     expect(screen.getByText('Question 1 of 25')).toBeVisible()
     expect(screen.getByRole('button', { name: 'All lesson quizzes' })).toBeVisible()
   })

@@ -38,7 +38,7 @@ describe('SubmissionReadiness', () => {
 
     expect(screen.getByRole('heading', { name: 'Meet the team' })).toBeVisible()
     for (const member of course.members) {
-      const memberCard = screen.getByRole('article', { name: `${member.name} contribution` })
+      const memberCard = screen.getByRole('article', { name: `${member.fullName ?? member.name} contribution` })
       expect(within(memberCard).getByText(member.role)).toBeVisible()
       expect(within(memberCard).getByText(member.contribution)).toBeVisible()
     }
@@ -64,8 +64,9 @@ describe('SubmissionReadiness', () => {
     expect(screen.getByRole('heading', { name: 'Not ready for submission' })).toBeInTheDocument()
 
     const needsContent = screen.getByRole('region', { name: 'Needs content' })
-    expect(within(needsContent).getByText('Member 1 — add a real name and student ID.')).toBeInTheDocument()
-    expect(within(needsContent).getByText('Member 2 — add a real name and student ID.')).toBeInTheDocument()
+    for (const member of course.members) {
+      expect(within(needsContent).getByText(`${member.fullName} — assign 3–5 recorded vocabulary items.`)).toBeInTheDocument()
+    }
 
     const missingVocabulary = [
       ['학생', 'Student'],
@@ -78,6 +79,7 @@ describe('SubmissionReadiness', () => {
       ['요리사', 'Chef'],
     ]
     for (const [korean, english] of missingVocabulary) {
+      expect(within(needsContent).getByText(`${korean} / ${english} — assign an existing member only when the word is assessed and requires recording.`)).toBeInTheDocument()
       expect(within(needsContent).getByText(`${korean} / ${english} — add human-recorded video and audio.`)).toBeInTheDocument()
     }
 
@@ -87,7 +89,6 @@ describe('SubmissionReadiness', () => {
     const passed = screen.getByRole('region', { name: 'Passed' })
     expect(within(passed).queryByText('Dialogue video durations')).not.toBeInTheDocument()
     for (const check of [
-      'Member vocabulary counts',
       'Grammar point count',
       'Exercises per grammar point',
       'Dialogue count',

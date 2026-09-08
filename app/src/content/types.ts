@@ -46,6 +46,8 @@ export type CourseIssue = {
 export type Member = {
   id: string
   name: string
+  fullName?: string
+  studentClass?: string
   studentId: string
   isDevelopmentIdentity: boolean
   role: string

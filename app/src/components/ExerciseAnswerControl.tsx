@@ -17,7 +17,7 @@ export function ExerciseAnswerControl({ exercise, answer, disabled, onChange, fi
 
     return (
       <div className="mt-4 grid gap-3" role="group" aria-label="Matching answers">
-        <p className="text-sm text-stage-muted" lang="en">Choose one English meaning for each Korean sentence. Complete both matches before checking your answer.</p>
+        <p className="text-sm text-stage-muted" lang="en">Choose one English meaning for each Korean sentence. Complete both matches.</p>
         {exercise.pairs.map((pair, index) => (
           <label className="grid gap-2 rounded-xl border border-stage-border p-4 sm:grid-cols-[minmax(0,1fr)_minmax(13rem,1fr)] sm:items-center" key={pair.id}>
             <span className="sr-only" id={`${matchingLabelId}-${pair.id}-prefix`} lang="en">Match</span>

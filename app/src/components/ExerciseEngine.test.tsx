@@ -11,6 +11,28 @@ const ieyoExercises = course.grammar.find((grammarPoint) => grammarPoint.id === 
 const matchingExercise = ieyoExercises[2]
 
 describe('ExerciseEngine', () => {
+  it('checks quick answers immediately and advances only after a correct answer', async () => {
+    const user = userEvent.setup()
+    render(<ExerciseEngine exercises={ieyoExercises} mode="quiz" quickAnswers />)
+    await user.click(screen.getByRole('radio', { name: '민수이에요' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Not quite')
+    expect(screen.getByRole('radio', { name: '민수예요' })).toBeEnabled()
+    await user.click(screen.getByRole('radio', { name: '민수예요' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Correct')
+    expect(screen.queryByRole('button', { name: 'Check answer' })).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText('Question 2 of 3')).toBeVisible(), { timeout: 3500 })
+  })
+
+  it('lets learners turn off auto-next and read feedback at their own pace', async () => {
+    const user = userEvent.setup()
+    render(<ExerciseEngine exercises={ieyoExercises} mode="quiz" quickAnswers />)
+    await user.click(screen.getByRole('checkbox', { name: /Auto-next/ }))
+    await user.click(screen.getByRole('radio', { name: '민수예요' }))
+    expect(screen.getByRole('button', { name: 'Next question' })).toBeVisible()
+    expect(screen.getByText('Question 1 of 3')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+    expect(screen.getByText('Question 2 of 3')).toBeVisible()
+  })
   it('locks a submitted wrong answer, then clears it and restores focus for retry', async () => {
     const user = userEvent.setup()
     const onResult = vi.fn()

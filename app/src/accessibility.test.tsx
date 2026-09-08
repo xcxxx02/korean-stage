@@ -127,9 +127,9 @@ describe('default-route accessibility', () => {
     renderRoute('/vocabulary/lesson-3')
 
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    expect(screen.getByRole('region', { name: 'Member 1 audio player' })).toHaveTextContent('Audio coming soon')
+    expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toHaveTextContent('Audio coming soon')
     expect(document.querySelector('audio')).not.toBeInTheDocument()
-    expect(screen.getByText('Audio coming soon')).toBeVisible()
+    expect(screen.getByText(/Audio coming soon/)).toBeVisible()
   })
 
   it('marks every rendered Korean text run in Vocabulary with the Korean language', () => {

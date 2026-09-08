@@ -10,10 +10,18 @@ import { course } from '../content/course'
 import type { VocabularyItem } from '../content/types'
 import { LearningShell } from './LearningShell'
 import { VocabularyMemberMedia } from './VocabularyMemberMedia'
+import { LanguageAwareText } from './LanguageAwareText'
 
 type VocabularyJourneyProps = {
   items: VocabularyItem[]
   itemLabel?: 'Vocabulary word' | 'Useful expression'
+}
+
+const countryFlags: Record<string, string> = { china: 'cn', japan: 'jp', usa: 'us', korea: 'kr', france: 'fr', germany: 'de', australia: 'au', 'united-kingdom': 'gb' }
+
+function CountryFlag({ item }: { item: VocabularyItem }) {
+  const code = countryFlags[item.id]
+  return code ? <img className="vocabulary-country-flag" src={`/assets/flags/${code}.svg`} alt={`${item.english} flag`} /> : null
 }
 
 function grammarTip(item: VocabularyItem) {
@@ -56,8 +64,6 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const item = items[safeActiveIndex]
   const member = course.members.find((candidate) => candidate.id === item.ownerId)
   const memberName = member?.name
-  const requiresMemberRecording = item.assessmentStatus === 'assessed'
-    && item.recordingRequirement === 'member-recording-required'
   const tip = grammarTip(item)
   const canPlayMemberRecording = item.video.kind === 'human-recording'
     && Boolean(item.video.src?.trim())
@@ -181,6 +187,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
                   <span lang="en">{word.english}</span>
                   {isActive ? <span className="vocabulary-word-current">Now learning</span> : null}
                 </span>
+                <CountryFlag item={word} />
               </button>
             </li>
           )
@@ -189,38 +196,29 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
     </>
   )
 
-  const media = requiresMemberRecording && memberName ? (
+  const media = (
       <VocabularyMemberMedia
+        key={item.id}
         audio={item.audio}
         audioRef={memberAudioRef}
-        memberName={memberName}
+        memberName={memberName ?? 'Pronunciation'}
         video={item.video}
         videoRef={memberVideoRef}
       />
-    ) : (
-      <section className="supporting-vocabulary-media" aria-labelledby={`${item.id}-supporting-heading`}>
-        <GraduationCap aria-hidden="true" size={42} weight="fill" />
-        <div>
-          <h2 id={`${item.id}-supporting-heading`}>Supporting vocabulary</h2>
-          <p>{isVocabularyWord
-            ? 'These country words support the lesson and Practice. They are not assessed member recordings.'
-            : 'These useful expressions support the lesson and Practice. They are not assessed member recordings.'}
-          </p>
-        </div>
-      </section>
     )
 
   const details = (
     <div className="vocabulary-details">
       <div>
         <div className="vocabulary-details__word-row">
+          <CountryFlag item={item} />
           <h2 className="vocabulary-details__word" data-korean-content lang="ko">{item.korean}</h2>
-          {requiresMemberRecording ? (
+          {(
             <button aria-label="Listen & watch" className="vocabulary-listen-button" disabled={!canPlayMemberRecording} onClick={playMemberRecording} type="button">
               <SpeakerHigh aria-hidden="true" size={24} weight="fill" />
               <span>Listen &amp;<br />watch</span>
             </button>
-          ) : null}
+          )}
         </div>
         <p className="vocabulary-details__meaning" lang="en">{item.english}</p>
       </div>
@@ -246,11 +244,13 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
         <GraduationCap aria-hidden="true" size={26} weight="fill" />
         <div>
           <h3 id={`${item.id}-grammar-heading`}>Grammar tip</h3>
-          <p>
+          {item.unitId === 'unit-1' ? <p>{item.korean.startsWith('안녕')
+            ? 'Use this polite greeting when meeting someone. It means “Hello.”'
+            : 'Replace 미나 (Mina) with your name. Use 예요 after a vowel, or 이에요 after a consonant.'}</p> : item.unitId === 'unit-2' ? <p><LanguageAwareText text={`${item.korean} + 사람 → ${item.korean} 사람 (${item.englishExample.replace(/^I am /, '').replace(/\.$/, '')}). Add 이에요 to say “${item.englishExample}”`} /></p> : <><p>
             <span data-korean-content lang="ko">{tip.noun}</span>
             {' '}ends in a {tip.ending}, so use{' '}
             <span data-korean-content lang="ko">{tip.copula}</span>.
-          </p>
+          </p><p className="mt-1"><LanguageAwareText text={`${item.korean} + ${tip.copula} → ${item.korean}${tip.copula}.`} /></p></>}
         </div>
       </section>
     </div>
@@ -259,23 +259,28 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const controls = (
     <nav aria-label={`${capitalizedLabel} navigation`} className="word-navigation">
       <button
+        aria-label={`Previous ${lowerLabel}`}
         className="word-navigation__previous"
         disabled={safeActiveIndex === 0}
         onClick={() => setActiveIndex((current) => Math.max(0, current - 1))}
         type="button"
       >
         <CaretLeft aria-hidden="true" weight="bold" />
-        Previous {lowerLabel}
+        Previous {isVocabularyWord ? 'word' : 'expression'}
       </button>
-      <button
+      {safeActiveIndex === items.length - 1 ? <a
+        className="word-navigation__next"
+        href={item.unitId === 'unit-1' ? '/vocabulary/lesson-2' : item.unitId === 'unit-2' ? '/vocabulary/lesson-3' : '/vocabulary'}
+      >{item.unitId === 'unit-3' ? 'All units' : 'Next unit'}<CaretRight aria-hidden="true" weight="bold" /></a> : <button
+        aria-label={`Next ${lowerLabel}`}
         className="word-navigation__next"
         disabled={safeActiveIndex === items.length - 1}
         onClick={() => setActiveIndex((current) => Math.min(items.length - 1, current + 1))}
         type="button"
       >
-        Next {lowerLabel}
+        Next {isVocabularyWord ? 'word' : 'expression'}
         <CaretRight aria-hidden="true" weight="bold" />
-      </button>
+      </button>}
     </nav>
   )
 

@@ -115,22 +115,22 @@ describe('VocabularyJourney', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    const audioPlayer = screen.getByRole('region', { name: 'Member 1 audio player' })
+    const audioPlayer = screen.getByRole('region', { name: 'Pronunciation audio player' })
     expect(audioPlayer).toHaveTextContent('Audio coming soon')
     const waveform = within(audioPlayer).getByTestId('audio-waveform')
     expect(waveform).toBeVisible()
-    expect(waveform.querySelectorAll('svg')).toHaveLength(6)
+    expect(waveform.querySelector('canvas')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /play member video/i })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /의사.*Doctor/ }))
-    expect(screen.getByRole('region', { name: 'Member 2 audio player' })).toHaveTextContent('Audio coming soon')
+    expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toHaveTextContent('Audio coming soon')
     expect(document.querySelector('audio')).not.toBeInTheDocument()
   })
 
   it('presents supporting country vocabulary without inventing a member owner or recording obligation', () => {
     render(<VocabularyJourney items={countryItems} />)
 
-    expect(screen.getByRole('heading', { name: 'Supporting vocabulary' })).toBeVisible()
-    expect(screen.getByText(/These country words support the lesson and Practice/)).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
     expect(screen.queryByText(/Course member|Presented by|Member video coming soon/)).not.toBeInTheDocument()
     expect(document.querySelector('video')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '중국' })).toHaveAttribute('lang', 'ko')
@@ -148,7 +148,7 @@ describe('VocabularyJourney', () => {
     expect(localStorage.length).toBe(0)
 
     await user.click(screen.getByRole('button', { name: /요리사.*Chef/ }))
-    expect(screen.getByRole('button', { name: 'Next word' })).toBeDisabled()
+    expect(screen.getByRole('link', { name: 'All units' })).toHaveAttribute('href', '/vocabulary')
     expect(screen.queryByRole('button', { name: /finish vocabulary|vocabulary complete/i })).not.toBeInTheDocument()
     expect(localStorage.length).toBe(0)
   })
@@ -168,14 +168,14 @@ describe('VocabularyJourney', () => {
     expect(within(details).getByRole('heading', { name: 'Grammar tip' })).toBeVisible()
     const grammarTip = within(details).getByRole('region', { name: 'Grammar tip' })
     expect(grammarTip).toHaveTextContent('학생 ends in a consonant, so use 이에요.')
-    expect(within(grammarTip).getByText('학생')).toHaveAttribute('lang', 'ko')
-    expect(within(grammarTip).getByText('이에요')).toHaveAttribute('lang', 'ko')
+    expect(within(grammarTip).getAllByText('학생').every((node) => node.lang === 'ko')).toBe(true)
+    expect(within(grammarTip).getAllByText('이에요').every((node) => node.lang === 'ko')).toBe(true)
   })
 
   it('keeps the member video preview separate from the bilingual word example', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    expect(screen.getByLabelText('Member 1 video preview')).toBeVisible()
+    expect(screen.getByLabelText('Pronunciation video preview')).toBeVisible()
     expect(screen.getByText('저는 학생이에요.')).toHaveAttribute('lang', 'ko')
     expect(screen.getByText('I am a student.')).toHaveAttribute('lang', 'en')
   })
@@ -183,9 +183,9 @@ describe('VocabularyJourney', () => {
   it('uses an honest passive preview and disabled audio controls when recordings are missing', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    expect(screen.getByLabelText('Member 1 video preview')).toBeVisible()
+    expect(screen.getByLabelText('Pronunciation video preview')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Play Member 1 audio' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Play Pronunciation audio' })).toBeDisabled()
     expect(document.querySelector('video')).not.toBeInTheDocument()
   })
 

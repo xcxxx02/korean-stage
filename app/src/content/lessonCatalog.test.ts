@@ -16,7 +16,7 @@ describe('public lesson catalog', () => {
     expect(course.dialogues.every((dialogue) => dialogue.scenario)).toBe(true)
   })
 
-  it('marks country vocabulary as supporting and occupations as assessed member recordings', () => {
+  it('marks country vocabulary as supporting and leaves assessed occupation recordings unassigned', () => {
     const countries = course.vocabulary.filter((item) => item.unitId === 'unit-2')
     const occupations = course.vocabulary.filter((item) => item.unitId === 'unit-3')
 
@@ -25,6 +25,6 @@ describe('public lesson catalog', () => {
     expect(countries.every((item) => item.recordingRequirement === 'not-required' && item.ownerId === null)).toBe(true)
     expect(occupations).toHaveLength(8)
     expect(occupations.every((item) => item.assessmentStatus === 'assessed')).toBe(true)
-    expect(occupations.every((item) => item.recordingRequirement === 'member-recording-required' && item.ownerId)).toBe(true)
+    expect(occupations.every((item) => item.recordingRequirement === 'member-recording-required' && item.ownerId === null)).toBe(true)
   })
 })

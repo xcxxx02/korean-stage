@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import {
   createCorrectExerciseAnswer,
   formatCorrectExerciseAnswer,
@@ -15,6 +15,7 @@ type ExerciseEngineProps = {
   mode?: 'all' | 'quiz'
   onResult?: (exerciseId: string, correct: boolean) => void
   title?: string
+  quickAnswers?: boolean
 }
 
 type Feedback = {
@@ -29,6 +30,7 @@ export function ExerciseEngine({
   mode = 'all',
   onResult,
   title = 'Grammar exercises',
+  quickAnswers = false,
 }: ExerciseEngineProps) {
   const firstControlRefs = useRef<Record<string, HTMLInputElement | HTMLSelectElement | null>>({})
   const feedbackRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -43,11 +45,24 @@ export function ExerciseEngine({
   ))
   const [questionIndex, setQuestionIndex] = useState(0)
   const [phase, setPhase] = useState<QuizPhase>('questions')
+  const [autoAdvance, setAutoAdvance] = useState(true)
   const quizMode = mode === 'quiz'
   const currentExercise = exercises[questionIndex]
   const currentFeedback = currentExercise ? feedback[currentExercise.id] : undefined
   const correctCount = Object.values(feedback).filter((result) => result.isCorrect).length
   const displayedExercises = quizMode && currentExercise ? [currentExercise] : exercises
+
+  useEffect(() => {
+    if (!quickAnswers || !quizMode || !autoAdvance || !currentFeedback?.isCorrect || phase !== 'questions') return
+    const timer = window.setTimeout(() => {
+      if (questionIndex === exercises.length - 1) setPhase('complete')
+      else {
+        shouldFocusQuestion.current = true
+        setQuestionIndex((index) => index + 1)
+      }
+    }, 2500)
+    return () => window.clearTimeout(timer)
+  }, [quickAnswers, quizMode, autoAdvance, currentFeedback, phase, questionIndex, exercises.length])
 
   useLayoutEffect(() => {
     if (!quizMode) return
@@ -115,6 +130,11 @@ export function ExerciseEngine({
         ) : null}
       </div>
 
+      {quickAnswers && quizMode && phase === 'questions' ? <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-stage-muted">
+        <p>Choose an answer to check it instantly. Wrong answer? Choose again.</p>
+        <label className="flex cursor-pointer items-center gap-2"><input checked={autoAdvance} onChange={(event) => setAutoAdvance(event.target.checked)} type="checkbox" />Auto-next after 2.5 seconds</label>
+      </div> : null}
+
       {quizMode && phase === 'complete' ? (
         <div className="rounded-xl border border-stage-border bg-stage-white p-6">
           <h3 className="practice-focus-target text-2xl font-bold text-stage-charcoal" ref={completionHeadingRef} tabIndex={-1}>Quiz complete</h3>
@@ -141,10 +161,23 @@ export function ExerciseEngine({
               </legend>
               <ExerciseAnswerControl
                 answer={answers[exercise.id]}
-                disabled={Boolean(result)}
+                disabled={quickAnswers ? Boolean(result?.isCorrect) : Boolean(result)}
                 exercise={exercise}
                 firstControlRef={(element) => { firstControlRefs.current[exercise.id] = element }}
-                onChange={(answer) => setAnswers((current) => ({ ...current, [exercise.id]: answer }))}
+                onChange={(answer) => {
+                  setAnswers((current) => ({ ...current, [exercise.id]: answer }))
+                  if (quickAnswers) {
+                    if (isExerciseAnswerComplete(exercise, answer)) {
+                      const isCorrect = isExerciseAnswerCorrect(exercise, answer)
+                      setFeedback((current) => ({ ...current, [exercise.id]: { isCorrect } }))
+                      onResult?.(exercise.id, isCorrect)
+                    } else setFeedback((current) => {
+                      const next = { ...current }
+                      delete next[exercise.id]
+                      return next
+                    })
+                  }
+                }}
               />
 
               {result ? (
@@ -162,17 +195,17 @@ export function ExerciseEngine({
               ) : null}
 
               <div className="mt-4 flex flex-wrap gap-3">
-                {result && !result.isCorrect ? (
+                {result && !result.isCorrect && !quickAnswers ? (
                   <button className="rounded-xl border border-stage-cobalt px-4 py-2 font-semibold text-stage-cobalt" onClick={() => retry(exercise.id)} type="button">
                     Try again
                   </button>
                 ) : null}
-                {quizMode && result ? (
+                {quizMode && result && (!quickAnswers || (result.isCorrect && !autoAdvance)) ? (
                   <button className="rounded-xl bg-stage-cobalt px-4 py-2 font-semibold text-stage-white" onClick={nextQuestion} type="button">
                     {questionIndex === exercises.length - 1 ? 'See results' : 'Next question'}
                   </button>
                 ) : null}
-                {!result ? (
+                {!result && !quickAnswers ? (
                   <button className="rounded-xl bg-stage-cobalt px-4 py-2 font-semibold text-stage-white disabled:cursor-not-allowed disabled:bg-stage-disabled" disabled={!isExerciseAnswerComplete(exercise, answers[exercise.id])} type="submit">
                     {quizMode ? 'Check answer' : `Check answer ${index + 1}`}
                   </button>

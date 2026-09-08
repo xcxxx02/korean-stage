@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom'
 import { ExerciseEngine } from '../components/ExerciseEngine'
+import { FullQuiz } from '../components/FullQuiz'
 import { LanguageAwareText } from '../components/LanguageAwareText'
 import { practiceGroups, type PracticeGroup } from '../content/practiceCatalog'
 import type { Exercise } from '../content/types'
@@ -21,7 +22,7 @@ const lessonSelection = (group: PracticeGroup): PracticeSelection => ({
 
 const mixedSelection: PracticeSelection = {
   id: 'mixed-lec-1',
-  title: 'Mixed Lec 1 quiz',
+  title: 'Quiz',
   exercises: practiceGroups.flatMap((group) => group.exercises),
 }
 
@@ -47,19 +48,19 @@ export function PracticePage() {
   if (lessonSlug && !routeGroup) return <Navigate replace to="/practice" />
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-5 sm:p-8">
+    <div className={`mx-auto max-w-5xl p-5 sm:px-8 ${activeQuiz ? 'space-y-4' : 'space-y-8 sm:py-8'}`}>
       <header>
         <p className="text-sm font-bold uppercase tracking-wide text-stage-cobalt">Lec 1 practice</p>
-        <h1 className="mt-1 text-4xl font-black text-stage-charcoal">Practice by lesson</h1>
-        <p className="mt-3 max-w-2xl text-stage-muted">
+        <h1 className={`mt-1 font-black text-stage-charcoal ${activeQuiz ? 'text-2xl' : 'text-4xl'}`}>Practice by lesson</h1>
+        {!activeQuiz ? <p className="mt-3 max-w-2xl text-stage-muted">
           Choose a lesson you have learned. Each quiz gives immediate English feedback and lets you try again.
-        </p>
+        </p> : null}
       </header>
 
       {activeQuiz ? (
-        <section aria-label="Active lesson quiz" className="space-y-6">
+        <section aria-label="Active lesson quiz" className="flex flex-col items-start gap-6 [&>section]:w-full">
           {routeGroup ? <Link
-            className="rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt no-underline hover:bg-stage-cobalt-soft"
+            className="inline-flex rounded-xl border border-stage-cobalt px-4 py-2 font-bold text-stage-cobalt no-underline hover:bg-stage-cobalt-soft"
             state={{ focusLesson: activeQuiz.id }}
             to="/practice"
           >
@@ -69,12 +70,13 @@ export function PracticePage() {
             onClick={() => setMixedQuizActive(false)}
             type="button"
           >All lesson quizzes</button>}
-          <ExerciseEngine
+          {mixedQuizActive && !routeGroup ? <FullQuiz exercises={activeQuiz.exercises} /> : <ExerciseEngine
             exercises={activeQuiz.exercises}
             key={activeQuiz.id}
             mode="quiz"
+            quickAnswers
             title={activeQuiz.title}
-          />
+          />}
         </section>
       ) : (
         <>
@@ -105,8 +107,8 @@ export function PracticePage() {
 
           <section aria-labelledby="mixed-quiz-heading" className="border-t border-stage-border pt-6">
             <p className="text-sm font-bold uppercase tracking-wide text-stage-vermilion">Optional final check</p>
-            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="mixed-quiz-heading">Mix all five lessons</h2>
-            <p className="mt-2 max-w-2xl text-stage-muted">Use this only when you want countries, jobs, and all three grammar points in one quiz.</p>
+            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="mixed-quiz-heading">Quiz</h2>
+            <p className="mt-2 max-w-2xl text-stage-muted">All 25 questions on one page. Finish and submit to see your results.</p>
             <button
               aria-label={`${mixedSelection.title} · ${mixedSelection.exercises.length} questions`}
               className="mt-4 rounded-xl bg-stage-vermilion px-5 py-3 font-bold text-stage-white hover:bg-stage-vermilion-strong"
@@ -114,7 +116,7 @@ export function PracticePage() {
               ref={(element) => { quizCardRefs.current[mixedSelection.id] = element }}
               type="button"
             >
-              Mixed Lec 1 quiz · {mixedSelection.exercises.length} questions
+              Quiz · {mixedSelection.exercises.length} questions
             </button>
           </section>
         </>

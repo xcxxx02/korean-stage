@@ -8,6 +8,7 @@ import {
 } from 'react'
 import { course } from '../content/course'
 import type { VocabularyItem } from '../content/types'
+import { publicAssetPath } from '../deployment'
 import { LearningShell } from './LearningShell'
 import { VocabularyMemberMedia } from './VocabularyMemberMedia'
 import { LanguageAwareText } from './LanguageAwareText'
@@ -21,7 +22,7 @@ const countryFlags: Record<string, string> = { china: 'cn', japan: 'jp', usa: 'u
 
 function CountryFlag({ item }: { item: VocabularyItem }) {
   const code = countryFlags[item.id]
-  return code ? <img className="vocabulary-country-flag" src={`/assets/flags/${code}.svg`} alt={`${item.english} flag`} /> : null
+  return code ? <img className="vocabulary-country-flag" src={publicAssetPath(`/assets/flags/${code}.svg`)} alt={`${item.english} flag`} /> : null
 }
 
 function grammarTip(item: VocabularyItem) {

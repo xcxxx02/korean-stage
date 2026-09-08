@@ -2,6 +2,7 @@ import { List, Users } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { course } from '../content/course'
+import { publicAssetPath } from '../deployment'
 import { getPrimaryNavigationItems } from '../navigation'
 
 const navigationItems = getPrimaryNavigationItems()
@@ -50,7 +51,7 @@ export function AppShell() {
         <div className="site-header__inner">
           <Link className="site-brand" to="/">
             <span aria-hidden="true" className="site-brand__mark">
-              <img alt="" className="site-brand__image" src="/assets/culture/palace-gate-mark-v2.png" />
+              <img alt="" className="site-brand__image" src={publicAssetPath('/assets/culture/palace-gate-mark-v2.png')} />
             </span>
             <span>{course.name}</span>
           </Link>
@@ -89,10 +90,10 @@ export function AppShell() {
             </ul>
           </nav>
         </div>
-        <img alt="" aria-hidden="true" className="obangsaek-band" src="/assets/culture/obangsaek-band-v2.png" />
+        <img alt="" aria-hidden="true" className="obangsaek-band" src={publicAssetPath('/assets/culture/obangsaek-band-v2.png')} />
       </header>
       <div className="app-stage">
-        <img alt="" aria-hidden="true" className="korean-stage-background" src="/assets/culture/korean-stage-background-v2.png" />
+        <img alt="" aria-hidden="true" className="korean-stage-background" src={publicAssetPath('/assets/culture/korean-stage-background-v2.png')} />
         <main id="main-content" ref={mainContentRef} tabIndex={-1}>
           <Outlet />
         </main>

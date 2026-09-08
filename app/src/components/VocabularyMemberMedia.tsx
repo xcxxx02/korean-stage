@@ -1,6 +1,7 @@
 import { Pause, Play } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import type { MediaSource } from '../content/types'
+import { publicAssetPath } from '../deployment'
 
 type VocabularyMemberMediaProps = {
   audio: MediaSource
@@ -27,15 +28,17 @@ export function VocabularyMemberMedia({ audio, audioRef, memberName, video, vide
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const canPlayAudio = hasPlayableSource(audio)
   const canPlayVideo = hasPlayableSource(video)
+  const audioSrc = audio.src ? publicAssetPath(audio.src) : undefined
+  const videoSrc = video.src ? publicAssetPath(video.src) : undefined
   const duration = loadedDuration || audio.durationSeconds || 0
 
   useEffect(() => {
-    if (!canPlayAudio || !audio.src) return
+    if (!canPlayAudio || !audioSrc) return
     const controller = new AbortController()
     let context: AudioContext | undefined
     void (async () => {
       try {
-        const response = await fetch(audio.src!, { signal: controller.signal })
+        const response = await fetch(audioSrc, { signal: controller.signal })
         if (!response.ok) return
         context = new AudioContext()
         const buffer = await context.decodeAudioData(await response.arrayBuffer())
@@ -53,7 +56,7 @@ export function VocabularyMemberMedia({ audio, audioRef, memberName, video, vide
       finally { if (context && context.state !== 'closed') void context.close() }
     })()
     return () => { controller.abort() }
-  }, [audio.src, canPlayAudio])
+  }, [audioSrc, canPlayAudio])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -81,7 +84,7 @@ export function VocabularyMemberMedia({ audio, audioRef, memberName, video, vide
   return (
     <section aria-label={`${memberName} recording`} className="vocabulary-member-media">
       <div aria-label={`${memberName} video preview`} className="vocabulary-member-video" role="img">
-        {canPlayVideo ? <video muted playsInline ref={videoRef}><source src={video.src ?? undefined} /></video> : <img alt="" aria-hidden="true" src="/assets/culture/video-coming-soon.png" />}
+        {canPlayVideo ? <video muted playsInline ref={videoRef}><source src={videoSrc} /></video> : <img alt="" aria-hidden="true" src={publicAssetPath('/assets/culture/video-coming-soon.png')} />}
       </div>
       <section aria-label={`${memberName} audio player`} className="vocabulary-audio-player">
         <p>{memberName} audio</p>
@@ -96,7 +99,7 @@ export function VocabularyMemberMedia({ audio, audioRef, memberName, video, vide
               void videoRef.current.play().catch(() => {})
             }
           }}
-          onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} ref={audioRef} src={audio.src ?? undefined} /> : null}
+          onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} ref={audioRef} src={audioSrc} /> : null}
         <div className="vocabulary-audio-player__controls">
           <button aria-label={isPlaying ? `Pause ${memberName} audio` : `Play ${memberName} audio`} disabled={!canPlayAudio} onClick={toggleAudio} type="button">{isPlaying ? <Pause aria-hidden="true" weight="fill" /> : <Play aria-hidden="true" weight="fill" />}</button>
           <div className="vocabulary-audio-player__visual" data-testid="audio-waveform">

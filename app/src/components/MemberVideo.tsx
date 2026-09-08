@@ -1,6 +1,7 @@
 import { Circle, Prohibit, Warning } from '@phosphor-icons/react'
 import { useRef, useState } from 'react'
 import type { MediaSource } from '../content/types'
+import { publicAssetPath } from '../deployment'
 
 type MemberVideoProps = {
   source: MediaSource
@@ -73,7 +74,7 @@ export function MemberVideo({
             alt=""
             aria-hidden="true"
             className="coming-soon-artwork"
-            src="/assets/culture/video-coming-soon.png"
+            src={publicAssetPath('/assets/culture/video-coming-soon.png')}
           />
         </div>
         <div className="coming-soon-copy">
@@ -118,9 +119,9 @@ export function MemberVideo({
         onError={() => setPlaybackErrorKey(sourceKey)}
         ref={videoRef}
       >
-        <source src={source.src ?? undefined} />
+        <source src={source.src ? publicAssetPath(source.src) : undefined} />
         {source.captionSrc ? (
-          <track default kind="captions" label="English captions" src={source.captionSrc} srcLang="en" />
+          <track default kind="captions" label="English captions" src={publicAssetPath(source.captionSrc)} srcLang="en" />
         ) : null}
         Your browser cannot play this video. Use the transcript below.
       </video>

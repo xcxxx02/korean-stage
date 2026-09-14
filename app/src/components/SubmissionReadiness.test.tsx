@@ -71,12 +71,12 @@ describe('SubmissionReadiness', () => {
     const missingVocabulary = [
       ['학생', 'Student'],
       ['선생님', 'Teacher'],
-      ['회사원', 'Office worker'],
-      ['기자', 'Reporter'],
+      ['엔지니어', 'Engineer'],
+      ['디자이너', 'Designer'],
       ['의사', 'Doctor'],
-      ['가수', 'Singer'],
-      ['군인', 'Soldier'],
-      ['요리사', 'Chef'],
+      ['간호사', 'Nurse'],
+      ['소방관', 'Firefighter'],
+      ['약사', 'Pharmacist'],
     ]
     for (const [korean, english] of missingVocabulary) {
       expect(within(needsContent).getByText(`${korean} / ${english} — assign an existing member only when the word is assessed and requires recording.`)).toBeInTheDocument()

@@ -39,7 +39,7 @@ export const validCourse: Course = {
   vocabulary: [
     ...['word-1', 'word-2', 'word-3', 'word-4'].map((id, index) => ({
       id,
-      unitId: 'unit-3' as const,
+      unitId: 'vocabulary-2' as const,
       displayKind: 'word' as const,
       korean: `한국어 ${index + 1}`,
       english: `Word ${index + 1}`,
@@ -51,10 +51,11 @@ export const validCourse: Course = {
       recordingRequirement: 'member-recording-required' as const,
       video: humanMedia(`/media/vocabulary/${id}.mp4`),
       audio: humanMedia(`/media/vocabulary/${id}.mp3`),
+      image: { src: `/assets/occupations/${id}.svg`, alt: `Word ${index + 1} illustration`, kind: 'occupation' as const },
     })),
     ...['word-5', 'word-6', 'word-7', 'word-8'].map((id, index) => ({
       id,
-      unitId: 'unit-3' as const,
+      unitId: 'vocabulary-2' as const,
       displayKind: 'word' as const,
       korean: `한국어 ${index + 5}`,
       english: `Word ${index + 5}`,
@@ -66,11 +67,12 @@ export const validCourse: Course = {
       recordingRequirement: 'member-recording-required' as const,
       video: humanMedia(`/media/vocabulary/${id}.mp4`),
       audio: humanMedia(`/media/vocabulary/${id}.mp3`),
+      image: { src: `/assets/occupations/${id}.svg`, alt: `Word ${index + 5} illustration`, kind: 'occupation' as const },
     })),
   ],
-  grammar: ['grammar-1', 'grammar-2', 'grammar-3'].map((id, grammarIndex) => ({
+  grammar: ['grammar-1', 'grammar-2'].map((id, grammarIndex) => ({
     id,
-    unitId: (`unit-${grammarIndex + 4}` as 'unit-4' | 'unit-5' | 'unit-6'),
+    unitId: (grammarIndex === 0 ? 'grammar-1' : 'grammar-2') as 'grammar-1' | 'grammar-2',
     korean: `문법 ${grammarIndex + 1}`,
     englishFunction: `Grammar ${grammarIndex + 1}`,
     explanation: 'A clear explanation.',
@@ -97,7 +99,11 @@ export const validCourse: Course = {
         id: `${id}-exercise-${number}`,
         grammarId: id,
         answerLanguage: 'ko',
-        type: grammarIndex === 0 ? 'sentence-completion' : grammarIndex === 1 ? 'particle' : 'multiple-choice',
+        type: grammarIndex === 0
+          ? 'sentence-completion'
+          : number === '3'
+            ? 'multiple-choice'
+            : 'particle',
         prompt: 'Choose the correct answer.',
         koreanContext: '문장을 완성하세요.',
         choices: ['정답'],

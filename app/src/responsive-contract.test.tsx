@@ -11,7 +11,7 @@ import { VocabularyJourney } from './components/VocabularyJourney'
 import { course } from './content/course'
 
 const styles = readFileSync(resolve(process.cwd(), 'src/styles.css'), 'utf8')
-const occupationItems = course.vocabulary.filter((item) => item.unitId === 'unit-3')
+const occupationItems = course.vocabulary.filter((item) => item.unitId === 'vocabulary-2')
 
 afterEach(cleanup)
 
@@ -23,7 +23,7 @@ describe('responsive beginner contracts', () => {
     const buttons = within(rail).getAllByRole('button')
     expect(buttons.every((button) => !button.hasAttribute('aria-label'))).toBe(true)
     expect(buttons[0]).toHaveAccessibleName(/학생.*Student.*Now learning/)
-    expect(buttons[7]).toHaveAccessibleName(/요리사.*Chef/)
+    expect(buttons[7]).toHaveAccessibleName(/약사.*Pharmacist/)
     expect(buttons[0]).toHaveAttribute('aria-current', 'true')
     expect(within(buttons[0]).getByText('Now learning')).toBeVisible()
 
@@ -62,11 +62,11 @@ describe('responsive beginner contracts', () => {
 
     const listbox = screen.getByRole('listbox', { name: 'Vocabulary words' })
     const firstOption = within(listbox).getByRole('option', { name: /학생.*Student/ })
-    const lastOption = within(listbox).getByRole('option', { name: /요리사.*Chef/ })
+    const lastOption = within(listbox).getByRole('option', { name: /약사.*Pharmacist/ })
     expect(within(firstOption).getByText('학생')).toHaveAttribute('lang', 'ko')
     expect(within(firstOption).getByText('Student')).toHaveAttribute('lang', 'en')
-    expect(within(lastOption).getByText('요리사')).toHaveAttribute('lang', 'ko')
-    expect(within(lastOption).getByText('Chef')).toHaveAttribute('lang', 'en')
+    expect(within(lastOption).getByText('약사')).toHaveAttribute('lang', 'ko')
+    expect(within(lastOption).getByText('Pharmacist')).toHaveAttribute('lang', 'en')
     expect(styles).toMatch(/\.learn-word-chooser\s*\{[^}]*display:\s*grid;/s)
     expect(styles).toMatch(/@media \(min-width: 70rem\)[\s\S]*?\.learn-word-chooser\s*\{[^}]*display:\s*none;/)
   })

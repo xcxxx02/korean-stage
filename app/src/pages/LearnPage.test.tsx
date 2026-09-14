@@ -6,29 +6,28 @@ describe('Canonical learning routes', () => {
   afterEach(cleanup)
 
   it('shows vocabulary content immediately without progress language', () => {
-    renderApp(['/vocabulary/lesson-1'])
+    renderApp(['/vocabulary/countries'])
 
-    expect(screen.getByRole('heading', { name: 'Essential greetings' })).toBeVisible()
-    expect(screen.getAllByText('안녕하세요?')[0]).toHaveAttribute('lang', 'ko')
+    expect(screen.getByRole('heading', { name: 'Countries & Nationalities' })).toBeVisible()
+    expect(screen.getAllByText('태국')[0]).toHaveAttribute('lang', 'ko')
     expect(screen.queryByText(/ready to continue|mark.*complete|continue learning/i)).not.toBeInTheDocument()
   })
 
   it('dispatches matching vocabulary content from a canonical detail route', () => {
-    renderApp(['/vocabulary/lesson-2'])
+    renderApp(['/vocabulary/occupations'])
 
-    expect(screen.getByRole('heading', { name: 'Countries & Nationalities' })).toBeVisible()
-    expect(screen.getAllByText('중국')[0]).toBeVisible()
-    expect(screen.getAllByText('China')[0]).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Jobs & Occupations' })).toBeVisible()
+    expect(screen.getAllByText('학생')[0]).toBeVisible()
+    expect(screen.getAllByText('Student')[0]).toBeVisible()
   })
 
   it('dispatches a focused guide from a canonical grammar route', () => {
-    renderApp(['/grammar/lesson-4'])
+    renderApp(['/grammar/identity'])
 
-    expect(screen.getByRole('heading', { name: '이에요 / 예요 · to be', level: 2 })).toBeVisible()
-    expect(screen.getByText('이에요 / 예요')).toHaveAttribute('lang', 'ko')
-    expect(screen.getByText('to be')).toHaveAttribute('lang', 'en')
-    expect(screen.getByText((_, element) => element?.tagName === 'LI' && element.textContent === 'Consonant-ending noun + 이에요')).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Practise this lesson' })).toHaveAttribute('href', '/practice/lesson-4')
+    expect(screen.getByRole('heading', { name: 'Talking about who someone is' })).toBeVisible()
+    expect(screen.getByRole('heading', { name: '이에요 / 예요 + 은 / 는 · talking about identity', level: 2 })).toBeVisible()
+    expect(screen.getByText((_, element) => element?.tagName === 'LI' && element.textContent === 'Consonant-ending topic + 은; vowel-ending topic + 는')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Practise this lesson' })).toHaveAttribute('href', '/practice/grammar-1')
     expect(screen.queryByText('Complete the sentence for Minsu.')).not.toBeInTheDocument()
   })
 

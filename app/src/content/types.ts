@@ -55,16 +55,25 @@ export type Member = {
 }
 
 export type CourseLesson = {
-  id: `unit-${1 | 2 | 3 | 4 | 5 | 6 | 7}`
-  slug: `lesson-${1 | 2 | 3 | 4 | 5 | 6 | 7}`
+  id: string
+  slug: string
   title: string
 }
 
-export type LessonSlug = CourseLesson['slug']
+export type LessonSlug = string
+
+export type VocabularyUnitId = 'vocabulary-1' | 'vocabulary-2'
+export type GrammarUnitId = 'grammar-1' | 'grammar-2'
+
+export type WordImage = {
+  src: string
+  alt: string
+  kind: 'flag' | 'occupation'
+}
 
 export type VocabularyItem = {
   id: string
-  unitId: 'unit-1' | 'unit-2' | 'unit-3'
+  unitId: VocabularyUnitId | 'unit-1' | 'unit-2' | 'unit-3'
   displayKind: 'expression' | 'word'
   korean: string
   english: string
@@ -72,6 +81,8 @@ export type VocabularyItem = {
   pronunciationHint?: string
   koreanExample: string
   englishExample: string
+  grammarTip?: string
+  image?: WordImage
   ownerId: string | null
   assessmentStatus: 'assessed' | 'supporting'
   recordingRequirement: 'member-recording-required' | 'not-required'
@@ -122,7 +133,7 @@ export type ExerciseAnswer = string | Record<string, string>
 
 export type GrammarPoint = {
   id: string
-  unitId: 'unit-4' | 'unit-5' | 'unit-6'
+  unitId: GrammarUnitId | 'unit-4' | 'unit-5' | 'unit-6'
   korean: string
   englishFunction: string
   explanation: string

@@ -92,13 +92,13 @@ export function validateCourse(course: Course, mode: ValidationMode = 'submissio
     }
   }
 
-  if (course.grammar.length !== 3) {
-    issues.push(issue('grammar-count', 'error', 'The course must have exactly three grammar points.'))
+  if (course.grammar.length !== 2) {
+    issues.push(issue('grammar-count', 'error', 'The course must have exactly two grammar units.'))
   }
 
   for (const grammar of course.grammar) {
-    if (grammar.exercises.length !== 3) {
-      issues.push(issue('exercise-count', 'error', 'Each grammar point must have exactly 3 exercises.', { grammarId: grammar.id }))
+    if (grammar.exercises.length < 3) {
+      issues.push(issue('exercise-count', 'error', 'Each grammar unit must have at least 3 exercises.', { grammarId: grammar.id }))
     }
 
     for (const exercise of grammar.exercises) {

@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
 import { GrammarGuide } from '../components/GrammarGuide'
-import { IntroductionLesson } from '../components/IntroductionLesson'
 import { LessonSelector } from '../components/LessonSelector'
 import { LanguageAwareText } from '../components/LanguageAwareText'
 import { VocabularyJourney } from '../components/VocabularyJourney'
@@ -16,8 +15,8 @@ export function LearnPage() {
         <p className="text-sm font-black uppercase tracking-[0.16em] text-stage-vermilion-strong">Course route</p>
         <h1 className="mt-2 text-4xl font-black text-stage-charcoal">Lesson not found</h1>
         <p className="mt-3 text-lg text-stage-muted">We couldn't find that lesson.</p>
-        <Link className="mt-6 inline-flex rounded-xl bg-stage-cobalt px-5 py-3 font-black text-stage-white no-underline" to="/learn/lesson-1">
-          Return to lessons
+        <Link className="mt-6 inline-flex rounded-xl bg-stage-cobalt px-5 py-3 font-black text-stage-white no-underline" to="/vocabulary">
+          Choose a vocabulary unit
         </Link>
       </section>
     )
@@ -27,11 +26,9 @@ export function LearnPage() {
   const grammarPoint = course.grammar.find((item) => item.unitId === lesson.id)
   const lessonNumber = courseLessons.indexOf(lesson) + 1
 
-  const lessonContent = lesson.id === 'unit-1'
-    ? <IntroductionLesson />
-    : lesson.id === 'unit-2' || lesson.id === 'unit-3'
-      ? <VocabularyJourney items={vocabulary} />
-      : grammarPoint
+  const lessonContent = lesson.id.startsWith('vocabulary-')
+    ? <VocabularyJourney items={vocabulary} />
+    : grammarPoint
         ? <GrammarGuide grammarPoint={grammarPoint} />
         : (
           <section aria-labelledby="dialogue-preview-heading" className="mt-8 rounded-xl border border-stage-border bg-stage-white p-6 sm:p-8">
@@ -52,7 +49,7 @@ export function LearnPage() {
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div className="max-w-3xl">
           <p className="m-0 text-sm font-black uppercase tracking-[0.16em] text-stage-cobalt">
-            Lesson {lessonNumber} of {courseLessons.length}
+            Unit {lessonNumber} of {courseLessons.length}
           </p>
           <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl"><LanguageAwareText text={lesson.title} /></h1>
         </div>

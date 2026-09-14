@@ -5,13 +5,14 @@ import { AppShell } from './components/AppShell'
 import { appRouteManifest, type AppRouteId, type RouteManifestEntry } from './navigation'
 import { DialoguePage } from './pages/DialoguePage'
 import { GrammarPage } from './pages/GrammarPage'
+import { HomePage } from './pages/HomePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { PracticePage } from './pages/PracticePage'
 import { TeamPage } from './pages/TeamPage'
 import { VocabularyPage } from './pages/VocabularyPage'
 
 const routeElements: Record<AppRouteId, ReactNode> = {
-  home: <Navigate replace to="/vocabulary" />,
+  home: <HomePage />,
   vocabulary: <VocabularyPage />,
   vocabularyLesson: <VocabularyPage />,
   grammar: <GrammarPage />,
@@ -21,12 +22,12 @@ const routeElements: Record<AppRouteId, ReactNode> = {
   dialogue: <DialoguePage />,
   team: <TeamPage />,
   learnLegacy: <Navigate replace to="/vocabulary" />,
-  learnLesson1Legacy: <Navigate replace to="/vocabulary/lesson-1" />,
-  learnLesson2Legacy: <Navigate replace to="/vocabulary/lesson-2" />,
-  learnLesson3Legacy: <Navigate replace to="/vocabulary/lesson-3" />,
-  learnLesson4Legacy: <Navigate replace to="/grammar/lesson-4" />,
-  learnLesson5Legacy: <Navigate replace to="/grammar/lesson-5" />,
-  learnLesson6Legacy: <Navigate replace to="/grammar/lesson-6" />,
+  learnLesson1Legacy: <Navigate replace to="/vocabulary" />,
+  learnLesson2Legacy: <Navigate replace to="/vocabulary/countries" />,
+  learnLesson3Legacy: <Navigate replace to="/vocabulary/occupations" />,
+  learnLesson4Legacy: <Navigate replace to="/grammar/identity" />,
+  learnLesson5Legacy: <Navigate replace to="/grammar/identity" />,
+  learnLesson6Legacy: <Navigate replace to="/grammar/negative-identity" />,
   learnLesson7Legacy: <Navigate replace to="/dialogue" />,
   'not-found': <NotFoundPage />,
 }

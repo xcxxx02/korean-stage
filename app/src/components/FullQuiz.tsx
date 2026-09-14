@@ -4,7 +4,7 @@ import { formatCorrectExerciseAnswer, isExerciseAnswerComplete, isExerciseAnswer
 import { ExerciseAnswerControl } from './ExerciseAnswerControl'
 import { LanguageAwareText } from './LanguageAwareText'
 
-export function FullQuiz({ exercises }: { exercises: Exercise[] }) {
+export function FullQuiz({ exercises, title = 'Quiz' }: { exercises: Exercise[]; title?: string }) {
   const [answers, setAnswers] = useState<Record<string, ExerciseAnswer>>({})
   const [submitted, setSubmitted] = useState(false)
   const summary = useRef<HTMLDivElement>(null)
@@ -17,7 +17,7 @@ export function FullQuiz({ exercises }: { exercises: Exercise[] }) {
 
   return <section aria-labelledby="full-quiz-heading" className="space-y-5">
     <header>
-      <h2 id="full-quiz-heading" className="text-3xl font-bold">Quiz</h2>
+      <h2 id="full-quiz-heading" className="text-3xl font-bold">{title}</h2>
       <p className="mt-2 text-stage-muted">Answer all {exercises.length} questions, then submit to see your score and explanations.</p>
     </header>
     <div ref={summary} tabIndex={-1} className="rounded-xl border border-stage-border bg-stage-cobalt-soft p-4" aria-live="polite">
@@ -46,9 +46,9 @@ export function FullQuiz({ exercises }: { exercises: Exercise[] }) {
       <div className="rounded-xl border border-stage-border bg-stage-white p-5">
         {submitted ? <button type="button" className="rounded-xl bg-stage-cobalt px-6 py-3 font-bold text-stage-white" onClick={() => {
           setSubmitted(false); setAnswers({}); summary.current?.focus(); summary.current?.scrollIntoView?.({ block: 'center' })
-        }}>Try Quiz again</button> : <>
+        }}>Try again</button> : <>
           <p className="mb-3 text-stage-muted">{answered === exercises.length ? 'All questions answered. Ready to submit.' : `Answer ${exercises.length - answered} more questions to submit.`}</p>
-          <button type="submit" disabled={answered !== exercises.length} className="rounded-xl bg-stage-cobalt px-6 py-3 font-bold text-stage-white disabled:opacity-40">Submit Quiz</button>
+          <button type="submit" disabled={answered !== exercises.length} className="rounded-xl bg-stage-cobalt px-6 py-3 font-bold text-stage-white disabled:opacity-40">Submit answers</button>
         </>}
       </div>
     </form>

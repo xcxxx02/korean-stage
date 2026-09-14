@@ -6,18 +6,25 @@ import { renderApp } from './test/renderApp'
 afterEach(cleanup)
 
 describe('App', () => {
-  it('redirects the root to the vocabulary chooser', async () => {
+  it('welcomes first-time learners at the root and guides them to vocabulary', async () => {
+    const user = userEvent.setup()
     renderApp(['/'])
 
-    expect(await screen.findByRole('heading', { name: 'Choose a vocabulary unit' })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: 'Welcome to Korean Stage' })).toBeVisible()
+    expect(screen.getByText('안녕하세요!', { exact: true })).toBeVisible()
     expect(screen.queryByText(/Start learning|Continue learning/i)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('link', { name: 'Explore vocabulary' }))
+    expect(await screen.findByRole('heading', { name: 'Choose a vocabulary unit' })).toBeVisible()
   })
 
   it.each([
     ['/vocabulary', 'Choose a vocabulary unit'],
-    ['/vocabulary/lesson-2', 'Countries & Nationalities'],
+    ['/vocabulary/countries', 'Countries & Nationalities'],
+    ['/vocabulary/occupations', 'Jobs & Occupations'],
     ['/grammar', 'Choose a grammar topic'],
-    ['/grammar/lesson-5', '은 / 는 - topic marker'],
+    ['/grammar/identity', 'Talking about who someone is'],
+    ['/grammar/negative-identity', 'Saying what someone is not'],
   ])('renders canonical route %s', async (path, heading) => {
     renderApp([path])
 
@@ -26,12 +33,12 @@ describe('App', () => {
 
   it.each([
     ['/learn', 'Choose a vocabulary unit'],
-    ['/learn/lesson-1', 'Essential greetings'],
+    ['/learn/lesson-1', 'Choose a vocabulary unit'],
     ['/learn/lesson-2', 'Countries & Nationalities'],
     ['/learn/lesson-3', 'Jobs & Occupations'],
-    ['/learn/lesson-4', '이에요 / 예요 - to be'],
-    ['/learn/lesson-5', '은 / 는 - topic marker'],
-    ['/learn/lesson-6', '이 / 가 아니에요 - to not be'],
+    ['/learn/lesson-4', 'Talking about who someone is'],
+    ['/learn/lesson-5', 'Talking about who someone is'],
+    ['/learn/lesson-6', 'Saying what someone is not'],
     ['/learn/lesson-7', 'Dialogue & role play'],
   ])('redirects legacy route %s to its canonical destination', async (path, heading) => {
     renderApp([path])
@@ -44,7 +51,7 @@ describe('App', () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const user = userEvent.setup()
 
-    renderApp(['/vocabulary/lesson-3'])
+    renderApp(['/vocabulary/occupations'])
     await user.click(screen.getByRole('button', { name: 'Next word' }))
     await user.click(screen.getByRole('link', { name: 'Practice' }))
 

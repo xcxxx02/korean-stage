@@ -1,11 +1,7 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { GrammarGuide } from '../components/GrammarGuide'
 import { LanguageAwareText } from '../components/LanguageAwareText'
-import { course, courseLessons } from '../content/course'
-
-const grammarLessons = courseLessons.filter((lesson) =>
-  lesson.id === 'unit-4' || lesson.id === 'unit-5' || lesson.id === 'unit-6',
-)
+import { course, grammarUnits } from '../content/course'
 
 function GrammarTopicChooser() {
   return (
@@ -17,7 +13,7 @@ function GrammarTopicChooser() {
       </header>
 
       <ul aria-label="Grammar topics" className="vocabulary-unit-grid mt-8 list-none p-0">
-        {grammarLessons.map((lesson, index) => (
+        {grammarUnits.map((lesson, index) => (
           <li key={lesson.id}>
             <Link
               aria-label={`Open grammar topic ${index + 1}: ${lesson.title}`}
@@ -53,8 +49,10 @@ export function GrammarPage() {
   const { lessonSlug } = useParams()
 
   if (lessonSlug === undefined) return <GrammarTopicChooser />
+  if (lessonSlug === 'lesson-4' || lessonSlug === 'lesson-5') return <Navigate replace to="/grammar/identity" />
+  if (lessonSlug === 'lesson-6') return <Navigate replace to="/grammar/negative-identity" />
 
-  const lesson = grammarLessons.find((candidate) => candidate.slug === lessonSlug)
+  const lesson = grammarUnits.find((candidate) => candidate.slug === lessonSlug)
   const grammarPoint = lesson && course.grammar.find((item) => item.unitId === lesson.id)
 
   if (!lesson || !grammarPoint) return <GrammarRecovery />

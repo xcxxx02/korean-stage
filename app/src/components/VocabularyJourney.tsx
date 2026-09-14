@@ -18,18 +18,14 @@ type VocabularyJourneyProps = {
   itemLabel?: 'Vocabulary word' | 'Useful expression'
 }
 
-const countryFlags: Record<string, string> = { china: 'cn', japan: 'jp', usa: 'us', korea: 'kr', france: 'fr', germany: 'de', australia: 'au', 'united-kingdom': 'gb' }
-
-function CountryFlag({ item }: { item: VocabularyItem }) {
-  const code = countryFlags[item.id]
-  return code ? <img className="vocabulary-country-flag" src={publicAssetPath(`/assets/flags/${code}.svg`)} alt={`${item.english} flag`} /> : null
-}
-
-function grammarTip(item: VocabularyItem) {
-  const noun = item.unitId === 'unit-2' ? '사람' : item.korean
-  const ending = item.koreanExample.endsWith('이에요.') ? 'consonant' : 'vowel'
-  const copula = ending === 'consonant' ? '이에요' : '예요'
-  return { noun, ending, copula }
+function VocabularyWordImage({ item, placement }: { item: VocabularyItem; placement: 'rail' | 'detail' }) {
+  if (!item.image) return null
+  return <img
+    alt={placement === 'detail' ? item.image.alt : ''}
+    className={`vocabulary-country-flag vocabulary-word-image--${placement}`}
+    data-testid={placement === 'detail' ? 'word-image-region' : undefined}
+    src={publicAssetPath(item.image.src)}
+  />
 }
 
 export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: VocabularyJourneyProps) {
@@ -65,7 +61,6 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
   const item = items[safeActiveIndex]
   const member = course.members.find((candidate) => candidate.id === item.ownerId)
   const memberName = member?.name
-  const tip = grammarTip(item)
   const canPlayMemberRecording = item.video.kind === 'human-recording'
     && Boolean(item.video.src?.trim())
     && item.audio.kind === 'human-recording'
@@ -188,7 +183,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
                   <span lang="en">{word.english}</span>
                   {isActive ? <span className="vocabulary-word-current">Now learning</span> : null}
                 </span>
-                <CountryFlag item={word} />
+                <VocabularyWordImage item={word} placement="rail" />
               </button>
             </li>
           )
@@ -212,7 +207,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
     <div className="vocabulary-details">
       <div>
         <div className="vocabulary-details__word-row">
-          <CountryFlag item={item} />
+          <VocabularyWordImage item={item} placement="detail" />
           <h2 className="vocabulary-details__word" data-korean-content lang="ko">{item.korean}</h2>
           {(
             <button aria-label="Listen & watch" className="vocabulary-listen-button" disabled={!canPlayMemberRecording} onClick={playMemberRecording} type="button">
@@ -245,13 +240,7 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
         <GraduationCap aria-hidden="true" size={26} weight="fill" />
         <div>
           <h3 id={`${item.id}-grammar-heading`}>Grammar tip</h3>
-          {item.unitId === 'unit-1' ? <p>{item.korean.startsWith('안녕')
-            ? 'Use this polite greeting when meeting someone. It means “Hello.”'
-            : 'Replace 미나 (Mina) with your name. Use 예요 after a vowel, or 이에요 after a consonant.'}</p> : item.unitId === 'unit-2' ? <p><LanguageAwareText text={`${item.korean} + 사람 → ${item.korean} 사람 (${item.englishExample.replace(/^I am /, '').replace(/\.$/, '')}). Add 이에요 to say “${item.englishExample}”`} /></p> : <><p>
-            <span data-korean-content lang="ko">{tip.noun}</span>
-            {' '}ends in a {tip.ending}, so use{' '}
-            <span data-korean-content lang="ko">{tip.copula}</span>.
-          </p><p className="mt-1"><LanguageAwareText text={`${item.korean} + ${tip.copula} → ${item.korean}${tip.copula}.`} /></p></>}
+          <p><LanguageAwareText text={item.grammarTip ?? 'Read the Korean word together with its English meaning and example.'} /></p>
         </div>
       </section>
     </div>
@@ -271,8 +260,8 @@ export function VocabularyJourney({ items, itemLabel = 'Vocabulary word' }: Voca
       </button>
       {safeActiveIndex === items.length - 1 ? <a
         className="word-navigation__next"
-        href={item.unitId === 'unit-1' ? '/vocabulary/lesson-2' : item.unitId === 'unit-2' ? '/vocabulary/lesson-3' : '/vocabulary'}
-      >{item.unitId === 'unit-3' ? 'All units' : 'Next unit'}<CaretRight aria-hidden="true" weight="bold" /></a> : <button
+        href={item.unitId === 'vocabulary-1' ? '/vocabulary/occupations' : '/vocabulary'}
+      >{item.unitId === 'vocabulary-2' ? 'All units' : 'Next unit'}<CaretRight aria-hidden="true" weight="bold" /></a> : <button
         aria-label={`Next ${lowerLabel}`}
         className="word-navigation__next"
         disabled={safeActiveIndex === items.length - 1}

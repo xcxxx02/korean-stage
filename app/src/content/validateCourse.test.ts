@@ -23,7 +23,7 @@ describe('validateCourse', () => {
     const supportingItem = {
       ...validCourse.vocabulary[0],
       id: 'supporting-country',
-      unitId: 'unit-2' as const,
+      unitId: 'vocabulary-1' as const,
       ownerId: null,
       assessmentStatus: 'supporting' as const,
       recordingRequirement: 'not-required' as const,
@@ -227,7 +227,6 @@ describe('validateCourse', () => {
     }
 
     expect(validateCourse(invalidCourse)).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'grammar-count' }),
       expect.objectContaining({ code: 'exercise-count', grammarId: 'grammar-1' }),
       expect.objectContaining({ code: 'dialogue-count' }),
       expect.objectContaining({ code: 'dialogue-speaker-count', dialogueId: 'dialogue-1' }),
@@ -236,7 +235,7 @@ describe('validateCourse', () => {
     ]))
   })
 
-  it('requires exactly three exercises for every grammar point', () => {
+  it('requires at least three exercises for every grammar point', () => {
     const courseWithTwoExercises = {
       ...validCourse,
       grammar: validCourse.grammar.map((grammar) =>
@@ -253,7 +252,7 @@ describe('validateCourse', () => {
     expect(validateCourse(courseWithTwoExercises)).toContainEqual(
       expect.objectContaining({ code: 'exercise-count', grammarId: 'grammar-1' }),
     )
-    expect(validateCourse(courseWithFourExercises)).toContainEqual(
+    expect(validateCourse(courseWithFourExercises)).not.toContainEqual(
       expect.objectContaining({ code: 'exercise-count', grammarId: 'grammar-1' }),
     )
   })
@@ -415,13 +414,12 @@ describe('validateCourse', () => {
     expect(course.sourceLesson).toBe('Lec 1')
     expect(course.vocabulary.filter((item) => item.ownerId !== null)).toEqual([])
     expect(course.vocabulary.filter((item) => item.ownerId === null).map((item) => item.korean)).toEqual([
-      '안녕하세요?', '저는 미나예요.', '중국', '일본', '미국', '한국', '프랑스', '독일', '호주', '영국',
-      '학생', '선생님', '회사원', '기자', '의사', '가수', '군인', '요리사',
+      '태국', '베트남', '필리핀', '싱가포르', '인도네시아', '스페인', '이탈리아', '브라질', '뉴질랜드',
+      '학생', '선생님', '엔지니어', '디자이너', '의사', '간호사', '소방관', '약사', '경찰관',
     ])
     expect(course.grammar.map((grammar) => grammar.exercises.map((exercise) => exercise.type === 'matching' ? undefined : exercise.answer))).toEqual([
-      ['민수예요', '학생이에요', undefined],
-      ['저는 학생이에요', '선생님은 한국 사람이에요', '제니는 가수예요'],
-      ['미국 사람이 아니에요', '가수가 아니에요', '회사원이 아니에요'],
+      ['민수예요', '학생이에요', undefined, '저는 학생이에요', '선생님은 태국 사람이에요', '유나는 디자이너예요'],
+      ['태국 사람이 아니에요', '디자이너가 아니에요', '소방관이 아니에요'],
     ])
     expect(course.grammar.flatMap((grammar) => grammar.exercises.map((exercise) => exercise.type))).toEqual([
       'sentence-completion', 'sentence-completion', 'matching',
@@ -433,6 +431,6 @@ describe('validateCourse', () => {
     expect(course.dialogues.every((dialogue) => dialogue.video.durationSeconds === undefined)).toBe(true)
     const blockingIssues = validateCourse(course, 'development').filter((courseIssue) => courseIssue.severity !== 'warning')
     expect(blockingIssues.filter((courseIssue) => courseIssue.code === 'member-vocabulary-count')).toHaveLength(4)
-    expect(blockingIssues.filter((courseIssue) => courseIssue.code === 'vocabulary-owner')).toHaveLength(8)
+    expect(blockingIssues.filter((courseIssue) => courseIssue.code === 'vocabulary-owner')).toHaveLength(18)
   })
 })

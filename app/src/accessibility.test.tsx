@@ -10,22 +10,22 @@ import { course } from './content/course'
 import { createAppRouteObjects } from './routeObjects'
 
 const expectedPrimaryHeadings: Record<AppRouteId, string> = {
-  home: 'Choose a vocabulary unit',
+  home: 'Welcome to Korean Stage',
   vocabulary: 'Choose a vocabulary unit',
-  vocabularyLesson: 'Essential greetings',
+  vocabularyLesson: 'Countries & Nationalities',
   grammar: 'Choose a grammar topic',
-  grammarLesson: '이에요 / 예요 - to be',
-  practice: 'Practice by lesson',
-  practiceLesson: 'Practice by lesson',
+  grammarLesson: 'Talking about who someone is',
+  practice: 'Practice & Quiz',
+  practiceLesson: 'Practice & Quiz',
   dialogue: 'Dialogue & role play',
   team: 'Meet the team',
   learnLegacy: 'Choose a vocabulary unit',
-  learnLesson1Legacy: 'Essential greetings',
+  learnLesson1Legacy: 'Choose a vocabulary unit',
   learnLesson2Legacy: 'Countries & Nationalities',
   learnLesson3Legacy: 'Jobs & Occupations',
-  learnLesson4Legacy: '이에요 / 예요 - to be',
-  learnLesson5Legacy: '은 / 는 - topic marker',
-  learnLesson6Legacy: '이 / 가 아니에요 - to not be',
+  learnLesson4Legacy: 'Talking about who someone is',
+  learnLesson5Legacy: 'Talking about who someone is',
+  learnLesson6Legacy: 'Saying what someone is not',
   learnLesson7Legacy: 'Dialogue & role play',
   'not-found': 'Page not found',
 }
@@ -41,9 +41,10 @@ const primaryRoutes = routeEntries.flatMap((route): Array<readonly [string, stri
 
 const routes = [
   ...primaryRoutes,
-  ['Vocabulary lesson 2', '/vocabulary/lesson-2', 'Countries & Nationalities'],
-  ['Vocabulary lesson 3', '/vocabulary/lesson-3', 'Jobs & Occupations'],
-  ['Grammar lesson 4', '/grammar/lesson-4', '이에요 / 예요 - to be'],
+  ['Vocabulary countries', '/vocabulary/countries', 'Countries & Nationalities'],
+  ['Vocabulary occupations', '/vocabulary/occupations', 'Jobs & Occupations'],
+  ['Grammar identity', '/grammar/identity', 'Talking about who someone is'],
+  ['Grammar negative identity', '/grammar/negative-identity', 'Saying what someone is not'],
   ['Fallback', '/missing', 'Page not found'],
 ] as const
 
@@ -124,7 +125,7 @@ describe('default-route accessibility', () => {
   })
 
   it('provides a disabled but clearly named audio player while member recordings are missing', () => {
-    renderRoute('/vocabulary/lesson-3')
+    renderRoute('/vocabulary/occupations')
 
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
     expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toHaveTextContent('Audio coming soon')
@@ -133,7 +134,7 @@ describe('default-route accessibility', () => {
   })
 
   it('marks every rendered Korean text run in Vocabulary with the Korean language', () => {
-    const { container } = renderRoute('/vocabulary/lesson-3')
+    const { container } = renderRoute('/vocabulary/occupations')
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
     const untaggedKorean: string[] = []
 
@@ -151,12 +152,10 @@ describe('default-route accessibility', () => {
   })
 
   it.each([
-    '/vocabulary/lesson-1',
-    '/vocabulary/lesson-2',
-    '/vocabulary/lesson-3',
-    '/grammar/lesson-4',
-    '/grammar/lesson-5',
-    '/grammar/lesson-6',
+    '/vocabulary/countries',
+    '/vocabulary/occupations',
+    '/grammar/identity',
+    '/grammar/negative-identity',
     '/dialogue',
   ])(
     'keeps every Hangul run and English run correctly scoped throughout %s',
@@ -185,7 +184,7 @@ describe('default-route accessibility', () => {
 
   it('does not scope English copy as Korean or flatten bilingual control names into aria-labels', async () => {
     const user = userEvent.setup()
-    const { container } = renderRoute('/vocabulary/lesson-3')
+    const { container } = renderRoute('/vocabulary/occupations')
     await user.click(screen.getByRole('button', { name: /Choose vocabulary word.*학생.*Student/ }))
 
     const wronglyScopedEnglish = [...container.querySelectorAll('[lang="ko"]')]
@@ -210,7 +209,7 @@ describe('default-route accessibility', () => {
 describe('keyboard-complete primary flows', () => {
   it('keeps the skip link as the first keyboard stop on initial load', async () => {
     const user = userEvent.setup()
-    renderRoute('/vocabulary/lesson-1')
+    renderRoute('/vocabulary/countries')
 
     expect(document.body).toHaveFocus()
     await user.tab()
@@ -219,7 +218,7 @@ describe('keyboard-complete primary flows', () => {
 
   it('opens the menu and freely selects a later vocabulary word without pointer clicks', async () => {
     const user = userEvent.setup()
-    renderRoute('/vocabulary/lesson-3')
+    renderRoute('/vocabulary/occupations')
 
     const menu = screen.getByRole('button', { name: 'Menu' })
     await tabTo(user, menu)
@@ -228,10 +227,10 @@ describe('keyboard-complete primary flows', () => {
     expect(within(document.getElementById('primary-navigation-list')!).getByRole('link', { name: 'Practice' })).toBeVisible()
     await user.keyboard('[Escape]')
 
-    const chef = screen.getByRole('button', { name: /요리사.*Chef/ })
-    await tabTo(user, chef)
+    const pharmacist = screen.getByRole('button', { name: /약사.*Pharmacist/ })
+    await tabTo(user, pharmacist)
     await user.keyboard('[Enter]')
-    expect(screen.getByRole('heading', { name: '요리사' })).toHaveAttribute('lang', 'ko')
+    expect(screen.getByRole('heading', { name: '약사' })).toHaveAttribute('lang', 'ko')
     expect(localStorage.length).toBe(0)
   })
 

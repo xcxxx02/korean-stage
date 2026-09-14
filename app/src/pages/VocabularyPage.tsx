@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { VocabularyJourney } from '../components/VocabularyJourney'
 import { course, vocabularyUnits } from '../content/course'
 
@@ -48,12 +48,14 @@ export function VocabularyPage() {
   const { lessonSlug } = useParams()
 
   if (lessonSlug === undefined) return <VocabularyUnitChooser />
+  if (lessonSlug === 'lesson-1') return <Navigate replace to="/vocabulary" />
+  if (lessonSlug === 'lesson-2') return <Navigate replace to="/vocabulary/countries" />
+  if (lessonSlug === 'lesson-3') return <Navigate replace to="/vocabulary/occupations" />
 
   const unit = vocabularyUnits.find((candidate) => candidate.lessonSlug === lessonSlug)
   if (!unit) return <VocabularyRecovery />
 
   const items = course.vocabulary.filter((item) => item.unitId === unit.unitId)
-  const itemLabel = unit.itemLabel === 'Useful expressions' ? 'Useful expression' : 'Vocabulary word'
 
   return (
     <section className="vocabulary-study-page mx-auto max-w-[1440px] px-5 py-10 sm:px-8 lg:py-12">
@@ -62,7 +64,7 @@ export function VocabularyPage() {
         <h1 className="mt-2 text-4xl font-black tracking-tight text-stage-charcoal sm:text-5xl">{unit.title}</h1>
         <p className="mt-3 text-lg leading-8 text-stage-muted">{unit.description}</p>
       </header>
-      <VocabularyJourney itemLabel={itemLabel} items={items} />
+      <VocabularyJourney items={items} />
     </section>
   )
 }

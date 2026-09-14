@@ -6,27 +6,25 @@ import { renderApp } from '../test/renderApp'
 describe('Canonical lesson selection', () => {
   afterEach(cleanup)
 
-  it('offers the three vocabulary units from the Vocabulary chooser', () => {
+  it('offers the two vocabulary units from the Vocabulary chooser', () => {
     renderApp(['/vocabulary'])
 
-    expect(screen.getByRole('link', { name: /Open Unit 1: Essential greetings/ })).toHaveAttribute('href', '/vocabulary/lesson-1')
-    expect(screen.getByRole('link', { name: /Open Unit 2: Countries & Nationalities/ })).toHaveAttribute('href', '/vocabulary/lesson-2')
-    expect(screen.getByRole('link', { name: /Open Unit 3: Jobs & Occupations/ })).toHaveAttribute('href', '/vocabulary/lesson-3')
+    expect(screen.getByRole('link', { name: /Open Unit 1: Countries & Nationalities/ })).toHaveAttribute('href', '/vocabulary/countries')
+    expect(screen.getByRole('link', { name: /Open Unit 2: Jobs & Occupations/ })).toHaveAttribute('href', '/vocabulary/occupations')
   })
 
-  it('offers the three grammar topics from the Grammar chooser', () => {
+  it('offers the two grammar topics from the Grammar chooser', () => {
     renderApp(['/grammar'])
 
-    expect(screen.getByRole('link', { name: /Open grammar topic 1:.*to be/ })).toHaveAttribute('href', '/grammar/lesson-4')
-    expect(screen.getByRole('link', { name: /Open grammar topic 2:.*topic marker/ })).toHaveAttribute('href', '/grammar/lesson-5')
-    expect(screen.getByRole('link', { name: /Open grammar topic 3:.*to not be/ })).toHaveAttribute('href', '/grammar/lesson-6')
+    expect(screen.getByRole('link', { name: /Open grammar topic 1: Talking about who someone is/ })).toHaveAttribute('href', '/grammar/identity')
+    expect(screen.getByRole('link', { name: /Open grammar topic 2: Saying what someone is not/ })).toHaveAttribute('href', '/grammar/negative-identity')
   })
 
   it('opens a selected vocabulary unit on its canonical route', async () => {
     const user = userEvent.setup()
     renderApp(['/vocabulary'])
 
-    await user.click(screen.getByRole('link', { name: /Open Unit 3: Jobs & Occupations/ }))
+    await user.click(screen.getByRole('link', { name: /Open Unit 2: Jobs & Occupations/ }))
 
     expect(screen.getByRole('heading', { level: 1, name: 'Jobs & Occupations' })).toBeVisible()
     expect(screen.getByRole('link', { name: 'Vocabulary' })).toHaveAttribute('aria-current', 'page')
@@ -36,9 +34,9 @@ describe('Canonical lesson selection', () => {
     const user = userEvent.setup()
     renderApp(['/grammar'])
 
-    await user.click(screen.getByRole('link', { name: /Open grammar topic 2:.*topic marker/ }))
+    await user.click(screen.getByRole('link', { name: /Open grammar topic 1: Talking about who someone is/ }))
 
-    expect(screen.getByRole('heading', { level: 1, name: '은 / 는 - topic marker' })).toBeVisible()
+    expect(screen.getByRole('heading', { level: 1, name: 'Talking about who someone is' })).toBeVisible()
     expect(screen.getByRole('link', { name: 'Grammar' })).toHaveAttribute('aria-current', 'page')
   })
 })

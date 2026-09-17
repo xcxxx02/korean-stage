@@ -21,6 +21,12 @@ const developmentMedia = (durationSeconds?: number): MediaSource => ({
   ...(durationSeconds === undefined ? {} : { durationSeconds }),
 })
 
+const humanRecording = (src: string, durationSeconds: number): MediaSource => ({
+  src,
+  kind: 'human-recording',
+  durationSeconds,
+})
+
 const vocabulary = (
   id: string,
   unitId: VocabularyItem['unitId'],
@@ -34,6 +40,7 @@ const vocabulary = (
   ownerId: string | null,
   imageKind: 'flag' | 'occupation',
   imageFile: string = id,
+  recording?: { memberSlug: string; durationSeconds: number },
 ): VocabularyItem => ({
   id,
   unitId,
@@ -49,8 +56,12 @@ const vocabulary = (
   ownerId,
   assessmentStatus: 'assessed',
   recordingRequirement: 'member-recording-required',
-  video: developmentMedia(),
-  audio: developmentMedia(),
+  video: recording
+    ? humanRecording(`/media/vocabulary/${recording.memberSlug}/${id}.mp4`, recording.durationSeconds)
+    : developmentMedia(),
+  audio: recording
+    ? humanRecording(`/media/vocabulary/${recording.memberSlug}/${id}.m4a`, recording.durationSeconds)
+    : developmentMedia(),
 })
 
 const exercise = (
@@ -89,24 +100,24 @@ export const course: Course = {
     {
       id: 'member-1', name: 'Member 1', fullName: 'CHEONG XIN CHEN', studentId: '251UC250T4', studentClass: 'FCI2',
       isDevelopmentIdentity: false,
-      role: 'To be confirmed',
-      contribution: 'Task allocation to be confirmed.',
+      role: 'Vocabulary presenter',
+      contribution: 'Presents Thailand, Vietnam, Philippines, and Singapore in Unit 1.',
     },
     {
       id: 'member-2', name: 'Member 2', fullName: 'WONG WEI QI', studentId: '251UC250TB', studentClass: 'FCI2',
       isDevelopmentIdentity: false,
-      role: 'To be confirmed',
-      contribution: 'Task allocation to be confirmed.',
+      role: 'Vocabulary presenter',
+      contribution: 'Presents Indonesia, Spain, Italy, Brazil, and New Zealand in Unit 1.',
     },
     {
       id: 'member-3', name: 'Member 3', fullName: 'LIM ZHEN LONG', studentId: '252UC243GJ', studentClass: 'FCI2',
       isDevelopmentIdentity: false,
-      role: 'To be confirmed', contribution: 'Task allocation to be confirmed.',
+      role: 'Vocabulary presenter', contribution: 'Presents Student, Teacher, Engineer, and Designer in Unit 2.',
     },
     {
       id: 'member-4', name: 'Member 4', fullName: 'LAM YI SIANG', studentId: '262UM2630D', studentClass: 'FOM',
       isDevelopmentIdentity: false,
-      role: 'To be confirmed', contribution: 'Task allocation to be confirmed.',
+      role: 'Vocabulary presenter', contribution: 'Presents Doctor, Nurse, Firefighter, Pharmacist, and Police officer in Unit 2.',
     },
   ],
   introductionModels: [
@@ -132,24 +143,24 @@ export const course: Course = {
     },
   ],
   vocabulary: [
-    vocabulary('thailand', 'vocabulary-1', '태국', 'Thailand', 'taeguk', 'tae-guk', '민지는 태국 사람이에요.', 'Minji is Thai.', 'Add 사람 after 태국 to say “a Thai person”: 태국 사람.', null, 'flag', 'th'),
-    vocabulary('vietnam', 'vocabulary-1', '베트남', 'Vietnam', 'beteunam', 'beh-teu-nam', '준호는 베트남 사람이에요.', 'Junho is Vietnamese.', '베트남 ends in a consonant, so use 은 in 베트남은.', null, 'flag', 'vn'),
-    vocabulary('philippines', 'vocabulary-1', '필리핀', 'Philippines', 'pillipin', 'pil-li-pin', '유나는 필리핀 사람이에요.', 'Yuna is Filipino.', '필리핀 사람 means “a Filipino person”; 사람이에요 means “is a person.”', null, 'flag', 'ph'),
-    vocabulary('singapore', 'vocabulary-1', '싱가포르', 'Singapore', 'singgaporeu', 'sing-ga-po-reu', '다니엘은 싱가포르 사람이에요.', 'Daniel is Singaporean.', '싱가포르 ends in a vowel, so use 는 in 싱가포르는.', null, 'flag', 'sg'),
-    vocabulary('indonesia', 'vocabulary-1', '인도네시아', 'Indonesia', 'indonesia', 'in-do-ne-si-a', '수진은 인도네시아 사람이에요.', 'Sujin is Indonesian.', 'Use 인도네시아 사람 for “an Indonesian person.”', null, 'flag', 'id'),
-    vocabulary('spain', 'vocabulary-1', '스페인', 'Spain', 'seupein', 'seu-pe-in', '마리아는 스페인 사람이에요.', 'Maria is Spanish.', '스페인 ends in a consonant, so use 은: 스페인은.', null, 'flag', 'es'),
-    vocabulary('italy', 'vocabulary-1', '이탈리아', 'Italy', 'itallia', 'i-tal-li-a', '루카는 이탈리아 사람이에요.', 'Luca is Italian.', '이탈리아 ends in a vowel, so use 는: 이탈리아는.', null, 'flag', 'it'),
-    vocabulary('brazil', 'vocabulary-1', '브라질', 'Brazil', 'beurajil', 'beu-ra-jil', '아나는 브라질 사람이에요.', 'Ana is Brazilian.', '브라질 ends in a consonant, so use 은: 브라질은.', null, 'flag', 'br'),
-    vocabulary('new-zealand', 'vocabulary-1', '뉴질랜드', 'New Zealand', 'nyujillaendeu', 'nyu-jil-laen-deu', '소피는 뉴질랜드 사람이에요.', 'Sophie is a New Zealander.', '뉴질랜드 사람 means “a New Zealander.”', null, 'flag', 'nz'),
-    vocabulary('student', 'vocabulary-2', '학생', 'Student', 'haksaeng', 'hak-ssaeng', '저는 학생이에요.', 'I am a student.', '학생 ends in a consonant, so use 이에요.', null, 'occupation'),
-    vocabulary('teacher', 'vocabulary-2', '선생님', 'Teacher', 'seonsaengnim', 'seon-saeng-nim', '민지는 선생님이에요.', 'Minji is a teacher.', '선생님 ends in a consonant, so use 은 in 선생님은.', null, 'occupation'),
-    vocabulary('engineer', 'vocabulary-2', '엔지니어', 'Engineer', 'enjinieo', 'en-ji-ni-eo', '준호는 엔지니어예요.', 'Junho is an engineer.', '엔지니어 ends in a vowel, so use 예요.', null, 'occupation'),
-    vocabulary('designer', 'vocabulary-2', '디자이너', 'Designer', 'dijaineo', 'di-ja-i-neo', '유나는 디자이너예요.', 'Yuna is a designer.', 'To say “not a designer,” use 디자이너가 아니에요.', null, 'occupation'),
-    vocabulary('doctor', 'vocabulary-2', '의사', 'Doctor', 'uisa', 'ui-sa', '수진은 의사예요.', 'Sujin is a doctor.', '의사 ends in a vowel, so use 는 in 의사는.', null, 'occupation'),
-    vocabulary('nurse', 'vocabulary-2', '간호사', 'Nurse', 'ganhosa', 'gan-ho-sa', '지민은 간호사예요.', 'Jimin is a nurse.', 'Combine 간호사 with 예요 to make 간호사예요.', null, 'occupation'),
-    vocabulary('firefighter', 'vocabulary-2', '소방관', 'Firefighter', 'sobanggwan', 'so-bang-gwan', '민수는 소방관이에요.', 'Minsu is a firefighter.', 'To say “not a firefighter,” use 소방관이 아니에요.', null, 'occupation'),
-    vocabulary('pharmacist', 'vocabulary-2', '약사', 'Pharmacist', 'yaksa', 'yak-sa', '서연은 약사예요.', 'Seoyeon is a pharmacist.', 'To say “not a pharmacist,” use 약사가 아니에요.', null, 'occupation'),
-    vocabulary('police-officer', 'vocabulary-2', '경찰관', 'Police officer', 'gyeongchalgwan', 'gyeong-chal-gwan', '현우는 경찰관이에요.', 'Hyunwoo is a police officer.', '경찰관 ends in a consonant, so use 이에요.', null, 'occupation'),
+    vocabulary('thailand', 'vocabulary-1', '태국', 'Thailand', 'taeguk', 'tae-guk', '민지는 태국 사람이에요.', 'Minji is Thai.', 'Add 사람 after 태국 to say “a Thai person”: 태국 사람.', 'member-1', 'flag', 'th'),
+    vocabulary('vietnam', 'vocabulary-1', '베트남', 'Vietnam', 'beteunam', 'beh-teu-nam', '준호는 베트남 사람이에요.', 'Junho is Vietnamese.', '베트남 ends in a consonant, so use 은 in 베트남은.', 'member-1', 'flag', 'vn'),
+    vocabulary('philippines', 'vocabulary-1', '필리핀', 'Philippines', 'pillipin', 'pil-li-pin', '유나는 필리핀 사람이에요.', 'Yuna is Filipino.', '필리핀 사람 means “a Filipino person”; 사람이에요 means “is a person.”', 'member-1', 'flag', 'ph'),
+    vocabulary('singapore', 'vocabulary-1', '싱가포르', 'Singapore', 'singgaporeu', 'sing-ga-po-reu', '다니엘은 싱가포르 사람이에요.', 'Daniel is Singaporean.', '싱가포르 ends in a vowel, so use 는 in 싱가포르는.', 'member-1', 'flag', 'sg'),
+    vocabulary('indonesia', 'vocabulary-1', '인도네시아', 'Indonesia', 'indonesia', 'in-do-ne-si-a', '수진은 인도네시아 사람이에요.', 'Sujin is Indonesian.', 'Use 인도네시아 사람 for “an Indonesian person.”', 'member-2', 'flag', 'id'),
+    vocabulary('spain', 'vocabulary-1', '스페인', 'Spain', 'seupein', 'seu-pe-in', '마리아는 스페인 사람이에요.', 'Maria is Spanish.', '스페인 ends in a consonant, so use 은: 스페인은.', 'member-2', 'flag', 'es'),
+    vocabulary('italy', 'vocabulary-1', '이탈리아', 'Italy', 'itallia', 'i-tal-li-a', '루카는 이탈리아 사람이에요.', 'Luca is Italian.', '이탈리아 ends in a vowel, so use 는: 이탈리아는.', 'member-2', 'flag', 'it'),
+    vocabulary('brazil', 'vocabulary-1', '브라질', 'Brazil', 'beurajil', 'beu-ra-jil', '아나는 브라질 사람이에요.', 'Ana is Brazilian.', '브라질 ends in a consonant, so use 은: 브라질은.', 'member-2', 'flag', 'br'),
+    vocabulary('new-zealand', 'vocabulary-1', '뉴질랜드', 'New Zealand', 'nyujillaendeu', 'nyu-jil-laen-deu', '소피는 뉴질랜드 사람이에요.', 'Sophie is a New Zealander.', '뉴질랜드 사람 means “a New Zealander.”', 'member-2', 'flag', 'nz'),
+    vocabulary('student', 'vocabulary-2', '학생', 'Student', 'haksaeng', 'hak-ssaeng', '저는 학생이에요.', 'I am a student.', '학생 ends in a consonant, so use 이에요.', 'member-3', 'occupation'),
+    vocabulary('teacher', 'vocabulary-2', '선생님', 'Teacher', 'seonsaengnim', 'seon-saeng-nim', '민지는 선생님이에요.', 'Minji is a teacher.', '선생님 ends in a consonant, so use 은 in 선생님은.', 'member-3', 'occupation'),
+    vocabulary('engineer', 'vocabulary-2', '엔지니어', 'Engineer', 'enjinieo', 'en-ji-ni-eo', '준호는 엔지니어예요.', 'Junho is an engineer.', '엔지니어 ends in a vowel, so use 예요.', 'member-3', 'occupation'),
+    vocabulary('designer', 'vocabulary-2', '디자이너', 'Designer', 'dijaineo', 'di-ja-i-neo', '유나는 디자이너예요.', 'Yuna is a designer.', 'To say “not a designer,” use 디자이너가 아니에요.', 'member-3', 'occupation'),
+    vocabulary('doctor', 'vocabulary-2', '의사', 'Doctor', 'uisa', 'ui-sa', '수진은 의사예요.', 'Sujin is a doctor.', '의사 ends in a vowel, so use 는 in 의사는.', 'member-4', 'occupation', 'doctor', { memberSlug: 'yi-siang', durationSeconds: 1.93 }),
+    vocabulary('nurse', 'vocabulary-2', '간호사', 'Nurse', 'ganhosa', 'gan-ho-sa', '지민은 간호사예요.', 'Jimin is a nurse.', 'Combine 간호사 with 예요 to make 간호사예요.', 'member-4', 'occupation', 'nurse', { memberSlug: 'yi-siang', durationSeconds: 2.52 }),
+    vocabulary('firefighter', 'vocabulary-2', '소방관', 'Firefighter', 'sobanggwan', 'so-bang-gwan', '민수는 소방관이에요.', 'Minsu is a firefighter.', 'To say “not a firefighter,” use 소방관이 아니에요.', 'member-4', 'occupation', 'firefighter', { memberSlug: 'yi-siang', durationSeconds: 3.07 }),
+    vocabulary('pharmacist', 'vocabulary-2', '약사', 'Pharmacist', 'yaksa', 'yak-sa', '서연은 약사예요.', 'Seoyeon is a pharmacist.', 'To say “not a pharmacist,” use 약사가 아니에요.', 'member-4', 'occupation', 'pharmacist', { memberSlug: 'yi-siang', durationSeconds: 2.45 }),
+    vocabulary('police-officer', 'vocabulary-2', '경찰관', 'Police officer', 'gyeongchalgwan', 'gyeong-chal-gwan', '현우는 경찰관이에요.', 'Hyunwoo is a police officer.', '경찰관 ends in a consonant, so use 이에요.', 'member-4', 'occupation', 'police-officer', { memberSlug: 'yi-siang', durationSeconds: 4.32 }),
   ],
   grammar: [
     {

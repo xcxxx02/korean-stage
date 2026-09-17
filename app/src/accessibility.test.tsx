@@ -128,7 +128,7 @@ describe('default-route accessibility', () => {
     renderRoute('/vocabulary/occupations')
 
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toHaveTextContent('Audio coming soon')
+    expect(screen.getByRole('region', { name: 'Member 3 audio player' })).toHaveTextContent('Audio coming soon')
     expect(document.querySelector('audio')).not.toBeInTheDocument()
     expect(screen.getByText(/Audio coming soon/)).toBeVisible()
   })

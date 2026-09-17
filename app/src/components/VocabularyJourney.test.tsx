@@ -110,26 +110,28 @@ describe('VocabularyJourney', () => {
     expect(chooser).toHaveFocus()
   })
 
-  it('shows passive member media with a separate audio player and a shared listen control', async () => {
+  it('enables the shared listen control and separate media player for a recorded word', async () => {
     const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)
 
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    const audioPlayer = screen.getByRole('region', { name: 'Pronunciation audio player' })
+    const audioPlayer = screen.getByRole('region', { name: 'Member 3 audio player' })
     expect(audioPlayer).toHaveTextContent('Audio coming soon')
     const waveform = within(audioPlayer).getByTestId('audio-waveform')
     expect(waveform).toBeVisible()
     expect(waveform.querySelector('canvas')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /play member video/i })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: /의사.*Doctor/ }))
-    expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toHaveTextContent('Audio coming soon')
-    expect(document.querySelector('audio')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeEnabled()
+    expect(screen.getByRole('region', { name: 'Member 4 audio player' })).toHaveTextContent('0:00 / 0:01')
+    expect(document.querySelector('audio')?.getAttribute('src')).toBe('/media/vocabulary/yi-siang/doctor.m4a')
+    expect(document.querySelector('video source')?.getAttribute('src')).toBe('/media/vocabulary/yi-siang/doctor.mp4')
   })
 
-  it('presents supporting country vocabulary without inventing a member owner or recording obligation', () => {
+  it('presents assigned country vocabulary honestly while its recording is pending', () => {
     render(<VocabularyJourney items={countryItems} />)
 
-    expect(screen.getByRole('region', { name: 'Pronunciation audio player' })).toBeVisible()
+    expect(screen.getByRole('region', { name: 'Member 1 audio player' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
     expect(screen.queryByText(/Course member|Presented by|Member video coming soon/)).not.toBeInTheDocument()
     expect(document.querySelector('video')).not.toBeInTheDocument()
@@ -176,7 +178,7 @@ describe('VocabularyJourney', () => {
   it('keeps the member video preview separate from the bilingual word example', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    expect(screen.getByLabelText('Pronunciation video preview')).toBeVisible()
+    expect(screen.getByLabelText('Member 3 video preview')).toBeVisible()
     expect(screen.getByText('저는 학생이에요.')).toHaveAttribute('lang', 'ko')
     expect(screen.getByText('I am a student.')).toHaveAttribute('lang', 'en')
   })
@@ -184,9 +186,9 @@ describe('VocabularyJourney', () => {
   it('uses an honest passive preview and disabled audio controls when recordings are missing', () => {
     render(<VocabularyJourney items={occupationItems} />)
 
-    expect(screen.getByLabelText('Pronunciation video preview')).toBeVisible()
+    expect(screen.getByLabelText('Member 3 video preview')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Play Pronunciation audio' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Play Member 3 audio' })).toBeDisabled()
     expect(document.querySelector('video')).not.toBeInTheDocument()
   })
 

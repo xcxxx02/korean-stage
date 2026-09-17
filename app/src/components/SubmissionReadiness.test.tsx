@@ -65,22 +65,17 @@ describe('SubmissionReadiness', () => {
 
     const needsContent = screen.getByRole('region', { name: 'Needs content' })
     for (const member of course.members) {
-      expect(within(needsContent).getByText(`${member.fullName} — assign 3–5 recorded vocabulary items.`)).toBeInTheDocument()
+      expect(within(needsContent).queryByText(`${member.fullName} — assign 3–5 recorded vocabulary items.`)).not.toBeInTheDocument()
     }
 
-    const missingVocabulary = [
-      ['학생', 'Student'],
-      ['선생님', 'Teacher'],
-      ['엔지니어', 'Engineer'],
-      ['디자이너', 'Designer'],
-      ['의사', 'Doctor'],
-      ['간호사', 'Nurse'],
-      ['소방관', 'Firefighter'],
-      ['약사', 'Pharmacist'],
-    ]
-    for (const [korean, english] of missingVocabulary) {
-      expect(within(needsContent).getByText(`${korean} / ${english} — assign an existing member only when the word is assessed and requires recording.`)).toBeInTheDocument()
-      expect(within(needsContent).getByText(`${korean} / ${english} — add human-recorded video and audio.`)).toBeInTheDocument()
+    const missingVocabulary = course.vocabulary.filter((item) => item.audio.kind === 'development-missing')
+    expect(missingVocabulary).toHaveLength(13)
+    for (const item of missingVocabulary) {
+      expect(within(needsContent).getByText(`${item.korean} / ${item.english} — add human-recorded video and audio.`)).toBeInTheDocument()
+      expect(within(needsContent).queryByText(`${item.korean} / ${item.english} — assign an existing member only when the word is assessed and requires recording.`)).not.toBeInTheDocument()
+    }
+    for (const item of course.vocabulary.filter((entry) => entry.audio.kind === 'human-recording')) {
+      expect(within(needsContent).queryByText(`${item.korean} / ${item.english} — add human-recorded video and audio.`)).not.toBeInTheDocument()
     }
 
     expect(within(needsContent).getByText('Hello, I am Mina — add a human-recorded dialogue video.')).toBeInTheDocument()

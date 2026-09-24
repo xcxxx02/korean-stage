@@ -124,13 +124,13 @@ describe('default-route accessibility', () => {
     expect(screen.queryByRole('heading', { level: 1, name: expectedPrimaryHeadings['not-found'] })).not.toBeInTheDocument()
   })
 
-  it('provides a disabled but clearly named audio player while member recordings are missing', () => {
+  it('provides clearly named controls for the recorded member media', () => {
     renderRoute('/vocabulary/occupations')
 
-    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
-    expect(screen.getByRole('region', { name: 'Member 3 audio player' })).toHaveTextContent('Audio coming soon')
-    expect(document.querySelector('audio')).not.toBeInTheDocument()
-    expect(screen.getByText(/Audio coming soon/)).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeEnabled()
+    expect(screen.getByRole('region', { name: 'Member 3 audio player' })).toHaveTextContent('0:00 / 0:02')
+    expect(document.querySelector('audio')).toHaveAttribute('src', '/media/vocabulary/zhen-long/student.m4a')
+    expect(document.querySelector('video source')).toHaveAttribute('src', '/media/vocabulary/zhen-long/student.mp4')
   })
 
   it('marks every rendered Korean text run in Vocabulary with the Korean language', () => {

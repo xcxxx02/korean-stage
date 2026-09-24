@@ -114,13 +114,14 @@ describe('VocabularyJourney', () => {
     const user = userEvent.setup()
     render(<VocabularyJourney items={occupationItems} />)
 
-    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeEnabled()
     const audioPlayer = screen.getByRole('region', { name: 'Member 3 audio player' })
-    expect(audioPlayer).toHaveTextContent('Audio coming soon')
+    expect(audioPlayer).toHaveTextContent('0:00 / 0:02')
     const waveform = within(audioPlayer).getByTestId('audio-waveform')
     expect(waveform).toBeVisible()
     expect(waveform.querySelector('canvas')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /play member video/i })).not.toBeInTheDocument()
+    expect(document.querySelector('audio')?.getAttribute('src')).toBe('/media/vocabulary/zhen-long/student.m4a')
+    expect(document.querySelector('video source')?.getAttribute('src')).toBe('/media/vocabulary/zhen-long/student.mp4')
     await user.click(screen.getByRole('button', { name: /의사.*Doctor/ }))
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeEnabled()
     expect(screen.getByRole('region', { name: 'Member 4 audio player' })).toHaveTextContent('0:00 / 0:01')
@@ -128,13 +129,14 @@ describe('VocabularyJourney', () => {
     expect(document.querySelector('video source')?.getAttribute('src')).toBe('/media/vocabulary/yi-siang/doctor.mp4')
   })
 
-  it('presents assigned country vocabulary honestly while its recording is pending', () => {
+  it('presents assigned country vocabulary with its human recording', () => {
     render(<VocabularyJourney items={countryItems} />)
 
     expect(screen.getByRole('region', { name: 'Member 1 audio player' })).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeEnabled()
     expect(screen.queryByText(/Course member|Presented by|Member video coming soon/)).not.toBeInTheDocument()
-    expect(document.querySelector('video')).not.toBeInTheDocument()
+    expect(document.querySelector('audio')?.getAttribute('src')).toBe('/media/vocabulary/xin-chen/thailand.m4a')
+    expect(document.querySelector('video source')?.getAttribute('src')).toBe('/media/vocabulary/xin-chen/thailand.mp4')
     expect(screen.getByRole('heading', { name: '태국' })).toHaveAttribute('lang', 'ko')
     expect(screen.getAllByText('Thailand').every((node) => node.getAttribute('lang') === 'en')).toBe(true)
     expect(screen.getAllByRole('img', { name: 'Thailand flag' }).every((flag) => flag.getAttribute('src')?.endsWith('/assets/flags/th.svg'))).toBe(true)
@@ -184,7 +186,12 @@ describe('VocabularyJourney', () => {
   })
 
   it('uses an honest passive preview and disabled audio controls when recordings are missing', () => {
-    render(<VocabularyJourney items={occupationItems} />)
+    const missingStudent = {
+      ...occupationItems[0],
+      video: { src: null, kind: 'development-missing' as const },
+      audio: { src: null, kind: 'development-missing' as const },
+    }
+    render(<VocabularyJourney items={[missingStudent]} />)
 
     expect(screen.getByLabelText('Member 3 video preview')).toBeVisible()
     expect(screen.getByRole('button', { name: 'Listen & watch' })).toBeDisabled()

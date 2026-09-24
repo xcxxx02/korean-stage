@@ -55,7 +55,7 @@ describe('SubmissionReadiness', () => {
     expect(screen.getByText('Submission readiness')).toBeVisible()
   })
 
-  it('keeps the real development course not ready while distinguishing complete structure from missing submission content', () => {
+  it('keeps the real development course not ready while distinguishing completed vocabulary media from missing dialogue content', () => {
     render(<SubmissionReadiness course={course} />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(
@@ -69,11 +69,7 @@ describe('SubmissionReadiness', () => {
     }
 
     const missingVocabulary = course.vocabulary.filter((item) => item.audio.kind === 'development-missing')
-    expect(missingVocabulary).toHaveLength(13)
-    for (const item of missingVocabulary) {
-      expect(within(needsContent).getByText(`${item.korean} / ${item.english} — add human-recorded video and audio.`)).toBeInTheDocument()
-      expect(within(needsContent).queryByText(`${item.korean} / ${item.english} — assign an existing member only when the word is assessed and requires recording.`)).not.toBeInTheDocument()
-    }
+    expect(missingVocabulary).toHaveLength(0)
     for (const item of course.vocabulary.filter((entry) => entry.audio.kind === 'human-recording')) {
       expect(within(needsContent).queryByText(`${item.korean} / ${item.english} — add human-recorded video and audio.`)).not.toBeInTheDocument()
     }

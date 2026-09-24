@@ -20,13 +20,13 @@ describe('DialoguePlayer', () => {
 
     expect(screen.getByRole('heading', { name: dialogue.title })).toBeVisible()
     expect(screen.getByText(dialogue.scenario)).toBeVisible()
-    expect(screen.getByText('Member 1 and Member 2').parentElement).toHaveTextContent('Roles: Member 1 and Member 2')
+    expect(screen.getByText('CHEONG XIN CHEN and WONG WEI QI').parentElement).toHaveTextContent('Roles: CHEONG XIN CHEN and WONG WEI QI')
     expect(screen.getAllByRole('figure')).toHaveLength(1)
 
     const transcript = screen.getByRole('list', { name: 'Bilingual dialogue transcript' })
     const lines = within(transcript).getAllByRole('listitem')
     expect(lines).toHaveLength(8)
-    expect(lines[0]).toHaveTextContent('Line 1 · Member 1')
+    expect(lines[0]).toHaveTextContent('Line 1 · CHEONG XIN CHEN')
     expect(within(lines[0]).getByText('안녕하세요.')).toHaveAttribute('lang', 'ko')
     expect(within(lines[0]).getByText('Hello.')).toHaveAttribute('lang', 'en')
   })
@@ -61,7 +61,7 @@ describe('DialoguePlayer', () => {
     render(<DialoguePlayer dialogue={course.dialogues[0]} members={course.members} />)
 
     expect(screen.getByRole('heading', { name: 'Dialogue video coming soon' })).toBeVisible()
-    expect(screen.getByText('This dialogue still needs a real recording from Member 1 and Member 2.')).toBeVisible()
+    expect(screen.getByText('This dialogue still needs a real recording from CHEONG XIN CHEN and WONG WEI QI.')).toBeVisible()
     expect(screen.queryByRole('button', { name: /play/i })).not.toBeInTheDocument()
     expect(document.querySelector('video')).not.toBeInTheDocument()
     expect(document.querySelector('audio')).not.toBeInTheDocument()
@@ -86,11 +86,11 @@ describe('DialoguePage', () => {
 
     const chooser = screen.getByRole('group', { name: 'Choose a dialogue' })
     const firstDialogue = within(chooser).getByRole('button', { name: 'Hello, I am Mina' })
-    const secondDialogue = within(chooser).getByRole('button', { name: 'Who are you?' })
+    const secondDialogue = within(chooser).getByRole('button', { name: 'Where are you from?' })
     expect(within(chooser).getAllByRole('button')).toHaveLength(2)
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('Meeting someone for the first time')).toBeVisible()
-    expect(screen.queryByText('Talking about jobs')).not.toBeInTheDocument()
+    expect(screen.queryByText('Meeting a classmate and talking about where you are from and what you study')).not.toBeInTheDocument()
     expect(screen.getAllByRole('figure')).toHaveLength(1)
 
     await user.click(secondDialogue)
@@ -98,9 +98,12 @@ describe('DialoguePage', () => {
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'false')
     expect(secondDialogue).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByText('Meeting someone for the first time')).not.toBeInTheDocument()
-    expect(screen.getByText('Talking about jobs')).toBeVisible()
-    expect(screen.getByText('다니엘은 학생이에요?')).toHaveAttribute('lang', 'ko')
-    expect(screen.getByText('Daniel, are you a student?')).toHaveAttribute('lang', 'en')
+    expect(screen.getByText('Meeting a classmate and talking about where you are from and what you study')).toBeVisible()
+    expect(screen.getByText('어느 나라에서 왔어요?')).toHaveAttribute('lang', 'ko')
+    expect(screen.getByText('Which country are you from?')).toHaveAttribute('lang', 'en')
+    expect(screen.getByLabelText('Where are you from? role-play video')).toHaveAttribute('controls')
+    expect(screen.getByLabelText('Where are you from? role-play video').querySelector('source')).toHaveAttribute('src', '/media/dialogues/dialogue-2.mp4')
+    expect(screen.getByText('LAM YI SIANG and LIM ZHEN LONG')).toBeVisible()
     expect(screen.getAllByRole('figure')).toHaveLength(1)
   })
 
@@ -109,7 +112,7 @@ describe('DialoguePage', () => {
     const user = userEvent.setup()
     render(<DialoguePage />)
 
-    await user.click(screen.getByRole('button', { name: 'Who are you?' }))
+    await user.click(screen.getByRole('button', { name: 'Where are you from?' }))
 
     expect(setItem).not.toHaveBeenCalled()
     expect(localStorage.length).toBe(0)

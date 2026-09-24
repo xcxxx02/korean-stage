@@ -1,35 +1,52 @@
-# Vocabulary lesson visual QA
+# Homepage design QA
 
-## Evidence
+- Source visual truth: `C:\Users\Nitro\.codex\generated_images\01a00e73-4a35-7c00-8237-c6f4815271b8\exec-e792736b-2bf2-4231-a3c9-8ee866ceb7d6.png`
+- Browser implementation: `http://127.0.0.1:4177/`
+- Implementation screenshot evidence: browser-rendered inline capture from Codex in-app browser tab 3. The browser surface did not expose a filesystem path for its PNG bytes.
+- Viewport: 1776 × 887 CSS pixels, device scale factor 1
+- Source pixels: 1774 × 887
+- Implementation capture pixels: 1776 × 887
+- Density normalization: source and implementation were both reviewed at approximately 1×; no density scaling was needed.
+- State: homepage, first viewport, animated vocabulary showcase visible; interaction state was also checked after choosing the 태국 card.
 
-- Source visual truth: `C:\Users\Nitro\.codex\generated_images\01a00e73-4a35-7c00-8237-c6f4815271b8\exec-9bea930d-8132-44fb-b6be-d57ade256c2f.png`
-- Implementation: `http://127.0.0.1:4174/vocabulary/lesson-3`
-- Viewport: 1440 × 1024 CSS pixels, desktop, light theme, Unit 3 / 학생 selected.
-- Implementation capture: browser-rendered CUA screenshot at the viewport above (not persisted as a local image artifact by the browser bridge).
-- Primary states checked: desktop word rail, selected word detail, disabled Listen & watch state when both human recordings are absent, passive circular video preview, disabled audio player, previous/next controls.
-- Console errors: none observed during the rendered-page check.
+## Full-view comparison evidence
 
-## Full-view comparison
+The approved design and the live implementation were loaded into one QA comparison page at full desktop dimensions. The implementation preserves the approved two-column hierarchy, large welcome message, obangsaek header strip, hanok learning stage, rotating Korean word cards, primary vocabulary action, and connected four-step learning journey. The live version intentionally simplifies the illustrative props so the experience remains people-free and the vocabulary stays the visual focus.
 
-The implementation preserves the reference anatomy: compact title/progress header, left bilingual word rail, centered word explanation with a small outlined Listen & watch control, and a right column that pairs circular member video with a separate audio player. The study workspace is contained within the desktop viewport and has no scrollbars.
+## Focused region comparison evidence
 
-## Focused comparison
+The animated hanok showcase was separately captured at 850 × 500 CSS pixels. The generated frame stays sharp, the active card remains centered, supporting cards remain readable, and the waveform and selector dots have clear contrast. A 390-pixel-wide focused capture also confirmed that the active vocabulary card, supporting cards, caption plaque, and journey heading stack without horizontal overflow.
 
-- **Typography:** Noto Sans KR remains consistent with the existing product; word and English hierarchy follow the reference.
-- **Spacing/layout:** The implemented tracks intentionally use the existing 1440px workspace and hold the video/audio column closer to the detail column, avoiding the empty space of the prior layout.
-- **Colors/tokens:** Cobalt, jade, vermilion, white, and the existing Obangsaek band are reused; no unapproved elevation was introduced.
-- **Image quality:** The circular preview uses the existing project “video coming soon” artwork while course recordings are absent. This is an intentional honest placeholder; a real member recording will replace it without changing the layout.
-- **Copy/content:** `Listen & watch`, separate `Member 1 audio`, bilingual word meaning, pronunciation, example, and grammar tip are present. Audio is explicitly marked `Audio coming soon` until a real recording source is supplied.
+## Required fidelity surfaces
+
+- Fonts and typography: Noto Sans/Noto Sans KR hierarchy is consistent with the existing site and closely follows the approved mock's heavy display heading and compact supporting copy. No clipping or unintended wrapping remains.
+- Spacing and layout rhythm: desktop content fits within the first viewport at 1776 × 887 and 1280 × 720. The hero and journey maintain distinct vertical zones; mobile stacks cleanly.
+- Colors and visual tokens: cobalt, jade, vermilion, yellow, warm cream, and charcoal remain aligned with the site palette and source direction.
+- Image quality and asset fidelity: the custom 960 × 620 hanok stage is crisp, people-free, and used as a raster asset rather than reconstructed with CSS. UI cards and controls remain live HTML.
+- Copy and content: greeting, learning promise, CTA, vocabulary labels, and four learning destinations are intact and beginner-friendly.
+
+## Comparison history
+
+1. Initial comparison found a P2 control issue: global button sizing stretched the three selector dots into tall bars. Fixed by retaining 36-pixel hit areas and rendering the visible dot through a centered pseudo-element. Post-fix focused capture shows three compact circular indicators.
+2. Initial comparison found a P2 polish issue: the caption sat directly over the wooden stage base. Fixed by slightly reducing the stage height and placing the caption in a warm bordered plaque below it. Post-fix desktop and mobile captures show clear separation and legibility.
 
 ## Findings
 
-No actionable P0, P1, or P2 visual mismatches. The visible placeholder in the circular preview is expected because a real member recording has not yet been added.
+No actionable P0, P1, or P2 findings remain.
+
+## Primary interactions tested
+
+- Automatic vocabulary rotation after four seconds
+- Manual vocabulary selection through the three accessible selector buttons
+- Reduced-motion preference keeps the preview static
+- Vocabulary CTA and learning-path links remain keyboard-accessible links
+
+## Console errors checked
+
+No browser console errors or warnings were present after loading the homepage and selecting a vocabulary card.
 
 ## Follow-up polish
 
-- Replace the circular placeholder with each member's real selfie video and real audio file when recordings are available.
-- Optionally add animated waveform progress once actual audio durations are supplied.
+- P3: The source mock contains additional book and headphone props. The implementation intentionally omits them to keep the live animation simpler and less decorative at smaller desktop widths.
 
-## Final result
-
-passed
+final result: passed

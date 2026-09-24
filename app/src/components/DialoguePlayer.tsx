@@ -7,7 +7,10 @@ type DialoguePlayerProps = {
 }
 
 export function DialoguePlayer({ dialogue, members }: DialoguePlayerProps) {
-  const memberName = (speakerId: string) => members.find((member) => member.id === speakerId)?.name ?? 'Course member'
+  const memberName = (speakerId: string) => {
+    const member = members.find((candidate) => candidate.id === speakerId)
+    return member?.fullName?.trim() || member?.name || 'Course member'
+  }
   const speakers = dialogue.speakerIds.map(memberName).join(' and ')
 
   return (

@@ -1,6 +1,13 @@
-import { ArrowRight, BookOpenText, ChatCircleText, CheckCircle, PuzzlePiece } from '@phosphor-icons/react'
+import { ArrowRight, BookOpenText, ChatCircleText, CheckCircle, Headphones, PuzzlePiece, SpeakerHigh } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { publicAssetPath } from '../deployment'
+
+const featuredWords = [
+  { korean: '한국어', english: 'Korean', icon: Headphones },
+  { korean: '태국', english: 'Thailand', icon: SpeakerHigh },
+  { korean: '학생', english: 'Student', icon: BookOpenText },
+] as const
 
 const learningSteps = [
   {
@@ -34,6 +41,21 @@ const learningSteps = [
 ] as const
 
 export function HomePage() {
+  const [featuredWordIndex, setFeaturedWordIndex] = useState(0)
+  const featuredWord = featuredWords[featuredWordIndex]
+  const FeaturedIcon = featuredWord.icon
+
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+
+    const interval = window.setInterval(() => {
+      setFeaturedWordIndex((current) => (current + 1) % featuredWords.length)
+    }, 4000)
+    return () => window.clearInterval(interval)
+  }, [])
+
+  const supportingWords = featuredWords.filter((_, index) => index !== featuredWordIndex)
+
   return (
     <section className="home-page">
       <div className="home-hero">
@@ -54,16 +76,48 @@ export function HomePage() {
           <p className="home-starting-note">No account needed — choose any unit and begin.</p>
         </div>
 
-        <figure className="home-hero__visual">
+        <section aria-label="Animated vocabulary preview" className="home-hero__visual">
           <img
-            alt="An illustrated Korean presenter recording a learning video"
-            src={publicAssetPath('/assets/culture/video-coming-soon.png')}
+            alt=""
+            aria-hidden="true"
+            className="home-hero__stage"
+            data-testid="home-hanok-stage"
+            src={publicAssetPath('/assets/culture/home-hanok-stage.png')}
           />
-          <figcaption>
-            <strong>Learn with real voices</strong>
-            <span>See and hear every word from our team.</span>
-          </figcaption>
-        </figure>
+          <div className="home-vocabulary-showcase">
+            <div className="home-vocabulary-showcase__supporting" aria-hidden="true">
+              {supportingWords.map((word) => (
+                <div className="home-vocabulary-mini-card" key={word.korean}>
+                  <strong lang="ko">{word.korean}</strong>
+                  <span lang="en">{word.english}</span>
+                </div>
+              ))}
+            </div>
+            <article aria-live="polite" className="home-vocabulary-card" key={featuredWord.korean}>
+              <FeaturedIcon aria-hidden="true" className="home-vocabulary-card__icon" size={28} weight="duotone" />
+              <h2 lang="ko">{featuredWord.korean}</h2>
+              <p lang="en">{featuredWord.english}</p>
+              <span aria-hidden="true" className="home-vocabulary-waveform">
+                {Array.from({ length: 15 }, (_, index) => <i key={index} />)}
+              </span>
+            </article>
+            <div aria-label="Choose featured vocabulary" className="home-vocabulary-dots" role="group">
+              {featuredWords.map((word, index) => (
+                <button
+                  aria-label={`Show ${word.korean} vocabulary card`}
+                  aria-pressed={index === featuredWordIndex}
+                  key={word.korean}
+                  onClick={() => setFeaturedWordIndex(index)}
+                  type="button"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="home-hero__caption">
+            <strong>Learn Korean, one word at a time.</strong>
+            <span>Clear meanings, real voices, and beginner-friendly examples.</span>
+          </div>
+        </section>
       </div>
 
       <nav aria-label="Learning journey" className="home-learning-path">

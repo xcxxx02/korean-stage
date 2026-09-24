@@ -75,7 +75,7 @@ describe('SubmissionReadiness', () => {
     }
 
     expect(within(needsContent).getByText('Hello, I am Mina — add a human-recorded dialogue video.')).toBeInTheDocument()
-    expect(within(needsContent).getByText('Who are you? — add a human-recorded dialogue video.')).toBeInTheDocument()
+    expect(within(needsContent).getByText('Where are you from? — keep the video between 60 and 180 seconds.')).toBeInTheDocument()
 
     const passed = screen.getByRole('region', { name: 'Passed' })
     expect(within(passed).queryByText('Dialogue video durations')).not.toBeInTheDocument()

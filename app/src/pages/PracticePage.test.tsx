@@ -18,12 +18,13 @@ function renderPractice(entry = '/practice') {
 }
 
 describe('PracticePage', () => {
-  it('offers four topic practices and one 27-question final quiz', () => {
+  it('offers four topic practices and one grammar quiz', () => {
     renderPractice()
 
     expect(screen.getByRole('heading', { name: 'Practice & Quiz' })).toBeVisible()
     expect(screen.getAllByRole('link', { name: /Unit [12]/ })).toHaveLength(4)
-    expect(screen.getByRole('link', { name: 'Quiz · 27 questions' })).toHaveAttribute('href', '/practice/quiz')
+    expect(screen.getByRole('heading', { name: 'Grammar quiz' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Grammar quiz · 9 questions' })).toHaveAttribute('href', '/practice/quiz')
     expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   })
 
@@ -41,9 +42,9 @@ describe('PracticePage', () => {
   it('shows all questions before revealing final quiz results', () => {
     renderPractice('/practice/quiz')
 
-    expect(screen.getByRole('heading', { name: 'Quiz' })).toBeVisible()
-    expect(screen.getByText('Question 1 of 27')).toBeVisible()
-    expect(screen.getByText('Question 27 of 27')).toBeVisible()
+    expect(screen.getByRole('heading', { name: 'Grammar quiz' })).toBeVisible()
+    expect(screen.getByText('Question 1 of 9')).toBeVisible()
+    expect(screen.getByText('Question 9 of 9')).toBeVisible()
     expect(screen.queryByText(/Correct answer:/)).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Submit answers' })).toBeDisabled()
   })

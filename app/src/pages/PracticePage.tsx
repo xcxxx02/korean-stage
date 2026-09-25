@@ -19,8 +19,8 @@ const lessonSelection = (group: PracticeGroup): PracticeSelection => ({
 
 const mixedSelection: PracticeSelection = {
   id: 'quiz',
-  title: 'Quiz',
-  exercises: practiceGroups.flatMap((group) => group.exercises),
+  title: 'Grammar quiz',
+  exercises: practiceGroups.filter((group) => group.kind === 'Grammar').flatMap((group) => group.exercises),
 }
 
 export function PracticePage() {
@@ -97,8 +97,8 @@ export function PracticePage() {
           </section>
 
           <section aria-labelledby="mixed-quiz-heading" className="border-t border-stage-border pt-6">
-            <p className="text-sm font-bold uppercase tracking-wide text-stage-vermilion">Optional final check</p>
-            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="mixed-quiz-heading">Quiz</h2>
+            <p className="text-sm font-bold uppercase tracking-wide text-stage-vermilion">Grammar review</p>
+            <h2 className="mt-1 text-2xl font-bold text-stage-charcoal" id="mixed-quiz-heading">Grammar quiz</h2>
             <p className="mt-2 max-w-2xl text-stage-muted">All {mixedSelection.exercises.length} questions on one page. Finish and submit once to see your results.</p>
             <Link
               aria-label={`${mixedSelection.title} · ${mixedSelection.exercises.length} questions`}
@@ -106,7 +106,7 @@ export function PracticePage() {
               ref={(element) => { quizCardRefs.current[mixedSelection.id] = element }}
               to="/practice/quiz"
             >
-              Quiz · {mixedSelection.exercises.length} questions
+              Grammar quiz · {mixedSelection.exercises.length} questions
             </Link>
           </section>
         </>

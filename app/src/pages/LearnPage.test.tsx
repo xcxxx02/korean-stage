@@ -35,8 +35,8 @@ describe('Canonical learning routes', () => {
     renderApp(['/dialogue'])
 
     expect(screen.getByRole('heading', { name: 'Dialogue & role play' })).toBeVisible()
-    expect(screen.getByText('안녕하세요.')).toHaveAttribute('lang', 'ko')
-    expect(screen.getByText('Hello. What is your name?')).toHaveAttribute('lang', 'en')
+    expect(screen.getByText('누구세요?')).toHaveAttribute('lang', 'ko')
+    expect(screen.getByText('Hello. I’m Jimin from next door. I brought you a small gift.')).toHaveAttribute('lang', 'en')
   })
 
   it.each([

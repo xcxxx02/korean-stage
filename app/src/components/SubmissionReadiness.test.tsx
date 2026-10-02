@@ -74,7 +74,8 @@ describe('SubmissionReadiness', () => {
       expect(within(needsContent).queryByText(`${item.korean} / ${item.english} — add human-recorded video and audio.`)).not.toBeInTheDocument()
     }
 
-    expect(within(needsContent).getByText('Hello, I am Mina — add a human-recorded dialogue video.')).toBeInTheDocument()
+    expect(within(needsContent).queryByText('A New Neighbor — add a human-recorded dialogue video.')).not.toBeInTheDocument()
+    expect(within(needsContent).getByText('A New Neighbor — keep the video between 60 and 180 seconds.')).toBeInTheDocument()
     expect(within(needsContent).getByText('Where are you from? — keep the video between 60 and 180 seconds.')).toBeInTheDocument()
 
     const passed = screen.getByRole('region', { name: 'Passed' })

@@ -2,7 +2,6 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { course } from '../content/course'
-import { validCourse } from '../test/fixtures'
 import { DialoguePage } from '../pages/DialoguePage'
 import { DialoguePlayer } from './DialoguePlayer'
 
@@ -27,8 +26,8 @@ describe('DialoguePlayer', () => {
     const lines = within(transcript).getAllByRole('listitem')
     expect(lines).toHaveLength(8)
     expect(lines[0]).toHaveTextContent('Line 1 · CHEONG XIN CHEN')
-    expect(within(lines[0]).getByText('안녕하세요.')).toHaveAttribute('lang', 'ko')
-    expect(within(lines[0]).getByText('Hello.')).toHaveAttribute('lang', 'en')
+    expect(within(lines[0]).getByText('누구세요?')).toHaveAttribute('lang', 'ko')
+    expect(within(lines[0]).getByText('Who is it?')).toHaveAttribute('lang', 'en')
   })
 
   it('renders every Korean dialogue occurrence once and inside a Korean language boundary', () => {
@@ -58,7 +57,11 @@ describe('DialoguePlayer', () => {
   })
 
   it('keeps missing dialogue media honest and non-playable', () => {
-    render(<DialoguePlayer dialogue={course.dialogues[0]} members={course.members} />)
+    const dialogueWithoutVideo = {
+      ...course.dialogues[0],
+      video: { src: null, kind: 'development-missing' as const },
+    }
+    render(<DialoguePlayer dialogue={dialogueWithoutVideo} members={course.members} />)
 
     expect(screen.getByRole('heading', { name: 'Dialogue video coming soon' })).toBeVisible()
     expect(screen.getByText('This dialogue still needs a real recording from CHEONG XIN CHEN and WONG WEI QI.')).toBeVisible()
@@ -67,11 +70,11 @@ describe('DialoguePlayer', () => {
     expect(document.querySelector('audio')).not.toBeInTheDocument()
   })
 
-  it('renders one supplied human role-play video without line-level media', () => {
-    const dialogue = validCourse.dialogues[0]
-    render(<DialoguePlayer dialogue={dialogue} members={validCourse.members} />)
+  it('renders the supplied Dialogue 1 role-play video without line-level media', () => {
+    const dialogue = course.dialogues[0]
+    render(<DialoguePlayer dialogue={dialogue} members={course.members} />)
 
-    const video = screen.getByLabelText('Dialogue 1 role-play video')
+    const video = screen.getByLabelText('A New Neighbor role-play video')
     expect(video).toHaveAttribute('controls')
     expect(video.querySelector('source')).toHaveAttribute('src', '/media/dialogues/dialogue-1.mp4')
     expect(document.querySelectorAll('video')).toHaveLength(1)
@@ -85,11 +88,11 @@ describe('DialoguePage', () => {
     render(<DialoguePage />)
 
     const chooser = screen.getByRole('group', { name: 'Choose a dialogue' })
-    const firstDialogue = within(chooser).getByRole('button', { name: 'Hello, I am Mina' })
+    const firstDialogue = within(chooser).getByRole('button', { name: 'A New Neighbor' })
     const secondDialogue = within(chooser).getByRole('button', { name: 'Where are you from?' })
     expect(within(chooser).getAllByRole('button')).toHaveLength(2)
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByText('Meeting someone for the first time')).toBeVisible()
+    expect(screen.getByText('Meeting a new neighbor and sharing Malaysian food')).toBeVisible()
     expect(screen.queryByText('Meeting a classmate and talking about where you are from and what you study')).not.toBeInTheDocument()
     expect(screen.getAllByRole('figure')).toHaveLength(1)
 
@@ -97,7 +100,7 @@ describe('DialoguePage', () => {
 
     expect(firstDialogue).toHaveAttribute('aria-pressed', 'false')
     expect(secondDialogue).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.queryByText('Meeting someone for the first time')).not.toBeInTheDocument()
+    expect(screen.queryByText('Meeting a new neighbor and sharing Malaysian food')).not.toBeInTheDocument()
     expect(screen.getByText('Meeting a classmate and talking about where you are from and what you study')).toBeVisible()
     expect(screen.getByText('조나단씨 어느 나라사람이에요?')).toHaveAttribute('lang', 'ko')
     expect(screen.getByText('Which country are you from?')).toHaveAttribute('lang', 'en')

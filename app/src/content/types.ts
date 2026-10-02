@@ -47,6 +47,10 @@ export type Member = {
   id: string
   name: string
   fullName?: string
+  photo?: {
+    src: string
+    position?: string
+  }
   studentClass?: string
   studentId: string
   isDevelopmentIdentity: boolean

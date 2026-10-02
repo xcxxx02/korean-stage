@@ -195,7 +195,7 @@ describe('Korean Stage visual-system contract', () => {
       'components/ExerciseEngine.tsx': /Score:/,
       'components/LearningShell.tsx': /\{progress\}/,
       'components/SubmissionReadiness.tsx': /Passed|Human review required/,
-      'components/TeamGrid.tsx': /Replace before submission|assignedVocabulary\.length/,
+      'components/TeamGrid.tsx': /Replace before submission|assignedVocabulary\.length|alt=\{member\.fullName|objectPosition/,
       'components/VocabularyJourney.tsx': /\{index \+ 1\}|Now learning/,
       'pages/DialoguePage.tsx': /Selected dialogue/,
     }

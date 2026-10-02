@@ -35,7 +35,7 @@ describe('Yi Siang vocabulary recordings', () => {
 
     expect(yiSiang).toMatchObject({
       fullName: 'LAM YI SIANG',
-      role: 'Vocabulary presenter',
+      role: 'Vocabulary, grammar quiz & dialogue contributor',
     })
     expect(yiSiang?.contribution).toContain('Doctor, Nurse, Firefighter, Pharmacist, and Police officer')
   })

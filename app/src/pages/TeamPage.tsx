@@ -12,7 +12,7 @@ export function TeamPage() {
       <p className="font-semibold text-stage-cobalt">Korean Stage · Group 4 · {course.members.length} members</p>
       <h1 className="mt-2 text-3xl font-black tracking-tight text-stage-charcoal sm:text-4xl">Meet the team</h1>
       <p className="mt-3 max-w-3xl text-lg text-stage-muted">
-        Meet the people who created Korean Stage and contributed to its vocabulary and dialogues.
+        Meet the people behind Korean Stage and explore their contributions to vocabulary, grammar, quizzes, and dialogues.
       </p>
       <TeamGrid course={course} />
       {showReadiness ? <SubmissionReadiness course={course} /> : null}

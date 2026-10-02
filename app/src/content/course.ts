@@ -99,25 +99,31 @@ export const course: Course = {
   members: [
     {
       id: 'member-1', name: 'Member 1', fullName: 'CHEONG XIN CHEN', studentId: '251UC250T4', studentClass: 'FCI2',
+      photo: { src: '/assets/team/cheong-xin-chen.jpeg', position: '50% 30%' },
       isDevelopmentIdentity: false,
-      role: 'Vocabulary presenter',
-      contribution: 'Presents Thailand, Vietnam, Philippines, and Singapore in Unit 1.',
+      role: 'Vocabulary, website & dialogue contributor',
+      contribution: 'Prepared and recorded Thailand, Vietnam, Philippines, and Singapore; contributed to the Homepage and Team page; and created and recorded Dialogue 1 with Wong Wei Qi.',
     },
     {
       id: 'member-2', name: 'Member 2', fullName: 'WONG WEI QI', studentId: '251UC250TB', studentClass: 'FCI2',
+      photo: { src: '/assets/team/wong-wei-qi.jpg', position: '50% 47%' },
       isDevelopmentIdentity: false,
-      role: 'Vocabulary presenter',
-      contribution: 'Presents Indonesia, Spain, Italy, Brazil, and New Zealand in Unit 1.',
+      role: 'Vocabulary, grammar & dialogue contributor',
+      contribution: 'Prepared and recorded Indonesia, Spain, Italy, Brazil, and New Zealand; contributed to Grammar Unit 1; and created and recorded Dialogue 1 with Cheong Xin Chen.',
     },
     {
       id: 'member-3', name: 'Member 3', fullName: 'LIM ZHEN LONG', studentId: '252UC243GJ', studentClass: 'FCI2',
+      photo: { src: '/assets/team/lim-zhen-long.jpeg', position: '50% 34%' },
       isDevelopmentIdentity: false,
-      role: 'Vocabulary presenter', contribution: 'Presents Student, Teacher, Engineer, and Designer in Unit 2.',
+      role: 'Vocabulary, grammar & dialogue contributor',
+      contribution: 'Prepared and recorded Student, Teacher, Engineer, and Designer; contributed to Grammar Unit 2; and created and recorded Dialogue 2 with Lam Yi Siang.',
     },
     {
       id: 'member-4', name: 'Member 4', fullName: 'LAM YI SIANG', studentId: '262UM2630D', studentClass: 'FOM',
+      photo: { src: '/assets/team/lam-yi-siang.jpeg', position: '50% 38%' },
       isDevelopmentIdentity: false,
-      role: 'Vocabulary presenter', contribution: 'Presents Doctor, Nurse, Firefighter, Pharmacist, and Police officer in Unit 2.',
+      role: 'Vocabulary, grammar quiz & dialogue contributor',
+      contribution: 'Prepared and recorded Doctor, Nurse, Firefighter, Pharmacist, and Police officer; contributed to the Grammar Quiz; and created and recorded Dialogue 2 with Lim Zhen Long.',
     },
   ],
   introductionModels: [

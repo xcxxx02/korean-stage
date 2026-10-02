@@ -1,11 +1,32 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
+import { course } from '../content/course'
 import { validCourse } from '../test/fixtures'
 import { TeamGrid } from './TeamGrid'
 
 afterEach(cleanup)
 
 describe('TeamGrid', () => {
+  it('shows one named portrait for every real team member', () => {
+    render(<TeamGrid course={course} />)
+
+    const portraits = screen.getAllByRole('img')
+    expect(portraits).toHaveLength(4)
+    expect(screen.getByRole('img', { name: 'CHEONG XIN CHEN' })).toHaveAttribute('src', '/assets/team/cheong-xin-chen.jpeg')
+    expect(screen.getByRole('img', { name: 'WONG WEI QI' })).toHaveAttribute('src', '/assets/team/wong-wei-qi.jpg')
+    expect(screen.getByRole('img', { name: 'LIM ZHEN LONG' })).toHaveAttribute('src', '/assets/team/lim-zhen-long.jpeg')
+    expect(screen.getByRole('img', { name: 'LAM YI SIANG' })).toHaveAttribute('src', '/assets/team/lam-yi-siang.jpeg')
+  })
+
+  it('labels each real member with the numbered dialogue they contributed to', () => {
+    render(<TeamGrid course={course} />)
+
+    expect(within(screen.getByRole('article', { name: 'CHEONG XIN CHEN contribution' })).getByText('Dialogue 1 · A New Neighbor')).toBeVisible()
+    expect(within(screen.getByRole('article', { name: 'WONG WEI QI contribution' })).getByText('Dialogue 1 · A New Neighbor')).toBeVisible()
+    expect(within(screen.getByRole('article', { name: 'LIM ZHEN LONG contribution' })).getByText('Dialogue 2 · Where are you from?')).toBeVisible()
+    expect(within(screen.getByRole('article', { name: 'LAM YI SIANG contribution' })).getByText('Dialogue 2 · Where are you from?')).toBeVisible()
+  })
+
   it('renders the exact Lec 1 source statement and two named member contributions from data', () => {
     render(<TeamGrid course={validCourse} />)
 
